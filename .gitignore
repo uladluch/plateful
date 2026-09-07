@@ -21,6 +21,7 @@ build/
 Secrets.xcconfig
 .env
 .env.*
+!.env.example
 
 # Backend pipeline
 backend/.venv/
