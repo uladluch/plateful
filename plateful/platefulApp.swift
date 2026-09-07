@@ -6,22 +6,9 @@
 //
 
 import SwiftUI
-import SwiftData
 
 @main
 struct platefulApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
 
     /// Каталог живёт столько же, сколько приложение: он read-only и грузится
     /// один раз. Экраны получают его из окружения и не знают, приехал он из
@@ -30,10 +17,9 @@ struct platefulApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ChainsView()
                 .environment(menu)
                 .task { await menu.load() }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

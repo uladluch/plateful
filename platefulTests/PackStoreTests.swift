@@ -183,6 +183,57 @@ struct PackStoreTests {
             atPath: sandbox.store.installedURL.path(percentEncoded: false)))
     }
 
+    /// Раньше ошибка сида глушилась `try?`, и «сид не разобрался» приходило
+    /// как «пака нет вообще». Из лога приложения было не понять, чинить
+    /// сборку или искать файл.
+    @Test("испорченный сид сообщает свою причину, а не «пака нет»")
+    func surfacesSeedFailure() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "seed-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let seedURL = directory.appending(path: "seed.json", directoryHint: .notDirectory)
+        try Data("{ это не пак }".utf8).write(to: seedURL)
+
+        let store = PackStore(
+            seedURL: seedURL,
+            installedURL: directory.appending(path: "current.json", directoryHint: .notDirectory))
+
+        do {
+            _ = try store.loadBest()
+            Issue.record("ожидалась ошибка")
+        } catch MenuPack.LoadError.noPackAvailable {
+            Issue.record("причина потеряна: сид есть, но пришло «пака нет»")
+        } catch let error as MenuPack.LoadError {
+            guard case .malformed = error else {
+                Issue.record("ожидался .malformed, получено \(error)")
+                return
+            }
+        }
+    }
+
+    /// Испорченный сид не должен ронять работу, если скачанный пак цел.
+    @Test("скачанный пак спасает при испорченном сиде")
+    func installedPackSurvivesBrokenSeed() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "seed-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let seedURL = directory.appending(path: "seed.json", directoryHint: .notDirectory)
+        try Data("{ это не пак }".utf8).write(to: seedURL)
+        let store = PackStore(
+            seedURL: seedURL,
+            installedURL: directory.appending(path: "current.json", directoryHint: .notDirectory))
+
+        let compressed = try Self.deflated(Self.packJSON(version: 2, kcal: 580))
+        _ = try store.install(compressed: compressed,
+                              expectedSHA256: Self.sha256(compressed), newerThan: 0)
+
+        #expect(try store.loadBest().version == 2)
+    }
+
     @Test("откат на сид по требованию")
     func removeInstalledRevertsToSeed() throws {
         let sandbox = try Sandbox()

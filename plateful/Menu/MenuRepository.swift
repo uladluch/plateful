@@ -25,6 +25,12 @@ final class MenuRepository {
         self.store = store
     }
 
+    /// Готовый каталог без обращения к диску — для превью и тестов.
+    init(catalog: MenuCatalog) {
+        self.store = .standard()
+        self.state = .ready(catalog)
+    }
+
     var catalog: MenuCatalog? {
         if case .ready(let catalog) = state { return catalog }
         return nil
@@ -61,6 +67,10 @@ final class MenuRepository {
 
     func items(in chain: String) -> [MenuItem] {
         catalog?.items(in: chain) ?? []
+    }
+
+    func sections(for chain: String) -> [MenuSection] {
+        catalog?.sections(for: chain) ?? []
     }
 
     /// Позиция по ссылке, пережившей обновление пака, — для сохранённых

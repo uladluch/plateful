@@ -43,7 +43,18 @@ nonisolated struct PackStore: Sendable {
     /// он удаляется, и мы честно откатываемся на сид.
     func loadBest() throws -> MenuPack {
         let installed = loadInstalled()
-        let seed = seedURL.flatMap { try? MenuPack.decode(from: Data(contentsOf: $0)) }
+
+        // Ошибку сида нельзя глушить `try?`: тогда «сид не разобрался»
+        // становится неотличим от «сида нет», и настоящая причина теряется.
+        var seed: MenuPack?
+        var seedFailure: Error?
+        if let seedURL {
+            do {
+                seed = try MenuPack.decode(from: Data(contentsOf: seedURL))
+            } catch {
+                seedFailure = error
+            }
+        }
 
         switch (installed, seed) {
         case let (installed?, seed?):
@@ -53,7 +64,7 @@ nonisolated struct PackStore: Sendable {
         case let (nil, seed?):
             return seed
         case (nil, nil):
-            throw MenuPack.LoadError.noPackAvailable
+            throw seedFailure ?? MenuPack.LoadError.noPackAvailable
         }
     }
 
