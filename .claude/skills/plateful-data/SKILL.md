@@ -11,8 +11,13 @@ description: Данные и бэкенд Plateful — MenuStat как seed, и�
 ## Supabase
 
 Проект **`tnlmtyhuuqpjwuhzximh`** — `https://supabase.com/dashboard/project/tnlmtyhuuqpjwuhzximh`.
-Подключён по MCP (`mcp__7f803660-…__*`). Схема применена (3 миграции), 96 сетей в `chains`,
-`items` ждёт `load_seed.py`. Бакет Storage `packs` публичный на чтение.
+Подключён по MCP (`mcp__7f803660-…__*`) **и по CLI**: `supabase link --project-ref tnlmtyhuuqpjwuhzximh`
+работает без пароля базы — CLI поднимает временную роль по access-токену. Отсюда:
+`supabase db push`, `supabase db query --linked -f file.sql`, `supabase migration list --linked`.
+Это основной рабочий путь, паролей и service-ключей не требует.
+
+Состояние: 4 миграции, **96 сетей и 25 366 позиций загружены**, бакет Storage `packs`
+публичный на чтение.
 **Миграции — в `supabase/migrations/` (конвенция Supabase CLI), версии совпадают с удалёнными.**
 Новая миграция = файл там + `apply_migration` с тем же именем; не расходить.
 Service key — только в GitHub Secrets / локальном `.env`, никогда в клиент.
@@ -95,6 +100,14 @@ Seed-пак зашит в бандл — без сети и при лежаще�
 - Кроулы (позже): cron, 8 ключевых сетей еженедельно, хвост ежемесячно (`chains.crawl_every`);
   добавится `ANTHROPIC_API_KEY` для PDF-экстракции. Стоимость ≈ $3–30/мес.
 - Приоритет новых адаптеров — по `search_events` с `matched=false`.
+
+## Два пака
+
+- `build_seed.py`: MenuStat → `plateful/Resources/seed-pack.json`. Детерминирован, в бандле, CI сверяет.
+- `export_pack.py --version N`: `items_export` (с overrides) → `pack-vN.deflate` для Storage.
+
+Проверка, что overrides доезжают: Big Mac — 540 ккал в сиде, 580 в паке из базы,
+сырая строка кроула не изменена.
 
 ## Правило одного slug
 `backend/plateful_data/slug.py` — единственная реализация `slugify`; `chains.slug` и `items.ext_key`

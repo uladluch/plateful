@@ -18,19 +18,42 @@
 | `plateful_data/validate.py` | Атуотер, диапазоны, дифф-проверка кроула |
 | `plateful_data/pack.py` | Собирает пак и манифест, считает sha256 |
 | `plateful_data/slug.py` | Единственная реализация slug/ext_key — см. ниже |
-| `scripts/build_seed.py` | MenuStat → `plateful/Resources/seed-pack.json` |
-| `scripts/load_seed.py` | Пак → Postgres (psycopg `COPY`, идемпотентно) |
+| `scripts/build_seed.py` | MenuStat → `plateful/Resources/seed-pack.json` (bootstrap, детерминирован) |
+| `scripts/load_seed.py` | Пак → Postgres. `--emit-sql` не требует пароля базы |
+| `scripts/export_pack.py` | Postgres (`items_export`, с overrides) → пак для Storage |
 | `../supabase/migrations/` | Схема, конвенция Supabase CLI; версии совпадают с удалёнными |
 | `../.github/workflows/` | `backend-ci` собирает и сверяет пак; `publish-pack` льёт в Postgres и Storage |
 
 ## Быстрый старт
 
+Пароль базы не нужен: `supabase` CLI поднимает временную роль по своему
+access-токену (`supabase login`, один раз).
+
 ```bash
-python3 backend/scripts/build_seed.py          # собрать пак (сеть нужна один раз)
-cp backend/.env.example backend/.env           # вписать SUPABASE_DB_URL
-pip install -r backend/requirements.txt
-python3 backend/scripts/load_seed.py           # залить в Postgres
+supabase link --project-ref tnlmtyhuuqpjwuhzximh
+python3 backend/scripts/build_seed.py                                  # MenuStat → пак в бандле
+python3 backend/scripts/load_seed.py --emit-sql backend/data/seed-sql  # пак → SQL
+for f in backend/data/seed-sql/*.sql; do supabase db query --linked -f "$f"; done
+python3 backend/scripts/export_pack.py --version 2                     # база → пак для Storage
 ```
+
+Для CI есть второй путь — напрямую по `SUPABASE_DB_URL` (одна команда `COPY`,
+быстрее на 25 тысячах строк):
+
+```bash
+cp backend/.env.example backend/.env && pip install -r backend/requirements.txt
+python3 backend/scripts/load_seed.py
+```
+
+## Два пака, и это не дубль
+
+- **seed-pack** — из MenuStat напрямую, детерминирован, лежит в бандле приложения.
+  CI сверяет файл в репозитории с пересборкой: расхождение = ошибка.
+- **pack-vN** — из базы, с наложенными `overrides`, уезжает в Storage.
+  Недетерминирован по определению: он и должен меняться вслед за правками.
+
+Проверено на Big Mac: в сиде 540 ккал / 28 г жира (MenuStat 2018), в паке из
+базы — 580 / 34 после override, при этом сырая строка кроула не тронута.
 
 ## Откуда берётся сырой файл
 

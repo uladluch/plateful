@@ -31,3 +31,5 @@ backend/data/raw/
 
 # Сгенерированные артефакты конвейера
 backend/data/*.deflate
+backend/data/seed-sql/
+backend/data/pack-v*.json
