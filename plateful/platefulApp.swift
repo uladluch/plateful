@@ -22,12 +22,12 @@ struct platefulApp: App {
     /// в моделях и без аккаунта в приложении.
     private let userData: ModelContainer = {
         do {
-            return try ModelContainer(for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self)
+            return try ModelContainer(for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self, UserGoals.self)
         } catch {
             // Хранилище пользователя не должно ронять справочник: поиск и
             // калории работают и без истории.
             return try! ModelContainer(
-                for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self,
+                for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self, UserGoals.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         }
     }()
