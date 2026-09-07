@@ -12,6 +12,9 @@ struct RootView: View {
             Tab("Saved", systemImage: "bookmark") {
                 SavedOrdersView()
             }
+            Tab("Profile", systemImage: "person.crop.circle") {
+                ProfileView()
+            }
         }
     }
 }

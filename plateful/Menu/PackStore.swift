@@ -22,12 +22,36 @@ nonisolated struct PackStore: Sendable {
     /// Имя сида в бандле. Кладётся туда конвейером: `backend/scripts/build_seed.py`.
     static let seedResource = "seed-pack"
 
-    let seedURL: URL?
+    /// Откуда брать сид.
+    enum Seed: Sendable {
+        /// Искать в бандле — **при каждом обращении**.
+        ///
+        /// Раньше путь вычислялся один раз при создании хранилища, и разовый
+        /// промах `Bundle.main.url` отравлял всю сессию: приложение до
+        /// перезапуска считало, что сида нет. Наблюдалось в симуляторе, когда
+        /// запуск пришёлся на подмену бандла при установке.
+        case bundle
+        /// Явный файл — для тестов; `nil` означает «сида нет вовсе».
+        case file(URL?)
+    }
+
+    let seed: Seed
     let installedURL: URL
 
-    init(seedURL: URL?, installedURL: URL) {
-        self.seedURL = seedURL
+    init(seed: Seed, installedURL: URL) {
+        self.seed = seed
         self.installedURL = installedURL
+    }
+
+    init(seedURL: URL?, installedURL: URL) {
+        self.init(seed: .file(seedURL), installedURL: installedURL)
+    }
+
+    var seedURL: URL? {
+        switch seed {
+        case .bundle: Bundle.main.url(forResource: Self.seedResource, withExtension: "json")
+        case .file(let url): url
+        }
     }
 
     /// Обычная конфигурация приложения.
@@ -39,7 +63,7 @@ nonisolated struct PackStore: Sendable {
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
 
         return PackStore(
-            seedURL: Bundle.main.url(forResource: seedResource, withExtension: "json"),
+            seed: .bundle,
             installedURL: directory.appending(path: "current.json", directoryHint: .notDirectory))
     }
 

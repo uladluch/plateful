@@ -183,6 +183,28 @@ struct PackStoreTests {
             atPath: sandbox.store.installedURL.path(percentEncoded: false)))
     }
 
+    /// Разовый промах поиска в бандле не должен отравлять сессию: путь к сиду
+    /// вычисляется при каждом обращении, а не запоминается при создании.
+    @Test("сид ищется заново на каждой загрузке")
+    func looksUpSeedEachTime() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "late-seed-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let seedURL = directory.appending(path: "seed.json", directoryHint: .notDirectory)
+        let store = PackStore(
+            seedURL: seedURL,
+            installedURL: directory.appending(path: "current.json", directoryHint: .notDirectory))
+
+        // Файла ещё нет — загрузка не удаётся.
+        #expect(throws: (any Error).self) { try store.loadBest() }
+
+        // Появился — то же хранилище его находит, пересоздавать не нужно.
+        try PackStoreTests.packJSON(version: 1, kcal: 540).write(to: seedURL)
+        #expect(try store.loadBest().version == 1)
+    }
+
     /// Раньше ошибка сида глушилась `try?`, и «сид не разобрался» приходило
     /// как «пака нет вообще». Из лога приложения было не понять, чинить
     /// сборку или искать файл.
