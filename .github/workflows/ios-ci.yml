@@ -16,22 +16,45 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
 
-      - name: Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.app
+      # Версию Xcode не хардкодим: образы раннеров меняются, и упавший
+      # xcode-select маскирует настоящую причину. Нужен 26+ — проект
+      # использует objectVersion 77 и `nonisolated` на типах.
+      - name: Выбрать Xcode
+        run: |
+          set -euo pipefail
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "Доступны:"; ls -d /Applications/Xcode*.app
+          sudo xcode-select -s "$latest"
+          xcodebuild -version
+          major=$(xcodebuild -version | head -1 | sed -E 's/Xcode ([0-9]+).*/\1/')
+          if [ "$major" -lt 26 ]; then
+            echo "::error::Нужен Xcode 26+, на раннере $major"
+            exit 1
+          fi
+
+      # Имя симулятора тоже зависит от образа — берём любой доступный iPhone.
+      - name: Выбрать симулятор
+        id: sim
+        run: |
+          set -euo pipefail
+          name=$(xcrun simctl list devices available \
+                 | grep -oE '^ +iPhone [^(]+' | sed 's/ *$//' | head -1 | xargs)
+          echo "Симулятор: $name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
 
       - name: Тесты
         run: |
+          set -o pipefail
           xcodebuild test \
             -project plateful.xcodeproj \
             -scheme plateful \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             -resultBundlePath TestResults.xcresult \
-            | xcbeautify --renderer github-actions
-        shell: bash
+            -quiet
 
       - uses: actions/upload-artifact@v5
         if: failure()
