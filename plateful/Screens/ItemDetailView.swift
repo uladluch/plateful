@@ -50,6 +50,13 @@ struct ItemDetailView: View {
         }
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            NavigationLink {
+                OrderView(startingWith: item)
+            } label: {
+                Label("Build order", systemImage: "plus.forwardslash.minus")
+            }
+        }
     }
 
     private var calories: some View {
