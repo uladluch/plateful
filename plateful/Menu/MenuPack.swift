@@ -53,6 +53,7 @@ nonisolated extension MenuPack {
     enum LoadError: Error, LocalizedError, Sendable {
         case unsupportedFormat(Int)
         case empty
+        case malformed(String)
         case checksumMismatch
         case decompressionFailed
         case noPackAvailable
@@ -63,6 +64,8 @@ nonisolated extension MenuPack {
                 "Формат пака \(format) не поддерживается, нужен \(MenuPack.supportedFormat)"
             case .empty:
                 "В паке нет ни одной позиции"
+            case .malformed(let detail):
+                "Пак не разобрался: \(detail)"
             case .checksumMismatch:
                 "Контрольная сумма пака не совпала"
             case .decompressionFailed:
@@ -73,8 +76,21 @@ nonisolated extension MenuPack {
         }
     }
 
+    /// Любая неудача разбора выходит наружу как `LoadError`.
+    ///
+    /// Повреждённые байты ведут себя по-разному: иногда не распаковываются
+    /// вовсе, иногда распаковываются в мусор, и тогда падает уже JSONDecoder.
+    /// Вызывающему это различие не нужно — ему нужно одно решение: остаться
+    /// на том паке, который уже работает.
     static func decode(from data: Data) throws -> MenuPack {
-        let pack = try JSONDecoder().decode(MenuPack.self, from: data)
+        let pack: MenuPack
+        do {
+            pack = try JSONDecoder().decode(MenuPack.self, from: data)
+        } catch let error as LoadError {
+            throw error
+        } catch {
+            throw LoadError.malformed(String(describing: error))
+        }
         guard pack.format == supportedFormat else {
             throw LoadError.unsupportedFormat(pack.format)
         }

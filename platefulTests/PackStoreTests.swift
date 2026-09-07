@@ -121,16 +121,33 @@ struct PackStoreTests {
         #expect(try sandbox.store.loadBest().version == 1)
     }
 
-    @Test("битые байты с верной суммой не распаковываются")
-    func rejectsCorruptPayload() throws {
+    /// Повреждение может и не распаковаться, и распаковаться в мусор —
+    /// какая именно ветка сработает, зависит от байтов. Наружу в обоих
+    /// случаях обязан выйти `LoadError`: на этом CI и поймал расхождение,
+    /// когда локально срабатывала одна ветка, а на раннере — другая.
+    @Test("битые байты с верной суммой отклоняются", arguments: [1, 8, 32])
+    func rejectsCorruptPayload(offset: Int) throws {
         let sandbox = try Sandbox()
         var broken = try Self.deflated(Self.packJSON(version: 2, kcal: 580))
-        broken.replaceSubrange(broken.startIndex..<broken.index(broken.startIndex, offsetBy: 8),
+        let start = broken.index(broken.startIndex, offsetBy: offset)
+        broken.replaceSubrange(start..<broken.index(start, offsetBy: 8),
                                with: Data(repeating: 0xAB, count: 8))
 
         #expect(throws: MenuPack.LoadError.self) {
             try sandbox.store.install(compressed: broken,
                                       expectedSHA256: Self.sha256(broken), newerThan: 1)
+        }
+        #expect(try sandbox.store.loadBest().version == 1)
+    }
+
+    @Test("распаковалось, но это не пак")
+    func rejectsNonPackPayload() throws {
+        let sandbox = try Sandbox()
+        let compressed = try Self.deflated(Data("вовсе не JSON".utf8))
+
+        #expect(throws: MenuPack.LoadError.self) {
+            try sandbox.store.install(compressed: compressed,
+                                      expectedSHA256: Self.sha256(compressed), newerThan: 1)
         }
         #expect(try sandbox.store.loadBest().version == 1)
     }
