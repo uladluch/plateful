@@ -15,6 +15,8 @@ import urllib.request
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
+from .slug import slugify
+
 DATAVERSE_FILE_IDS = {
     2008: 6191166, 2010: 6191164, 2012: 6191168, 2013: 6191161,
     2014: 6191162, 2015: 6191163, 2017: 6191165, 2018: 6191167,
@@ -31,7 +33,6 @@ OBSERVED_AT = "2018-12-31"
 COMBO_BUILD_MARKER = "Accompanying Item"
 
 _WS = re.compile(r"\s+")
-_NON_KEY = re.compile(r"[^a-z0-9]+")
 
 
 @dataclass(frozen=True)
@@ -95,7 +96,7 @@ def _ext_key(name: str) -> str:
     К нему цепляются overrides, поэтому он не должен меняться от кроула
     к кроулу: только нормализованное имя, без регистра и пунктуации.
     """
-    return _NON_KEY.sub("-", name.lower()).strip("-")
+    return slugify(name)
 
 
 def _serving(row: dict) -> str | None:

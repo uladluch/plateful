@@ -1,0 +1,57 @@
+name: publish-pack
+
+# Ручной запуск. Секреты в Settings → Secrets and variables → Actions:
+#   SUPABASE_DB_URL           — строка подключения (пулер, порт 6543)
+#   SUPABASE_SERVICE_ROLE_KEY — для загрузки в Storage
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Версия пака"
+        required: true
+        default: "1"
+
+env:
+  SUPABASE_URL: https://tnlmtyhuuqpjwuhzximh.supabase.co
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: backend/data/raw
+          key: menustat-2018-v1
+
+      - run: pip install -r backend/requirements.txt
+      - run: python3 backend/scripts/build_seed.py --version ${{ inputs.version }}
+
+      - name: Seed → Postgres
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python3 backend/scripts/load_seed.py
+
+      # Storage REST API как есть: никакого своего клиента.
+      # Версии пака неизменяемы — заливаем без x-upsert, повтор упадёт.
+      - name: Пак → Storage
+        env:
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          V: ${{ inputs.version }}
+        run: |
+          curl --fail-with-body -X POST \
+            "$SUPABASE_URL/storage/v1/object/packs/v$V.deflate" \
+            -H "Authorization: Bearer $KEY" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @backend/data/seed-pack-v$V.deflate
+          curl --fail-with-body -X POST \
+            "$SUPABASE_URL/storage/v1/object/packs/manifest.json" \
+            -H "Authorization: Bearer $KEY" \
+            -H "Content-Type: application/json" \
+            -H "x-upsert: true" \
+            --data-binary @backend/data/manifest.json

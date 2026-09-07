@@ -19,26 +19,20 @@ import os
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from plateful_data.slug import slugify
+
+try:
+    import psycopg
+    from dotenv import load_dotenv
+except ImportError as exc:  # pragma: no cover
+    raise SystemExit(f"{exc.name} не установлен: pip install -r backend/requirements.txt")
+
 ROOT = Path(__file__).resolve().parents[2]
 PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
 SOURCE = "menustat-2018"
 OBSERVED = "2018-12-31"
-
-
-def load_dotenv(path: Path) -> None:
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
-def slugify(name: str) -> str:
-    import re
-    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
 def main() -> int:
@@ -50,12 +44,6 @@ def main() -> int:
     dsn = os.environ.get("SUPABASE_DB_URL")
     if not dsn:
         print("SUPABASE_DB_URL не задан. См. backend/.env.example", file=sys.stderr)
-        return 2
-
-    try:
-        import psycopg
-    except ImportError:
-        print("Нужен psycopg: pip install -r backend/requirements.txt", file=sys.stderr)
         return 2
 
     pack = json.loads(args.pack.read_text(encoding="utf-8"))

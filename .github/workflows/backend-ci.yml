@@ -1,0 +1,40 @@
+name: backend-ci
+
+on:
+  push:
+    paths: ["backend/**", ".github/workflows/backend-ci.yml"]
+  pull_request:
+    paths: ["backend/**"]
+
+jobs:
+  build-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      # Сырой MenuStat — 31 МБ с Harvard Dataverse. Кэшируем, чтобы не дёргать
+      # зеркало на каждый пуш; ключ фиксирован, файл 2018 года не меняется.
+      - uses: actions/cache@v4
+        with:
+          path: backend/data/raw
+          key: menustat-2018-v1
+
+      - run: pip install -r backend/requirements.txt
+      - run: python3 backend/scripts/build_seed.py
+
+      # Пак в бандле обязан совпадать с тем, что собирается из исходника.
+      - name: Пак в репозитории актуален
+        run: git diff --exit-code -- plateful/Resources/seed-pack.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seed-pack
+          path: |
+            backend/data/manifest.json
+            backend/data/problems.csv
+            backend/data/*.deflate

@@ -11,8 +11,10 @@ description: Данные и бэкенд Plateful — MenuStat как seed, и�
 ## Supabase
 
 Проект **`tnlmtyhuuqpjwuhzximh`** — `https://supabase.com/dashboard/project/tnlmtyhuuqpjwuhzximh`.
-Подключён по MCP (`mcp__7f803660-…__*`). На 2026-09-07 схема `public` пустая.
-DDL — только через `apply_migration`, данные — `execute_sql`.
+Подключён по MCP (`mcp__7f803660-…__*`). Схема применена (3 миграции), 96 сетей в `chains`,
+`items` ждёт `load_seed.py`. Бакет Storage `packs` публичный на чтение.
+**Миграции — в `supabase/migrations/` (конвенция Supabase CLI), версии совпадают с удалёнными.**
+Новая миграция = файл там + `apply_migration` с тем же именем; не расходить.
 Service key — только в GitHub Secrets / локальном `.env`, никогда в клиент.
 
 ## Архитектура: конвейер, не сервер
@@ -20,7 +22,7 @@ Service key — только в GitHub Secrets / локальном `.env`, ни
 ```
 сайты сетей → адаптеры → нормализация → валидация → Postgres (истина)
                                                       ↓ экспорт
-приложение ← Storage: packs/v{N}.json.gz (≈0.4 MB) + manifest.json
+приложение ← Storage: packs/v{N}.deflate (0.56 MB) + manifest.json
 ```
 Клиент читает только `manifest.json` и пак. Пишет только `search_events` (anon key, RLS INSERT-only).
 Seed-пак зашит в бандл — без сети и при лежащем Supabase приложение работает.
@@ -31,7 +33,8 @@ Seed-пак зашит в бандл — без сети и при лежаще�
   (расширение `.tab`, на деле CSV с кавычками, 71 172 строки, 50 колонок).
 - Очистка: выбросить `Customizable_Builds == 'Accompanying Item'` (41 052 combo-перестановки),
   дедуп по `(Restaurant, lower(Item_Name))`, оставить строки с числовыми
-  `Calories, Protein, Carbohydrates, Total_Fat` → **25 838 позиций, 96 сетей**, 2.1 MB / 0.37 MB gz.
+  `Calories, Protein, Carbohydrates, Total_Fat` → 25 836; минус 470 с противоречивыми числами
+  (ошибки Атуотера) → **25 366 позиций в паке, 96 сетей**, 4.94 MB JSON / 0.56 MB deflate.
 - Все 8 сетей из keywords есть. Нет Shake Shack и Sweetgreen.
 - Помечать `stale=true`, `source='menustat-2018'`. Дрейф: Big Mac 540→580 ккал (жир +21%),
   Crunchy Taco совпадает. Топ-20 у 8 ключевых сетей сверить руками до релиза.
@@ -56,8 +59,10 @@ Seed-пак зашит в бандл — без сети и при лежаще�
 
 ## Валидация — обязательна для каждого кроула
 
-1. **Атуотер**: `kcal ≈ 4·P + 4·C + 9·F` ±20% (шире для алкоголя/клетчатки). Ловит съехавшие колонки и галлюцинации LLM.
-2. Диапазоны: 0–3000 ккал на позицию, макросы ≥ 0.
+1. **Атуотер асимметричный**: макросы дают больше ккал, чем заявлено (>25%) — **ошибка**, так не бывает;
+   заявлено больше, чем объясняют макросы — **предупреждение** (алкоголь, 7 ккал/г, не в макросах).
+   Ошибки в пак не едут, лежат в `backend/data/problems.csv`, чинятся через `overrides`.
+2. Диапазоны: до 5000 ккал (целые пироги бывают), >2000 — предупреждение; макросы ≥ 0.
 3. Дифф с прошлым кроулом: >30% изменилось или >20% пропало → `crawls.status='held'`, релиз не собирать.
 4. Диапазоны комбо «730-1010» → `kcal_min/kcal_max`, не усреднять.
 
@@ -67,20 +72,30 @@ Seed-пак зашит в бандл — без сети и при лежаще�
 `kcal_min/max`) · `overrides` (ручные правки, живут отдельно и переживают кроулы) ·
 `crawls` · `releases` (version, pack_url, sha256) · `search_events`.
 
-## Контракт пака для приложения
+## Контракт пака для приложения (реализован в `backend/plateful_data/pack.py`)
 
 ```json
-// manifest.json
-{"version": 7, "url": ".../packs/v7.json.gz", "sha256": "…", "item_count": 25838, "released_at": "…"}
-// pack: массив позиций
-[{"chain":"McDonald's","name":"Big Mac","category":"Burgers","serving":"1 sandwich",
-  "kcal":580,"protein":25,"carbs":45,"fat":34,"source":"mcdonalds.com","observed":"2026-09-07","stale":false}]
+// manifest.json — единственное место с датой релиза
+{"format":1,"version":1,"url":".../object/public/packs/v1.deflate","sha256":"<sha256 deflate>","itemCount":25366,"releasedAt":"2026-09-07"}
+// пак (JSON; для Storage — raw deflate/zlib, читается Data.decompressed(using: .zlib) без зависимостей)
+{"format":1,"version":1,"source":"menustat-2018","observed":"2018-12-31",
+ "chains":[{"name":"McDonald's","itemCount":223}],
+ "items":[{"chain":"McDonald's","key":"big-mac","name":"Big Mac","category":"Burgers","serving":null,
+           "kcal":540.0,"protein":25.0,"carbs":46.0,"fat":28.0}]}
 ```
-Версии пака immutable. В приложении `MenuRepository` — единственная граница; реализация
-«бандл или скачанный пак, что новее», проверка sha256, атомарная подмена.
+Пак детерминирован (без даты внутри) — CI сверяет `plateful/Resources/seed-pack.json` с пересборкой.
+Версии immutable. `MenuRepository` в приложении — единственная граница: «бандл или скачанный
+пак, что новее», sha256, атомарная подмена. Seed уже в бандле: `plateful/Resources/seed-pack.json`.
 
 ## Оркестрация
 
-GitHub Actions cron: 8 ключевых сетей еженедельно, хвост ежемесячно (`chains.crawl_every`).
-Секреты `SUPABASE_SERVICE_KEY`, `ANTHROPIC_API_KEY` в GitHub Secrets. Стоимость ≈ $3–30/мес.
-Приоритет новых адаптеров — по `search_events` с `matched=false`.
+- `.github/workflows/backend-ci.yml` — на каждый пуш в `backend/`: собрать пак, проверить, что бандл актуален.
+- `.github/workflows/publish-pack.yml` — вручную: seed → Postgres (`load_seed.py`), пак → Storage через
+  Storage REST API (curl, без своего клиента). Секреты: `SUPABASE_DB_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
+- Кроулы (позже): cron, 8 ключевых сетей еженедельно, хвост ежемесячно (`chains.crawl_every`);
+  добавится `ANTHROPIC_API_KEY` для PDF-экстракции. Стоимость ≈ $3–30/мес.
+- Приоритет новых адаптеров — по `search_events` с `matched=false`.
+
+## Правило одного slug
+`backend/plateful_data/slug.py` — единственная реализация `slugify`; `chains.slug` и `items.ext_key`
+считаются им же; SQL-эквивалент `regexp_replace(lower(name), '[^a-z0-9]+', '-', 'g')`. Не дублировать.

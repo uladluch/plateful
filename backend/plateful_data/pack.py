@@ -27,10 +27,12 @@ PACK_FORMAT = 1
 def build(items, *, version: int, source: str, observed: str) -> dict:
     chains = Counter(i.chain for i in items)
 
+    # Даты релиза здесь нет намеренно: пак должен байт-в-байт совпадать при
+    # пересборке из того же исходника, иначе CI не сможет проверить, что файл
+    # в бандле актуален. Дата — свойство манифеста и таблицы releases.
     return {
         "format": PACK_FORMAT,
         "version": version,
-        "releasedAt": date.today().isoformat(),
         "source": source,
         "observed": observed,
         "chains": [
@@ -64,7 +66,7 @@ def write(pack: dict, *, json_path: Path, deflate_path: Path | None = None) -> d
     meta = {
         "version": pack["version"],
         "itemCount": len(pack["items"]),
-        "releasedAt": pack["releasedAt"],
+        "releasedAt": date.today().isoformat(),
         "sha256": hashlib.sha256(payload).hexdigest(),
         "bytes": len(payload),
     }

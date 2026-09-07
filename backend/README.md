@@ -17,8 +17,11 @@
 | `plateful_data/menustat.py` | Скачивает MenuStat 2018 с Harvard Dataverse (CC0), чистит |
 | `plateful_data/validate.py` | Атуотер, диапазоны, дифф-проверка кроула |
 | `plateful_data/pack.py` | Собирает пак и манифест, считает sha256 |
+| `plateful_data/slug.py` | Единственная реализация slug/ext_key — см. ниже |
 | `scripts/build_seed.py` | MenuStat → `plateful/Resources/seed-pack.json` |
-| `scripts/load_seed.py` | Пак → Postgres |
+| `scripts/load_seed.py` | Пак → Postgres (psycopg `COPY`, идемпотентно) |
+| `../supabase/migrations/` | Схема, конвенция Supabase CLI; версии совпадают с удалёнными |
+| `../.github/workflows/` | `backend-ci` собирает и сверяет пак; `publish-pack` льёт в Postgres и Storage |
 
 ## Быстрый старт
 
@@ -75,6 +78,18 @@ class Adapter(Protocol):
 
 Вежливость обязательна: 1 запрос/сек, честный User-Agent с контактом, robots.txt,
 без обхода CAPTCHA и логинов, только с домена самой сети.
+
+## Один slug на всех
+
+`chains.slug` и `items.ext_key` считаются одной функцией `plateful_data.slug.slugify`;
+в SQL — `regexp_replace(lower(name), '[^a-z0-9]+', '-', 'g')`. Разойдутся — overrides
+перестанут находить позиции. Не переписывать «по-быстрому» в новом месте.
+
+## Почему psycopg, а не supabase-py
+
+Загрузка — 25 тысяч строк за раз; `COPY` делает это одной командой, REST — 26 батчами.
+Для кроулов (десятки строк на сеть) подойдёт и supabase-py, но второй клиент ради этого
+не нужен: тот же `SUPABASE_DB_URL` уйдёт в GitHub Secrets для крона.
 
 ## Секреты
 
