@@ -9,6 +9,14 @@ import Foundation
 // Проект собирается с SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor — это верно
 // для SwiftUI, но не для слоя данных: каталог разбирается и строится вне
 // главного потока. Отсюда `nonisolated` на типах ниже.
+/// Хеширование пака. Вынесено, чтобы конвейер, приложение и тесты считали
+/// контрольную сумму одним и тем же способом.
+nonisolated enum PackStoreHashing {
+    static func sha256Hex(_ data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+}
+
 nonisolated struct PackStore: Sendable {
 
     /// Имя сида в бандле. Кладётся туда конвейером: `backend/scripts/build_seed.py`.
@@ -94,8 +102,7 @@ nonisolated struct PackStore: Sendable {
     /// повреждение ловится до того, как мы потратим память на распаковку.
     @discardableResult
     func install(compressed: Data, expectedSHA256: String, newerThan currentVersion: Int) throws -> InstallResult {
-        let digest = SHA256.hash(data: compressed)
-            .map { String(format: "%02x", $0) }.joined()
+        let digest = PackStoreHashing.sha256Hex(compressed)
         guard digest == expectedSHA256.lowercased() else {
             throw MenuPack.LoadError.checksumMismatch
         }

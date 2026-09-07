@@ -36,7 +36,12 @@ struct platefulApp: App {
         WindowGroup {
             RootView()
                 .environment(menu)
-                .task { await menu.load() }
+                .task {
+                    await menu.load()
+                    // Обновление — после того, как каталог уже показан:
+                    // запуск не должен ждать сети.
+                    await menu.checkForUpdate()
+                }
         }
         .modelContainer(userData)
     }

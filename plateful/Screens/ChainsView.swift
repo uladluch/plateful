@@ -71,6 +71,9 @@ struct ChainsView: View {
         }
         .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
         .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
+        // Проверка обновлений сама идёт при запуске; жест нужен тем, кто
+        // увидел устаревшее число и хочет проверить прямо сейчас.
+        .refreshable { await menu.checkForUpdate() }
     }
 
     /// Просмотренные позиции, которые ещё есть в текущем каталоге.

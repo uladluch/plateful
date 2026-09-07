@@ -19,15 +19,19 @@ final class MenuRepository {
     private(set) var state: State = .loading
 
     private let store: PackStore
+    private let updater: PackUpdater
     private let log = Logger(subsystem: "com.anluch.plateful", category: "menu")
 
-    init(store: PackStore = .standard()) {
+    init(store: PackStore = .standard(), transport: PackTransport = NetworkPackTransport()) {
         self.store = store
+        self.updater = PackUpdater(store: store, transport: transport)
     }
 
     /// Готовый каталог без обращения к диску — для превью и тестов.
     init(catalog: MenuCatalog) {
-        self.store = .standard()
+        let store = PackStore.standard()
+        self.store = store
+        self.updater = PackUpdater(store: store)
         self.state = .ready(catalog)
     }
 
@@ -71,6 +75,26 @@ final class MenuRepository {
                 скачанный пак: \(FileManager.default.fileExists(
                     atPath: store.installedURL.path(percentEncoded: false)) ? "есть" : "нет")
                 """)
+        }
+    }
+
+    /// Проверяет, не вышел ли пак новее, и подхватывает его.
+    ///
+    /// Обновление необязательно: каталог уже работает, поэтому любая неудача
+    /// остаётся в логе и ничего не ломает. Экраны об этом даже не знают —
+    /// каталог просто становится свежее.
+    func checkForUpdate() async {
+        guard let catalog else { return }
+        do {
+            switch try await updater.update(currentVersion: catalog.version) {
+            case .upToDate(let version):
+                log.info("Пак v\(version) — обновлений нет")
+            case .installed(let version, let itemCount):
+                log.info("Установлен пак v\(version): \(itemCount) позиций, перезагружаю каталог")
+                await load(force: true)
+            }
+        } catch {
+            log.info("Обновление не состоялось, остаёмся на текущем паке: \(error.localizedDescription)")
         }
     }
 
