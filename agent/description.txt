@@ -1,0 +1,26 @@
+Plateful shows you the calories, protein, carbs and fat for menu items at restaurant chains, so you can pick what fits before you order.
+
+FIND IT BEFORE YOU ORDER
+- Search a chain, then a dish, and see the full nutrition breakdown
+- Compare two items side by side
+- Filter a menu by calorie ceiling or protein floor
+- Save your usual orders for one-tap lookup
+
+BUILT FOR EATING OUT
+Calorie counters expect you to log after the fact. Plateful is for the moment you are standing at the counter: fast lookup, no logging, no account.
+
+WHERE THE NUMBERS COME FROM
+Nutrition data comes from MenuStat, a public dataset of chain restaurant menus
+compiled by the New York City Department of Health from figures the chains
+themselves published under federal menu labeling rules. Chains change portions
+and recipes over time, so treat values as a guide, not a guarantee. Plateful is
+not affiliated with, endorsed by, or connected to any restaurant listed in the
+app.
+
+WORKS OFFLINE
+Your saved orders and recent lookups are cached on your device, so the app answers even with no signal.
+
+CLEAR PRICING
+Search and lookup are free. One purchase unlocks side-by-side compare, menu filters and unlimited saved orders. No subscription and no weekly plan.
+
+Plateful provides nutrition information for general reference only. It is not medical or dietary advice.

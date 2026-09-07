@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Secrets
+*.xcconfig.local
+Secrets.xcconfig
+.env
+.env.*
+
+# Backend pipeline
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/data/raw/
