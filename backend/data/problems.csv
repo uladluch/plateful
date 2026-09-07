@@ -1,0 +1,1260 @@
+severity,chain,name,kind,detail
+warning,Applebee's,Apple Sangria,atwater,"220 ккал, макросы объясняют только 148 (33%) — алкоголь или потерянный макрос"
+warning,Applebee's,Blue Hawaiian Long Island Iced Tea,atwater,"250 ккал, макросы объясняют только 148 (41%) — алкоголь или потерянный макрос"
+warning,Applebee's,Bourbon & Berries,atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+warning,Applebee's,Captain Morgan Bahama Mama,atwater,"280 ккал, макросы объясняют только 164 (41%) — алкоголь или потерянный макрос"
+warning,Applebee's,Fireball Whiskey Lemonade,atwater,"260 ккал, макросы объясняют только 148 (43%) — алкоголь или потерянный макрос"
+warning,Applebee's,Irish Peach Sour,atwater,"220 ккал, макросы объясняют только 88 (60%) — алкоголь или потерянный макрос"
+warning,Applebee's,"Margaritas, Blue Agave Rita",atwater,"390 ккал, макросы объясняют только 268 (31%) — алкоголь или потерянный макрос"
+warning,Applebee's,"Margaritas, Perfect Margarita",atwater,"310 ккал, макросы объясняют только 164 (47%) — алкоголь или потерянный макрос"
+warning,Applebee's,"Margaritas, Strawberry Lime Margarita",atwater,"420 ккал, макросы объясняют только 284 (32%) — алкоголь или потерянный макрос"
+warning,Applebee's,Pair of Jacks,atwater,"220 ккал, макросы объясняют только 104 (53%) — алкоголь или потерянный макрос"
+warning,Applebee's,Perfect Patron Margarita,atwater,"290 ккал, макросы объясняют только 168 (42%) — алкоголь или потерянный макрос"
+warning,Applebee's,Perfect Pomegranate Margarita,atwater,"360 ккал, макросы объясняют только 216 (40%) — алкоголь или потерянный макрос"
+warning,Applebee's,Raspberry Cosmo,atwater,"220 ккал, макросы объясняют только 112 (49%) — алкоголь или потерянный макрос"
+warning,Applebee's,"Sangrias, Blackberry Sangria",atwater,"270 ккал, макросы объясняют только 140 (48%) — алкоголь или потерянный макрос"
+warning,Applebee's,Summer Squeeze,atwater,"340 ккал, макросы объясняют только 204 (40%) — алкоголь или потерянный макрос"
+warning,Applebee's,Summer Squeeze Mango,atwater,"370 ккал, макросы объясняют только 240 (35%) — алкоголь или потерянный макрос"
+warning,Applebee's,Summer Squeeze Strawberry,atwater,"400 ккал, макросы объясняют только 272 (32%) — алкоголь или потерянный макрос"
+warning,Applebee's,Summer Squeeze Wildberry,atwater,"370 ккал, макросы объясняют только 244 (34%) — алкоголь или потерянный макрос"
+warning,Applebee's,The Classic Combo,portion,2270 ккал — вероятно целая порция на компанию
+warning,Applebee's,Top Shelf Long Island Iced Tea,atwater,"220 ккал, макросы объясняют только 92 (58%) — алкоголь или потерянный макрос"
+warning,Applebee's,Watermelon Sangria,atwater,"210 ккал, макросы объясняют только 100 (52%) — алкоголь или потерянный макрос"
+error,Auntie Anne's,"Breakfast Pretzel Sandwich, Egg & Cheese",atwater,макросы дают 240 ккал против заявленных 119 (+102%)
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Cuckoo Racha Seasoning,portion,2190 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Desert Gold Seasoning,portion,2170 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ EXXXXtra Hot 5 Pepper Buffalo Sauce,portion,2190 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Garlic Parmesan Sauce,portion,2380 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Hot & Spicy Buffalo Sauce,portion,2180 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Peppered BBQ Sauce,portion,2290 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Peppered BBQ Sauce,atwater,"2290 ккал, макросы объясняют только 1504 (34%) — алкоголь или потерянный макрос"
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Root Beer BBQ Sauce,portion,2300 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Cappuccino,atwater,"100 ккал, макросы объясняют только 40 (60%) — алкоголь или потерянный макрос"
+warning,BJ's Restaurant & Brewhouse,Chocolate Milk,atwater,"100 ккал, макросы объясняют только 40 (60%) — алкоголь или потерянный макрос"
+error,BJ's Restaurant & Brewhouse,Classic Breakfast Sandwich w/ Ham on a Toasted Wheat Bread,atwater,макросы дают 3848 ккал против заявленных 900 (+328%)
+warning,BJ's Restaurant & Brewhouse,Latte,atwater,"100 ккал, макросы объясняют только 40 (60%) — алкоголь или потерянный макрос"
+error,Bob Evans,"1 Side & Bread, High Calorie",atwater,макросы дают 680 ккал против заявленных 370 (+84%)
+warning,Bob Evans,12 Buttermilk Biscuits w/ Butter,portion,3120 ккал — вероятно целая порция на компанию
+warning,Bob Evans,12 Dinner Rolls w/ Butter,portion,2350 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"Chocolate Peanut Butter Pie, Whole",portion,4010 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"Coconut Cream Pie, Whole",portion,3470 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"Double Crust Apple Pie, Whole",portion,2990 ккал — вероятно целая порция на компанию
+error,Bob Evans,"Fresh Steamed Broccoli, Family",atwater,макросы дают 109 ккал против заявленных 80 (+36%)
+error,Bob Evans,"Freshly Brewed Iced Tea, Unsweetened, Gallon",atwater,макросы дают 108 ккал против заявленных 60 (+80%)
+warning,Bob Evans,"Pumpkin Pie Supreme, Whole",portion,3710 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"Pumpkin Pie, Whole",portion,3080 ккал — вероятно целая порция на компанию
+error,Bob Evans,"Tomato Juice, Large",atwater,макросы дают 90 ккал против заявленных 70 (+28%)
+error,Boston Market,Bacon Brussel Sprouts,atwater,макросы дают 387 ккал против заявленных 240 (+61%)
+error,Boston Market,Beef Au Jus,atwater,макросы дают 219 ккал против заявленных 100 (+119%)
+error,Boston Market,Rotisserie Chicken Pot Pie,atwater,макросы дают 1286 ккал против заявленных 750 (+71%)
+error,Boston Market,Rotisserie Potatoes,atwater,макросы дают 329 ккал против заявленных 120 (+174%)
+error,Boston Market,Turkey Pot Pie,atwater,макросы дают 1241 ккал против заявленных 710 (+75%)
+warning,California Pizza Kitchen,Angry Orchard Crisp Apple Cider,atwater,"220 ккал, макросы объясняют только 124 (44%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Apothic Winemakers Blend, 9 oz",atwater,"230 ккал, макросы объясняют только 32 (86%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Apothic Winemakers Blend, Bottle",atwater,"650 ккал, макросы объясняют только 92 (86%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,B 52 Coffee,atwater,"230 ккал, макросы объясняют только 147 (36%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Beehive Sangria,atwater,"290 ккал, макросы объясняют только 172 (41%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Beringer White Zinfandel, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Beringer White Zinfandel, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Beringer White Zinfandel, Bottle",atwater,"610 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Blue Moon,atwater,"260 ккал, макросы объясняют только 84 (68%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Blue Moon Belgian White Ale,atwater,"170 ккал, макросы объясняют только 68 (60%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Blueberry Ginger Smash,atwater,"330 ккал, макросы объясняют только 204 (38%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Bud Light, 12 oz",atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Cha Cha Agua Fresca,atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Chateau Ste Michelle Riesling, 6 oz",atwater,"140 ккал, макросы объясняют только 28 (80%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Chateau Ste Michelle Riesling, 9 oz",atwater,"210 ккал, макросы объясняют только 40 (81%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Chateau Ste Michelle Riesling, Bottle",atwater,"600 ккал, макросы объясняют только 116 (81%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Citrus Crush,atwater,"130 ккал, макросы объясняют только 52 (60%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Clos Du Bois Chardonnay, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Clos du Bois Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Clos du Bois Chardonnay, Bottle",atwater,"620 ккал, макросы объясняют только 68 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Colby Red Blend, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Colby Red Blend, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Colby Red Blend, Bottle",atwater,"630 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Coney Island Hard Root Beer, 12 oz",atwater,"290 ккал, макросы объясняют только 176 (39%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Coors Light, 12 oz",atwater,"110 ккал, макросы объясняют только 24 (78%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Corona Extra, 12 oz",atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Dos Equis Lager,atwater,"130 ккал, макросы объясняют только 44 (66%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Francis Ford Coppola Bianco Pinot Grigio, 9 oz",atwater,"200 ккал, макросы объясняют только 28 (86%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Francis Ford Coppola Bianco Pinot Grigio, Bottle",atwater,"570 ккал, макросы объясняют только 76 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Francis Ford Coppola Diamond Collection Merlot, 9 oz",atwater,"220 ккал, макросы объясняют только 36 (84%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Francis Ford Coppola Diamond Collection Merlot, Bottle",atwater,"620 ккал, макросы объясняют только 104 (83%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Fresh Agave Lime Margarita,atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Goose Island,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Hand Shaken Agave Mojito,atwater,"200 ккал, макросы объясняют только 108 (46%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Irish Coffee,atwater,"160 ккал, макросы объясняют только 65 (59%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 3 oz",atwater,"75 ккал, макросы объясняют только 12 (84%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, Bottle",atwater,"620 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Jacobs Creek Moscato, 6 oz",atwater,"150 ккал, макросы объясняют только 36 (76%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Jacobs Creek Moscato, 9 oz",atwater,"220 ккал, макросы объясняют только 56 (75%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Jacobs Creek Moscato, Bottle",atwater,"620 ккал, макросы объясняют только 160 (74%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Josh Cellars Chardonnay, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Josh Cellars Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Josh Cellars Chardonnay, Bottle",atwater,"610 ккал, макросы объясняют только 76 (88%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kendall Jackson Vintners Reserve Chardonnay, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kendall Jackson Vintners Reserve Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kendall Jackson Vintners Reserve Chardonnay, Bottle",atwater,"630 ккал, макросы объясняют только 68 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kim Crawford Sauvignon Blanc, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kim Crawford Sauvignon Blanc, 9 oz",atwater,"210 ккал, макросы объясняют только 20 (90%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Kim Crawford Sauvignon Blanc, Bottle",atwater,"600 ккал, макросы объясняют только 60 (90%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"La Crema Pinot Noir, 3 oz",atwater,"70 ккал, макросы объясняют только 8 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"La Crema Pinot Noir, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"La Crema Pinot Noir, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"La Crema Pinot Noir, Bottle",atwater,"610 ккал, макросы объясняют только 72 (88%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"La Marca Prosecco, Bottle",atwater,"630 ккал, макросы объясняют только 144 (77%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Le Grand Courtage Brut, Bottle",atwater,"650 ккал, макросы объясняют только 60 (91%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Le Grand Courtage Brut, Split",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Le Grand Courtage, Bottle",atwater,"650 ккал, макросы объясняют только 60 (91%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Le Grand Courtage, Split",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"M Chapoutier Belleruche Rose, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"M Chapoutier Belleruche Rose, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"M Chapoutier Belleruche Rose, Bottle",atwater,"610 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Mark West Pinot Noir, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Mark West Pinot Noir, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Mark West Pinot Noir, Bottle",atwater,"610 ккал, макросы объясняют только 72 (88%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Meiomi Pinot Noir, 6 oz",atwater,"140 ккал, макросы объясняют только 4 (97%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Meiomi Pinot Noir, 9 oz",atwater,"220 ккал, макросы объясняют только 4 (98%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Meiomi Pinot Noir, Bottle",atwater,"600 ккал, макросы объясняют только 16 (97%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Miller Lite, 12 oz",atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Modelo Especial, 12 oz",atwater,"170 ккал, макросы объясняют только 72 (58%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Moscow Mule,atwater,"180 ккал, макросы объясняют только 92 (49%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Napa Cellars Sauvignon Blanc, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Napa Cellars Sauvignon Blanc, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Napa Cellars Sauvignon Blanc, Bottle",atwater,"630 ккал, макросы объясняют только 72 (89%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Newcastle Brown Ale, 12 oz",atwater,"140 ккал, макросы объясняют только 64 (54%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Nobilo Sauvignon Blanc, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Nobilo Sauvignon Blanc, 9 oz",atwater,"210 ккал, макросы объясняют только 20 (90%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Nobilo Sauvignon Blanc, Bottle",atwater,"600 ккал, макросы объясняют только 64 (89%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Orchard Sangria,atwater,"280 ккал, макросы объясняют только 160 (43%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Platinum Margarita w/ Apothic Red Wine,atwater,"180 ккал, макросы объясняют только 76 (58%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Platinum Margarita w/ Chambord,atwater,"210 ккал, макросы объясняют только 96 (54%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Platinum Margarita w/ Grand Marnier,atwater,"210 ккал, макросы объясняют только 92 (56%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Red Berry Sangria,atwater,"270 ккал, макросы объясняют только 156 (42%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Rodney Strong Cabernet Sauvignon, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Rodney Strong Cabernet Sauvignon, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Rodney Strong Cabernet Sauvignon, Bottle",atwater,"620 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Sam Adams Boston Lager,atwater,"260 ккал, макросы объясняют только 120 (54%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Sam Adams Seasonal, Cold Snap",atwater,"250 ккал, макросы объясняют только 96 (62%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Sam Adams Seasonal, Oktoberfest",atwater,"280 ккал, макросы объясняют только 124 (56%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Sam Adams Seasonal, Summer Ale",atwater,"250 ккал, макросы объясняют только 92 (63%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Sam Adams Seasonal, Winter Lager",atwater,"290 ккал, макросы объясняют только 128 (56%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Sangria Flight,atwater,"300 ккал, макросы объясняют только 172 (43%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Santa Margherita Pinot Grigio, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Santa Margherita Pinot Grigio, 9 oz",atwater,"220 ккал, макросы объясняют только 20 (91%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Santa Margherita Pinot Grigio, Bottle",atwater,"620 ккал, макросы объясняют только 64 (90%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sledgehammer Zinfandel, 6 oz",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sledgehammer Zinfandel, 9 oz",atwater,"240 ккал, макросы объясняют только 28 (88%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sledgehammer Zinfandel, Bottle",atwater,"670 ккал, макросы объясняют только 84 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Socialite Cosmo,atwater,"190 ккал, макросы объясняют только 80 (58%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sonoma Cutrer, Russian River Ranches Chardonnay, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sonoma Cutrer, Russian River Ranches Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Sonoma Cutrer, Russian River Ranches Chardonnay, Bottle",atwater,"630 ккал, макросы объясняют только 68 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"St Pauli NA, 12 oz",atwater,"150 ккал, макросы объясняют только 36 (76%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Stella Artois,atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Strawberry Lime Margarita,atwater,"190 ккал, макросы объясняют только 104 (45%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Tamari Reserva Malbec, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Tamari Reserva Malbec, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,California Pizza Kitchen,"Tamari Reserva Malbec, Bottle",atwater,"620 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Ultimate Bloody Mary,atwater,"220 ккал, макросы объясняют только 104 (53%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,Whiskey Cider Press,atwater,"170 ккал, макросы объясняют только 60 (65%) — алкоголь или потерянный макрос"
+error,Carl's Jr.,"Cilantro Lime Rice, Side",atwater,макросы дают 137 ккал против заявленных 90 (+52%)
+warning,Carrabba's Italian Grill,Birra Moretti,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Bloody Mary, Regional",atwater,"150 ккал, макросы объясняют только 81 (46%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Blue Moon Draft,atwater,"180 ккал, макросы объясняют только 68 (62%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Bread Herbs & Oil, Serves 10",portion,3190 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,"Caesar Salad, Serves 10",portion,2570 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,Cafe Carrabba,atwater,"230 ккал, макросы объясняют только 156 (32%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Chianti Kiss,atwater,"210 ккал, макросы объясняют только 80 (62%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Classic Red Sangria, 9 oz",atwater,"290 ккал, макросы объясняют только 140 (52%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Classic Red Sangria, Pitcher",atwater,"1310 ккал, макросы объясняют только 568 (57%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,Cosmopolitan,atwater,"130 ккал, макросы объясняют только 16 (88%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Craft, Higher Alcohol, 19 oz, Regional",atwater,"310 ккал, макросы объясняют только 24 (92%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Family Bundle Cavatappi Alfredo,portion,3880 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,Family Bundle Cavatappi Carrabba,portion,4540 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,"House Salad, Serves 10",portion,2150 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,"Italian Salad, Serves 10",portion,2680 ккал — вероятно целая порция на компанию
+error,Carrabba's Italian Grill,"Light Beer, 19 oz, Regional",atwater,"160 ккал, макросы объясняют только 32 (80%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Peach Sangria, Glass, 6 oz",atwater,"210 ккал, макросы объясняют только 76 (64%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Peroni,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,Raspberry Limoncello Drop,atwater,"160 ккал, макросы объясняют только 24 (85%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Red Wine, Glass, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Red Wine, Glass, 9 oz",atwater,"230 ккал, макросы объясняют только 28 (88%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Regular Beer, 13 oz",atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Regular Beer, 19 oz, Regional",atwater,"220 ккал, макросы объясняют только 72 (67%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Rose Wine, Glass, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Rose Wine, Glass, 9 oz",atwater,"230 ккал, макросы объясняют только 28 (88%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,"Spaghetti w/ Meat Sauce, Family Bundle, Serves 4",portion,2670 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,"Spaghetti w/ Meatballs, Family Bundle, Serves 4",portion,3070 ккал — вероятно целая порция на компанию
+warning,Carrabba's Italian Grill,"Spaghetti w/ Sausage, Family Bundle, Serves 4",portion,3070 ккал — вероятно целая порция на компанию
+error,Carrabba's Italian Grill,"Sparkling Wine, Bottle, 750 ml",atwater,"600 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"Sparkling Wine, Glass, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Stella Artois Draft,atwater,"170 ккал, макросы объясняют только 60 (65%) — алкоголь или потерянный макрос"
+warning,Carrabba's Italian Grill,Tiramisu Martini,atwater,"300 ккал, макросы объясняют только 203 (32%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"White Wine, Glass, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Carrabba's Italian Grill,"White Wine, Glass, 9 oz",atwater,"230 ккал, макросы объясняют только 28 (88%) — алкоголь или потерянный макрос"
+error,Casey's General Store,Dr Pepper,atwater,макросы дают 904 ккал против заявленных 100 (+804%)
+warning,Chick-Fil-A,6 Grilled Nuggets Kids Meal,atwater,"110 ккал, макросы объясняют только 74 (32%) — алкоголь или потерянный макрос"
+warning,Chick-Fil-A,Grilled Market Salad,atwater,"210 ккал, макросы объясняют только 142 (32%) — алкоголь или потерянный макрос"
+warning,Chili's,"Angry Orchard, 10 fl oz",atwater,"160 ккал, макросы объясняют только 80 (50%) — алкоголь или потерянный макрос"
+warning,Chili's,"Angry Orchard, 12 fl oz",atwater,"190 ккал, макросы объясняют только 96 (49%) — алкоголь или потерянный макрос"
+warning,Chili's,"Angry Orchard, 16 fl oz",atwater,"250 ккал, макросы объясняют только 128 (49%) — алкоголь или потерянный макрос"
+warning,Chili's,"Angry Orchard, 22 fl oz",atwater,"350 ккал, макросы объясняют только 176 (50%) — алкоголь или потерянный макрос"
+warning,Chili's,Black Barrel Cherry Margarita,atwater,"320 ккал, макросы объясняют только 200 (38%) — алкоголь или потерянный макрос"
+warning,Chili's,"Blue Moon, 10 fl oz",atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Blue Moon, 12 fl oz",atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Blue Moon, 16 fl oz",atwater,"220 ккал, макросы объясняют только 88 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Blue Moon, 22 fl oz",atwater,"310 ккал, макросы объясняют только 116 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,Blueberry & Pineapple Margarita,atwater,"340 ккал, макросы объясняют только 204 (40%) — алкоголь или потерянный макрос"
+warning,Chili's,"Bud Light, 10 fl oz",atwater,"90 ккал, макросы объясняют только 24 (73%) — алкоголь или потерянный макрос"
+warning,Chili's,"Bud Light, 12 fl oz",atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+warning,Chili's,"Bud Light, 16 fl oz",atwater,"150 ккал, макросы объясняют только 40 (73%) — алкоголь или потерянный макрос"
+warning,Chili's,"Bud Light, 22 fl oz",atwater,"200 ккал, макросы объясняют только 56 (72%) — алкоголь или потерянный макрос"
+warning,Chili's,"Budweiser, 10 fl oz",atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+warning,Chili's,"Budweiser, 12 fl oz",atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Chili's,"Budweiser, 16 fl oz",atwater,"190 ккал, макросы объясняют только 64 (66%) — алкоголь или потерянный макрос"
+warning,Chili's,"Budweiser, 22 fl oz",atwater,"270 ккал, макросы объясняют только 84 (69%) — алкоголь или потерянный макрос"
+error,Chili's,"Coors Light, 10 fl oz",atwater,"80 ккал, макросы объясняют только 16 (80%) — алкоголь или потерянный макрос"
+error,Chili's,"Coors Light, 12 fl oz",atwater,"100 ккал, макросы объясняют только 20 (80%) — алкоголь или потерянный макрос"
+error,Chili's,"Coors Light, 16 fl oz",atwater,"140 ккал, макросы объясняют только 28 (80%) — алкоголь или потерянный макрос"
+error,Chili's,"Coors Light, 22 fl oz",atwater,"190 ккал, макросы объясняют только 36 (81%) — алкоголь или потерянный макрос"
+warning,Chili's,"Corona Extra, 10 fl oz",atwater,"130 ккал, макросы объясняют только 52 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Corona Extra, 12 fl oz",atwater,"160 ккал, макросы объясняют только 64 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Corona Extra, 16 fl oz",atwater,"210 ккал, макросы объясняют только 88 (58%) — алкоголь или потерянный макрос"
+warning,Chili's,"Corona Extra, 22 fl oz",atwater,"290 ккал, макросы объясняют только 116 (60%) — алкоголь или потерянный макрос"
+error,Chili's,"Corona Light, 10 fl oz",atwater,"90 ккал, макросы объясняют только 20 (78%) — алкоголь или потерянный макрос"
+error,Chili's,"Corona Light, 12 fl oz",atwater,"110 ккал, макросы объясняют только 24 (78%) — алкоголь или потерянный макрос"
+error,Chili's,"Corona Light, 16 fl oz",atwater,"140 ккал, макросы объясняют только 32 (77%) — алкоголь или потерянный макрос"
+error,Chili's,"Corona Light, 22 fl oz",atwater,"200 ккал, макросы объясняют только 48 (76%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 3-4% ABV, 10 fl oz",atwater,"130 ккал, макросы объясняют только 52 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 3-4% ABV, 16 fl oz",atwater,"200 ккал, макросы объясняют только 84 (58%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 3-4% ABV, 22 fl oz",atwater,"280 ккал, макросы объясняют только 112 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 5-7% ABV, 10 fl oz",atwater,"160 ккал, макросы объясняют только 60 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 5-7% ABV, 16 fl oz",atwater,"260 ккал, макросы объясняют только 100 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 5-7% ABV, 22 fl oz",atwater,"360 ккал, макросы объясняют только 136 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 8-10% ABV, 10 fl oz",atwater,"240 ккал, макросы объясняют только 84 (65%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 8-10% ABV, 16 fl oz",atwater,"390 ккал, макросы объясняют только 136 (65%) — алкоголь или потерянный макрос"
+warning,Chili's,"Craft Beer, 8-10% ABV, 22 fl oz",atwater,"530 ккал, макросы объясняют только 188 (65%) — алкоголь или потерянный макрос"
+warning,Chili's,Crispy Honey Chipotle & Waffles Crispers,portion,2480 ккал — вероятно целая порция на компанию
+warning,Chili's,Curevo Blue Margarita,atwater,"250 ккал, макросы объясняют только 144 (42%) — алкоголь или потерянный макрос"
+warning,Chili's,Deep Eddy Texas Lemonade,atwater,"270 ккал, макросы объясняют только 132 (51%) — алкоголь или потерянный макрос"
+warning,Chili's,"Dos Equis, 10 fl oz",atwater,"100 ккал, макросы объясняют только 40 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Dos Equis, 12 fl oz",atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,"Dos Equis, 16 fl oz",atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Dos Equis, 22 fl oz",atwater,"230 ккал, макросы объясняют только 84 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,El Jimador Fresca Margarita,atwater,"270 ккал, макросы объясняют только 120 (56%) — алкоголь или потерянный макрос"
+warning,Chili's,El Nino Margarita,atwater,"330 ккал, макросы объясняют только 136 (59%) — алкоголь или потерянный макрос"
+warning,Chili's,"Fresh for $5, Mango Margarita",atwater,"200 ккал, макросы объясняют только 128 (36%) — алкоголь или потерянный макрос"
+warning,Chili's,"Fresh for $5, Raspberry Margarita",atwater,"190 ккал, макросы объясняют только 112 (41%) — алкоголь или потерянный макрос"
+warning,Chili's,"Fresh for $5, Traditional Margarita",atwater,"180 ккал, макросы объясняют только 100 (44%) — алкоголь или потерянный макрос"
+warning,Chili's,"Heineken, 10 fl oz",atwater,"110 ккал, макросы объясняют только 44 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Heineken, 12 fl oz",atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Heineken, 16 fl oz",atwater,"180 ккал, макросы объясняют только 72 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Heineken, 22 fl oz",atwater,"250 ккал, макросы объясняют только 100 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Lagunitas IPA, 10 fl oz",atwater,"160 ккал, макросы объясняют только 56 (65%) — алкоголь или потерянный макрос"
+warning,Chili's,"Lagunitas IPA, 12 fl oz",atwater,"190 ккал, макросы объясняют только 68 (64%) — алкоголь или потерянный макрос"
+warning,Chili's,"Lagunitas IPA, 16 fl oz",atwater,"250 ккал, макросы объясняют только 92 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,"Lagunitas IPA, 22 fl oz",atwater,"350 ккал, макросы объясняют только 124 (65%) — алкоголь или потерянный макрос"
+error,Chili's,"Michelob Ultra, 10 fl oz",atwater,"80 ккал, макросы объясняют только 8 (90%) — алкоголь или потерянный макрос"
+error,Chili's,"Michelob Ultra, 12 fl oz",atwater,"90 ккал, макросы объясняют только 16 (82%) — алкоголь или потерянный макрос"
+error,Chili's,"Michelob Ultra, 16 fl oz",atwater,"130 ккал, макросы объясняют только 16 (88%) — алкоголь или потерянный макрос"
+error,Chili's,"Michelob Ultra, 22 fl oz",atwater,"170 ккал, макросы объясняют только 24 (86%) — алкоголь или потерянный макрос"
+error,Chili's,"Miller Lite, 10 fl oz",atwater,"80 ккал, макросы объясняют только 12 (85%) — алкоголь или потерянный макрос"
+error,Chili's,"Miller Lite, 12 fl oz",atwater,"100 ккал, макросы объясняют только 12 (88%) — алкоголь или потерянный макрос"
+error,Chili's,"Miller Lite, 16 fl oz",atwater,"130 ккал, макросы объясняют только 16 (88%) — алкоголь или потерянный макрос"
+error,Chili's,"Miller Lite, 22 fl oz",atwater,"180 ккал, макросы объясняют только 24 (87%) — алкоголь или потерянный макрос"
+warning,Chili's,"Modelo Especial, 10 fl oz",atwater,"130 ккал, макросы объясняют только 52 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Modelo Especial, 12 fl oz",atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Modelo Especial, 16 fl oz",atwater,"200 ккал, макросы объясняют только 84 (58%) — алкоголь или потерянный макрос"
+warning,Chili's,"Modelo Especial, 22 fl oz",atwater,"280 ккал, макросы объясняют только 112 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,Patron Margarita,atwater,"310 ккал, макросы объясняют только 180 (42%) — алкоголь или потерянный макрос"
+warning,Chili's,"Patron Margarita, Mango",atwater,"360 ккал, макросы объясняют только 236 (34%) — алкоголь или потерянный макрос"
+warning,Chili's,"Patron Margarita, Strawberry",atwater,"360 ккал, макросы объясняют только 232 (36%) — алкоголь или потерянный макрос"
+warning,Chili's,Premium Long Island Iced Tea,atwater,"290 ккал, макросы объясняют только 128 (56%) — алкоголь или потерянный макрос"
+warning,Chili's,Presidente Margarita,atwater,"240 ккал, макросы объясняют только 92 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Presidente Margarita, Mango",atwater,"290 ккал, макросы объясняют только 144 (50%) — алкоголь или потерянный макрос"
+warning,Chili's,"Presidente Margarita, Strawberry",atwater,"270 ккал, макросы объясняют только 128 (53%) — алкоголь или потерянный макрос"
+error,Chili's,"Red Wine, 6 fl oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Chili's,"Red Wine, 9 fl oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sam Adams Boston Lager, 10 fl oz",atwater,"150 ккал, макросы объясняют только 72 (52%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sam Adams Boston Lager, 12 fl oz",atwater,"180 ккал, макросы объясняют только 84 (53%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sam Adams Boston Lager, 16 fl oz",atwater,"240 ккал, макросы объясняют только 112 (53%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sam Adams Boston Lager, 22 fl oz",atwater,"330 ккал, макросы объясняют только 156 (53%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada IPA, 10 fl oz",atwater,"200 ккал, макросы объясняют только 76 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada IPA, 12 fl oz",atwater,"240 ккал, макросы объясняют только 92 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada IPA, 16 fl oz",atwater,"320 ккал, макросы объясняют только 120 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada IPA, 22 fl oz",atwater,"440 ккал, макросы объясняют только 172 (61%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada Side Car, 10 fl oz",atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada Side Car, 16 fl oz",atwater,"240 ккал, макросы объясняют только 96 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sierra Nevada Side Car, 22 fl oz",atwater,"330 ккал, макросы объясняют только 132 (60%) — алкоголь или потерянный макрос"
+warning,Chili's,Spicy Sauza Jalapeno Margarita,atwater,"310 ккал, макросы объясняют только 180 (42%) — алкоголь или потерянный макрос"
+warning,Chili's,"Stella Artois, 10 fl oz",atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,"Stella Artois, 12 fl oz",atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+warning,Chili's,"Stella Artois, 16 fl oz",atwater,"200 ккал, макросы объясняют только 76 (62%) — алкоголь или потерянный макрос"
+warning,Chili's,"Stella Artois, 22 fl oz",atwater,"280 ккал, макросы объясняют только 100 (64%) — алкоголь или потерянный макрос"
+error,Chili's,"Sweet Wine, 6 fl oz",atwater,"170 ккал, макросы объясняют только 40 (76%) — алкоголь или потерянный макрос"
+warning,Chili's,"Sweet Wine, 9 fl oz",atwater,"250 ккал, макросы объясняют только 68 (73%) — алкоголь или потерянный макрос"
+warning,Chili's,Titos Punch,atwater,"320 ккал, макросы объясняют только 212 (34%) — алкоголь или потерянный макрос"
+warning,Chili's,Titos Vodkarita,atwater,"310 ккал, макросы объясняют только 172 (45%) — алкоголь или потерянный макрос"
+warning,Chili's,"Titos Vodkarita, Mango",atwater,"330 ккал, макросы объясняют только 196 (41%) — алкоголь или потерянный макрос"
+warning,Chili's,"Titos Vodkarita, Strawberry",atwater,"330 ккал, макросы объясняют только 196 (41%) — алкоголь или потерянный макрос"
+warning,Chili's,Tropical Sunrise Margarita,atwater,"250 ккал, макросы объясняют только 144 (42%) — алкоголь или потерянный макрос"
+warning,Chili's,Ultimate Fresh Margarita,atwater,"300 ккал, макросы объясняют только 180 (40%) — алкоголь или потерянный макрос"
+error,Chili's,"White Wine, 6 fl oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,Chili's,"White Wine, 9 fl oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,Chipotle,"Steak, for Kids Build Your Own",atwater,макросы дают 109 ккал против заявленных 70 (+56%)
+warning,Ci Ci's Pizza,Cheese Pizza on Traditional Crust,atwater,"190 ккал, макросы объясняют только 104 (45%) — алкоголь или потерянный макрос"
+warning,Ci Ci's Pizza,Garlic Cheesy Bread,atwater,"140 ккал, макросы объясняют только 62 (56%) — алкоголь или потерянный макрос"
+error,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 10 in",range,kcal=6940.0 выше потолка 5000
+error,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 10 in",range,carbs=946.0 выше потолка 500
+warning,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 10 in",portion,6940 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 8 in",range,carbs=621.0 выше потолка 500
+warning,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 8 in",portion,4570 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Cookie Dough Blizzard Cake, 10 in",range,kcal=7560.0 выше потолка 5000
+error,Dairy Queen,"Cookie Dough Blizzard Cake, 10 in",range,carbs=1041.0 выше потолка 500
+warning,Dairy Queen,"Cookie Dough Blizzard Cake, 10 in",portion,7560 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Cookie Dough Blizzard Cake, 8 in",range,carbs=659.0 выше потолка 500
+warning,Dairy Queen,"Cookie Dough Blizzard Cake, 8 in",portion,4820 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"DQ Round Cake, 10 in",range,carbs=728.0 выше потолка 500
+warning,Dairy Queen,"DQ Round Cake, 10 in",portion,4950 ккал — вероятно целая порция на компанию
+warning,Dairy Queen,"DQ Round Cake, 8 in",portion,3260 ккал — вероятно целая порция на компанию
+error,Dairy Queen,Kansas City BBQ Pulled Pork Sandwich,atwater,макросы дают 543 ккал против заявленных 430 (+26%)
+error,Dairy Queen,"Oreo Blizzard Cake, 10 in",range,kcal=6870.0 выше потолка 5000
+error,Dairy Queen,"Oreo Blizzard Cake, 10 in",range,carbs=960.0 выше потолка 500
+warning,Dairy Queen,"Oreo Blizzard Cake, 10 in",portion,6870 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Oreo Blizzard Cake, 8 in",range,carbs=619.0 выше потолка 500
+warning,Dairy Queen,"Oreo Blizzard Cake, 8 in",portion,4460 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 10 in",range,kcal=6850.0 выше потолка 5000
+error,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 10 in",range,carbs=910.0 выше потолка 500
+warning,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 10 in",portion,6850 ккал — вероятно целая порция на компанию
+error,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 8 in",range,carbs=589.0 выше потолка 500
+warning,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 8 in",portion,4450 ккал — вероятно целая порция на компанию
+warning,Del Taco,12 Chocolate Chip Cookies,portion,2400 ккал — вероятно целая порция на компанию
+warning,Denny's,"French Dressing, 1.5 oz",atwater,"130 ккал, макросы объясняют только 80 (38%) — алкоголь или потерянный макрос"
+warning,Denny's,"French Dressing, 3 oz",atwater,"260 ккал, макросы объясняют только 169 (35%) — алкоголь или потерянный макрос"
+error,Denny's,"Vegetable Beef Soup, Cup",atwater,макросы дают 251 ккал против заявленных 200 (+26%)
+error,Dickey's Barbeque Pit,Brisket Mac,atwater,макросы дают 999 ккал против заявленных 675 (+48%)
+warning,Dickey's Barbeque Pit,Family Pack Max,portion,4635 ккал — вероятно целая порция на компанию
+warning,Dickey's Barbeque Pit,Family Pack Min,portion,2680 ккал — вероятно целая порция на компанию
+warning,Dickey's Barbeque Pit,Picnic Pack Max,portion,2577 ккал — вероятно целая порция на компанию
+error,Dickey's Barbeque Pit,Pork Sandwich,atwater,макросы дают 616 ккал против заявленных 483 (+27%)
+error,Dickey's Barbeque Pit,XL Pack Max,range,kcal=6693.0 выше потолка 5000
+error,Dickey's Barbeque Pit,XL Pack Max,range,protein=266.0 выше потолка 250
+error,Dickey's Barbeque Pit,XL Pack Max,range,fat=509.1 выше потолка 400
+warning,Dickey's Barbeque Pit,XL Pack Max,portion,6693 ккал — вероятно целая порция на компанию
+error,Dickey's Barbeque Pit,XL Pack Min,range,protein=295.5 выше потолка 250
+warning,Dickey's Barbeque Pit,XL Pack Min,portion,3579 ккал — вероятно целая порция на компанию
+error,Dunkin' Donuts,"Hot Coffee w/ Skim Milk & Sugar, Small",atwater,макросы дают 88 ккал против заявленных 70 (+26%)
+error,Einstein Bros,Mini Hazelnut Pastry,atwater,макросы дают 612 ккал против заявленных 140 (+337%)
+warning,El Pollo Loco,"Vitamin Water XXX, Small",atwater,"80 ккал, макросы объясняют только 44 (45%) — алкоголь или потерянный макрос"
+error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,kcal=7520.0 выше потолка 5000
+error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,protein=432.0 выше потолка 250
+error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,carbs=618.0 выше потолка 500
+error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,fat=408.0 выше потолка 400
+warning,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",portion,7520 ккал — вероятно целая порция на компанию
+error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",range,kcal=7480.0 выше потолка 5000
+error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",range,protein=437.0 выше потолка 250
+error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",range,carbs=621.0 выше потолка 500
+warning,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",portion,7480 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,BBQ Chips,atwater,"410 ккал, макросы объясняют только 257 (37%) — алкоголь или потерянный макрос"
+error,Famous Dave's,BBQ Stuffed Baked Potato w/ Georgia Chopped Pork,atwater,макросы дают 1024 ккал против заявленных 810 (+26%)
+error,Famous Dave's,BBQ Stuffed Baked Potato w/ Texas Beef Brisket,atwater,макросы дают 1013 ккал против заявленных 790 (+28%)
+warning,Famous Dave's,"Boneless Double Winger, To Go",portion,2050 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Boneless Party Platter, To Go",portion,4830 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Boneless Wings w/ Buffalo Sauce, Double Winger",portion,2050 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Boneless Wings w/ Devils Spit, Double Winger",portion,2040 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Boneless Wings w/ Rich & Sassy, Double Winger",portion,2050 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Feast For Two w/ Georgia Chopped Pork, 1/2 Order",portion,2100 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Feast For Two w/ Georgia Chopped Pork, Full Order",portion,4200 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Feast For Two w/ Texas Beef Brisket, 1/2 Order",portion,2080 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Feast For Two w/ Texas Beef Brisket, Full Order",portion,4170 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,Feast for One w/ Georgia Pork,portion,2330 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,Feast for One w/ Texas Beef Brisket,portion,2260 ккал — вероятно целая порция на компанию
+error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,kcal=9240.0 выше потолка 5000
+error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,protein=679.0 выше потолка 250
+error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,fat=556.0 выше потолка 400
+warning,Famous Dave's,"Rib Tips Til Payday, Dinner",portion,9240 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Sampler, High",portion,3210 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Sampler, Low",portion,2560 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Traditional Double Winger, To Go",portion,2070 ккал — вероятно целая порция на компанию
+error,Famous Dave's,"Traditional Party Platter, To Go",range,protein=361.0 выше потолка 250
+warning,Famous Dave's,"Traditional Party Platter, To Go",portion,4890 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Traditional Wings w/ Devils Spit, Double Winger",portion,2060 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Traditional Wings w/ Rich & Sassy, Double Winger",portion,2070 ккал — вероятно целая порция на компанию
+warning,Firehouse Subs,"Coca-Cola, 44 fl oz",atwater,"540 ккал, макросы объясняют только 184 (66%) — алкоголь или потерянный макрос"
+error,Friendly's,Bacon Trio Cheeseburger w/ 2 Patties,range,carbs=1524.0 выше потолка 500
+error,Friendly's,Bacon Trio Cheeseburger w/ 2 Patties,atwater,макросы дают 6679 ккал против заявленных 865 (+672%)
+error,Friendly's,Bacon Trio Cheeseburger w/ 2 Patties & French Fries,range,carbs=1554.0 выше потолка 500
+error,Friendly's,Bacon Trio Cheeseburger w/ 2 Patties & French Fries,atwater,макросы дают 6889 ккал против заявленных 1075 (+541%)
+error,Friendly's,Belgian Waffle w/ Bacon,atwater,макросы дают 490 ккал против заявленных 300 (+63%)
+warning,Friendly's,Broccoli,atwater,"60 ккал, макросы объясняют только 40 (33%) — алкоголь или потерянный макрос"
+error,Friendly's,Build Your Own Martian Sundae,atwater,макросы дают 577 ккал против заявленных 438 (+32%)
+error,Friendly's,Butter Pecan Ice Cream,atwater,макросы дают 340 ккал против заявленных 250 (+36%)
+warning,Friendly's,Buttermilk Pancakes w/ Pancake Syrup,atwater,"970 ккал, макросы объясняют только 610 (37%) — алкоголь или потерянный макрос"
+warning,Friendly's,Crispy Chicken Wrap,atwater,"880 ккал, макросы объясняют только 460 (48%) — алкоголь или потерянный макрос"
+warning,Friendly's,Crispy Chicken Wrap w/ Fries,atwater,"1090 ккал, макросы объясняют только 670 (39%) — алкоголь или потерянный макрос"
+warning,Friendly's,Garden Vegetable Omelette,atwater,"770 ккал, макросы объясняют только 340 (56%) — алкоголь или потерянный макрос"
+warning,Friendly's,Garden Vegetable Omelette w/ Strawberry Jam for Toast,atwater,"1060 ккал, макросы объясняют только 340 (68%) — алкоголь или потерянный макрос"
+warning,Friendly's,Goldfish Crackers,atwater,"70 ккал, макросы объясняют только 40 (43%) — алкоголь или потерянный макрос"
+error,Friendly's,Hot Chocolate,atwater,макросы дают 210 ккал против заявленных 160 (+31%)
+error,Friendly's,"Hot Chocolate, Carryout",atwater,макросы дают 210 ккал против заявленных 160 (+31%)
+warning,Friendly's,Mini Mozzarella Sticks,atwater,"800 ккал, макросы объясняют только 378 (53%) — алкоголь или потерянный макрос"
+error,Friendly's,Vienna Mocha Chunk Ice Cream,atwater,макросы дают 340 ккал против заявленных 270 (+26%)
+warning,Friendly's,Waffle Fries,atwater,"351 ккал, макросы объясняют только 243 (31%) — алкоголь или потерянный макрос"
+error,Frisch's Big Boy,Baked Apples,atwater,макросы дают 180 ккал против заявленных 90 (+100%)
+error,Frisch's Big Boy,"Chili Spaghetti, Kids",atwater,"390 ккал, макросы объясняют только 38 (90%) — алкоголь или потерянный макрос"
+warning,Frisch's Big Boy,"Fish, Kids",atwater,"140 ккал, макросы объясняют только 61 (56%) — алкоголь или потерянный макрос"
+error,Frisch's Big Boy,Frischs Mayonnaise Lady Rose,atwater,макросы дают 162 ккал против заявленных 100 (+62%)
+error,Frisch's Big Boy,"L & T, Lemonade and Iced Tea",atwater,макросы дают 500 ккал против заявленных 125 (+300%)
+warning,Frisch's Big Boy,"Mini Hand Breaded Chicken Strips, Kids",atwater,"330 ккал, макросы объясняют только 223 (32%) — алкоголь или потерянный макрос"
+error,Frisch's Big Boy,"One Egg, Scrambled",atwater,макросы дают 392 ккал против заявленных 140 (+180%)
+error,Frisch's Big Boy,"Strawberry Topping, for Sundaes",atwater,макросы дают 796 ккал против заявленных 70 (+1037%)
+error,Frisch's Big Boy,White Cheddar Cheese,atwater,макросы дают 72 ккал против заявленных 55 (+32%)
+error,Golden Corral,Apple Pecan Topped Waffle,atwater,макросы дают 211 ккал против заявленных 160 (+32%)
+error,Golden Corral,Apple-Topped Waffle,atwater,макросы дают 202 ккал против заявленных 150 (+35%)
+error,Golden Corral,Berry Cheese Blintz,atwater,макросы дают 337 ккал против заявленных 250 (+35%)
+warning,Golden Corral,Carmel Pecan Sticky Rolls,atwater,"310 ккал, макросы объясняют только 97 (69%) — алкоголь или потерянный макрос"
+error,Golden Corral,Grilled Chicken Breast,atwater,макросы дают 222 ккал против заявленных 70 (+216%)
+error,Golden Corral,Milk,atwater,макросы дают 685 ккал против заявленных 140 (+389%)
+error,Golden Corral,Mmm Mmm Meatloaf,atwater,макросы дают 191 ккал против заявленных 140 (+36%)
+error,Golden Corral,Peach-Topped Waffles,atwater,макросы дают 198 ккал против заявленных 150 (+32%)
+error,Golden Corral,Salisbury Steak,atwater,макросы дают 132 ккал против заявленных 70 (+89%)
+error,Golden Corral,Shepherds Pie,atwater,макросы дают 451 ккал против заявленных 310 (+45%)
+error,Golden Corral,"Spinach, 1/2 Cup",atwater,макросы дают 63 ккал против заявленных 50 (+26%)
+error,Golden Corral,Strawberry Cheesecake,atwater,макросы дают 383 ккал против заявленных 210 (+82%)
+error,Golden Corral,Strawberry Cheesecake French Toast,atwater,макросы дают 295 ккал против заявленных 210 (+40%)
+error,Golden Corral,Stuffed Peppers,atwater,макросы дают 283 ккал против заявленных 160 (+77%)
+warning,Golden Corral,Turkey Sausage,atwater,"90 ккал, макросы объясняют только 54 (39%) — алкоголь или потерянный макрос"
+error,Golden Corral,Turtle Cheesecake,atwater,макросы дают 399 ккал против заявленных 240 (+66%)
+warning,Hooters,15 Breaded Wings,portion,2050 ккал — вероятно целая порция на компанию
+warning,Hooters,20 Bacon Wrapped Wings,portion,2260 ккал — вероятно целая порция на компанию
+warning,Hooters,20 Breaded Wings,portion,2730 ккал — вероятно целая порция на компанию
+warning,Hooters,20 Daytona Wings,portion,2680 ккал — вероятно целая порция на компанию
+error,Hooters,50 Bacon Wrapped Wings,range,kcal=5490.0 выше потолка 5000
+error,Hooters,50 Bacon Wrapped Wings,range,protein=490.0 выше потолка 250
+warning,Hooters,50 Bacon Wrapped Wings,portion,5490 ккал — вероятно целая порция на компанию
+warning,Hooters,50 Boneless Wings,portion,2300 ккал — вероятно целая порция на компанию
+error,Hooters,50 Breaded Wings,range,kcal=6830.0 выше потолка 5000
+error,Hooters,50 Breaded Wings,range,protein=369.0 выше потолка 250
+error,Hooters,50 Breaded Wings,range,fat=429.0 выше потолка 400
+warning,Hooters,50 Breaded Wings,portion,6830 ккал — вероятно целая порция на компанию
+error,Hooters,50 Daytona Wings,range,kcal=6540.0 выше потолка 5000
+error,Hooters,50 Daytona Wings,range,protein=337.0 выше потолка 250
+warning,Hooters,50 Daytona Wings,portion,6540 ккал — вероятно целая порция на компанию
+error,Hooters,50 Naked Wings,range,protein=562.0 выше потолка 250
+warning,Hooters,50 Naked Wings,portion,4630 ккал — вероятно целая порция на компанию
+error,IHOP,Create Your French Toast Combo w/ Peach Vanilla Stuffed French Toast,atwater,"450 ккал, макросы объясняют только 98 (78%) — алкоголь или потерянный макрос"
+error,IHOP,Sirloin Steak Tips,atwater,макросы дают 1401 ккал против заявленных 760 (+84%)
+error,IHOP,Sirloin Tips & Eggs,atwater,макросы дают 1651 ккал против заявленных 1030 (+60%)
+warning,Jack in the Box,Chick N Tater Melt Munchie Meal,portion,2010 ккал — вероятно целая порция на компанию
+error,Jamba Juice,Krave Beef Jerky,atwater,макросы дают 215 ккал против заявленных 90 (+139%)
+error,Jamba Juice,"Watermelon Breeze Smoothie, 22 fl oz",atwater,макросы дают 547 ккал против заявленных 400 (+37%)
+warning,Jason's Deli,"Ham Muffaletta, Whole",portion,2060 ккал — вероятно целая порция на компанию
+warning,Jason's Deli,"Jasons Deli Pomegranate Blueberry Sports Drink, 24 oz",atwater,"200 ккал, макросы объясняют только 120 (40%) — алкоголь или потерянный макрос"
+warning,Jason's Deli,"Jasons Deli Pomegranate Blueberry Sports Drink, 32 oz",atwater,"260 ккал, макросы объясняют только 160 (38%) — алкоголь или потерянный макрос"
+error,Jason's Deli,Raspberry Sweet Leaf Tea,atwater,макросы дают 232 ккал против заявленных 160 (+45%)
+error,Jason's Deli,Sugar Cookie,atwater,макросы дают 319 ккал против заявленных 240 (+33%)
+error,Jason's Deli,White Chocolate Raspberry Bite,atwater,макросы дают 185 ккал против заявленных 130 (+42%)
+error,Jersey Mike's Subs,#26 Bacon Ranch Chicken Cheese Steak on White Regular,atwater,макросы дают 898 ккал против заявленных 415 (+116%)
+error,Jersey Mike's Subs,#31 California Chicken Cheese Steak on Wheat Giant,atwater,макросы дают 1804 ккал против заявленных 860 (+110%)
+warning,Jersey Mike's Subs,#43 Chipotle Cheese Steak on Wheat Giant,portion,2010 ккал — вероятно целая порция на компанию
+warning,Jersey Mike's Subs,#43 Chipotle Cheese Steak on White Giant,portion,2010 ккал — вероятно целая порция на компанию
+error,Jersey Mike's Subs,Buffalo Steak Cheesesteak on Wheat Giant,atwater,макросы дают 1940 ккал против заявленных 1060 (+83%)
+error,Jersey Mike's Subs,"Extra Cheese & Meat, for #2 Jersey Shore Favorite, Regular & Tub",atwater,макросы дают 166 ккал против заявленных 95 (+75%)
+error,Jersey Mike's Subs,"Extra Meat & Cheese, for #6 Roast Beef & Provolone, Giant",atwater,макросы дают 409 ккал против заявленных 225 (+82%)
+warning,Joe's Crab Shack,10 Coconut Shrimp,portion,2170 ккал — вероятно целая порция на компанию
+error,Joe's Crab Shack,Arctic Bay Steampot for 2,range,protein=304.0 выше потолка 250
+warning,Joe's Crab Shack,Arctic Bay Steampot for 2,portion,2210 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,"Barefoot White Wine Spritzer, 8.45 oz",atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Barefoot on The Beach, Regional",atwater,"340 ккал, макросы объясняют только 236 (31%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Barefoot on the Beach,atwater,"500 ккал, макросы объясняют только 272 (46%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,Beantown Bake,range,protein=254.0 выше потолка 250
+warning,Joe's Crab Shack,"Blue Moon, 16 oz",atwater,"240 ккал, макросы объясняют только 104 (57%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Blue Moon, 22 oz",atwater,"320 ккал, макросы объясняют только 96 (70%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,Broccoli,atwater,макросы дают 90 ккал против заявленных 70 (+29%)
+warning,Joe's Crab Shack,"Bud Light, 12 oz",atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Bud Light, 16 oz",atwater,"150 ккал, макросы объясняют только 40 (73%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Bud Light, 22 oz",atwater,"200 ккал, макросы объясняют только 56 (72%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Budweiser, 12 oz",atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Category 5 Hurricane,atwater,"400 ккал, макросы объясняют только 152 (62%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Coors Light, 12 oz",atwater,"100 ккал, макросы объясняют только 20 (80%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,Corona,atwater,"150 ккал, макросы объясняют только 8 (95%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,"Corona Light, 12 oz",atwater,"100 ккал, макросы объясняют только 32 (68%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Coronita Rita,atwater,"230 ккал, макросы объясняют только 80 (65%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,Crab Nachos,atwater,макросы дают 2335 ккал против заявленных 1810 (+29%)
+error,Joe's Crab Shack,Crab Stuffed Mushrooms,atwater,макросы дают 706 ккал против заявленных 530 (+33%)
+error,Joe's Crab Shack,Crazy Good Crab Dip,atwater,макросы дают 1468 ккал против заявленных 990 (+48%)
+error,Joe's Crab Shack,"Crazy Good Crab Dip, 4 oz",atwater,макросы дают 736 ккал против заявленных 500 (+47%)
+warning,Joe's Crab Shack,"Dos Equis Lager, 12 oz,",atwater,"140 ккал, макросы объясняют только 52 (63%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,East Coast Platter,portion,3330 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,"Heineken, 12 oz",atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,House Cabernet Sauvignon,atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,House Chardonnay,atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Joes Patron Rita,atwater,"220 ккал, макросы объясняют только 92 (58%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Kendall Jackson Chardonnay, 8 oz Wine",atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Kickin Mango Coronita Rita,atwater,"280 ккал, макросы объясняют только 128 (54%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"La Crema Pinot Noir, 8 oz",atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Mason Jar Bloody Mary,atwater,"160 ккал, макросы объясняют только 65 (59%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Mason Jar Margarita,atwater,"250 ккал, макросы объясняют только 100 (60%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Michelob Ultra, 12 oz",atwater,"90 ккал, макросы объясняют только 16 (82%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Miller Light, 12 oz",atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Miller Lite, 16 oz",atwater,"130 ккал, макросы объясняют только 20 (85%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Miller Lite, 22 oz",atwater,"180 ккал, макросы объясняют только 32 (82%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Mirassou Moscato, 8 oz",atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Modelo Especial, 12 oz",atwater,"150 ккал, макросы объясняют только 8 (95%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Murphy Goode Cabernet Sauvignon, 8 oz",atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Patio Punch,atwater,"430 ккал, макросы объясняют только 256 (40%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Popcorn Shrimp,portion,2310 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,"Raspberry Liqueur, Shooter",atwater,"80 ккал, макросы объясняют только 32 (60%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Sam Adams, 16 oz",atwater,макросы дают 1008 ккал против заявленных 230 (+338%)
+warning,Joe's Crab Shack,"Sam Adams, 22 oz",atwater,"320 ккал, макросы объясняют только 148 (54%) — алкоголь или потерянный макрос"
+error,Joe's Crab Shack,"Seafood Gumbo, Bowl",atwater,макросы дают 464 ккал против заявленных 250 (+86%)
+error,Joe's Crab Shack,"Seafood Gumbo, Cup",atwater,макросы дают 265 ккал против заявленных 160 (+66%)
+warning,Joe's Crab Shack,Shark Bite,atwater,"290 ккал, макросы объясняют только 100 (66%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Shrimp & Fish,portion,2240 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,Shrimp Sampler,portion,2800 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,Southern Spiked Tea,atwater,"210 ккал, макросы объясняют только 108 (49%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Spiked Lemonade,atwater,"200 ккал, макросы объясняют только 104 (48%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Strawberry Peach Sangria,atwater,"300 ккал, макросы объясняют только 188 (37%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Sweet Potato Fries,atwater,"840 ккал, макросы объясняют только 461 (45%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,TKO Punch,atwater,"340 ккал, макросы объясняют только 168 (51%) — алкоголь или потерянный макрос"
+warning,Joe's Crab Shack,Voodoo Chicken Bites,portion,2100 ккал — вероятно целая порция на компанию
+warning,Joe's Crab Shack,Watermelon Sangria,atwater,"270 ккал, макросы объясняют только 180 (33%) — алкоголь или потерянный макрос"
+error,KFC,Kentucky Grilled Chicken Thigh,atwater,макросы дают 217 ккал против заявленных 150 (+45%)
+warning,Krystal,24 Bone In Wings,portion,2340 ккал — вероятно целая порция на компанию
+warning,Krystal,24 Boneless Wings w/ BBQ Sauce,portion,2160 ккал — вероятно целая порция на компанию
+warning,Krystal,24 Krystals,portion,3080 ккал — вероятно целая порция на компанию
+warning,Krystal,48 Bone In Wings,portion,4680 ккал — вероятно целая порция на компанию
+warning,Krystal,48 Boneless Wings w/ BBQ Sauce,portion,4320 ккал — вероятно целая порция на компанию
+warning,Krystal,48 Boneless Wings w/ Buffalo Sauce,portion,3880 ккал — вероятно целая порция на компанию
+error,Krystal,48 Krystals,range,kcal=6150.0 выше потолка 5000
+error,Krystal,48 Krystals,range,protein=301.0 выше потолка 250
+error,Krystal,48 Krystals,range,carbs=743.0 выше потолка 500
+warning,Krystal,48 Krystals,portion,6150 ккал — вероятно целая порция на компанию
+warning,LongHorn Steakhouse,Buck Bourbon & Coke,atwater,"130 ккал, макросы объясняют только 40 (69%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Captains Mule,atwater,"220 ккал, макросы объясняют только 140 (36%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,"Chili Cheese Fries, Larger Portion",portion,2050 ккал — вероятно целая порция на компанию
+warning,LongHorn Steakhouse,"Cider, Beer",atwater,"200 ккал, макросы объясняют только 84 (58%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Classic Steakhouse Martini,atwater,"220 ккал, макросы объясняют только 74 (66%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,Cucumber Mint Mojito,atwater,"100 ккал, макросы объясняют только 20 (80%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"Light Bottle Beer, 12 oz",atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"Light Draft Beer, 16 oz",atwater,"140 ккал, макросы объясняют только 32 (77%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,"Light Draft Beer, 20 oz",atwater,"170 ккал, макросы объясняют только 44 (74%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Montana Mule,atwater,"200 ккал, макросы объясняют только 104 (48%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Moscow Mule,atwater,"220 ккал, макросы объясняют только 136 (38%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Patron Platinum Margarita,atwater,"260 ккал, макросы объясняют только 168 (35%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"Red Wine, Glass",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"Red Wine, LongPour",atwater,"230 ккал, макросы объясняют только 32 (86%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,"Regular Bottle Beer, 12 oz",atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,"Regular Draft Beer, 16 oz",atwater,"200 ккал, макросы объясняют только 64 (68%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,"Regular Draft Beer, 20 oz",atwater,"250 ккал, макросы объясняют только 80 (68%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Southern Mule,atwater,"170 ккал, макросы объясняют только 104 (39%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Sunset Cosmo,atwater,"160 ккал, макросы объясняют только 64 (60%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Texas Tea,atwater,"240 ккал, макросы объясняют только 140 (42%) — алкоголь или потерянный макрос"
+warning,LongHorn Steakhouse,Watermelon Margarita,atwater,"240 ккал, макросы объясняют только 144 (40%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"White Wine, Glass",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,LongHorn Steakhouse,"White Wine, LongPour",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,Marco's Pizza,"Chef Salad, Large",atwater,макросы дают 166 ккал против заявленных 130 (+28%)
+error,Marco's Pizza,"Chicken Caesar Salad, Large",atwater,макросы дают 140 ккал против заявленных 100 (+40%)
+error,Marco's Pizza,"Chicken Caesar Salad, Small",atwater,макросы дают 152 ккал против заявленных 120 (+27%)
+error,Marco's Pizza,"Garden Salad, Large",atwater,макросы дают 163 ккал против заявленных 130 (+25%)
+error,Marco's Pizza,"Garden Salad, Small",atwater,макросы дают 189 ккал против заявленных 150 (+26%)
+warning,McAlister's Deli,Cheetos Crunchy Mellow Cheese Snacks,atwater,"310 ккал, макросы объясняют только 116 (63%) — алкоголь или потерянный макрос"
+error,McAlister's Deli,Chocolate Chip Cookie,atwater,макросы дают 467 ккал против заявленных 370 (+26%)
+warning,McAlister's Deli,Doritos Nacho Cheese Tortilla Chips,atwater,"240 ккал, макросы объясняют только 124 (48%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,Lays BBQ Potato Chips,atwater,"230 ккал, макросы объясняют только 104 (55%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,New York Cheesecake & Strawberry Puree,atwater,"950 ккал, макросы объясняют только 388 (59%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,New York Cheesecake & Wildberry Puree,atwater,"960 ккал, макросы объясняют только 388 (60%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,Sun Chips Harvest Cheddar Snacks,atwater,"210 ккал, макросы объясняют только 124 (41%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,Sunchips Original Snacks,atwater,"210 ккал, макросы объясняют только 124 (41%) — алкоголь или потерянный макрос"
+warning,McDonald's,"Extra Value Meal w/ 40 Pc Nuggets, Medium Coke & Medium Fries",portion,2500 ккал — вероятно целая порция на компанию
+error,Moe's Southwest Grill,"Adobo Chicken, Double, for Kids",atwater,макросы дают 152 ккал против заявленных 112 (+36%)
+error,Moe's Southwest Grill,"Adobo Chicken, Regular, for Kids",atwater,макросы дают 76 ккал против заявленных 56 (+36%)
+error,Moe's Southwest Grill,"Fish, Double, for Kids",atwater,макросы дают 150 ккал против заявленных 76 (+97%)
+error,Moe's Southwest Grill,"Fish, Double, for Tacos",atwater,макросы дают 150 ккал против заявленных 110 (+36%)
+error,Moe's Southwest Grill,"Fish, Regular, Tacos",atwater,макросы дают 75 ккал против заявленных 55 (+36%)
+error,Moe's Southwest Grill,"Grilled Steak, Double, for Kids",atwater,макросы дают 116 ккал против заявленных 92 (+26%)
+error,Moe's Southwest Grill,"Ground Beef, Double, for Kids",atwater,макросы дают 144 ккал против заявленных 110 (+31%)
+error,Moe's Southwest Grill,"Ground Beef, Regular, for Kids",atwater,макросы дают 72 ккал против заявленных 55 (+31%)
+error,Moe's Southwest Grill,"Guacamole, Bowl",atwater,макросы дают 394 ккал против заявленных 308 (+28%)
+error,Moe's Southwest Grill,"Guacamole, Cup",atwater,макросы дают 299 ккал против заявленных 238 (+26%)
+error,Moe's Southwest Grill,"Organic Tofu, Double, for Kids",atwater,макросы дают 128 ккал против заявленных 86 (+49%)
+error,Moe's Southwest Grill,"Pork Carnitas, Double, for Kids",atwater,макросы дают 136 ккал против заявленных 100 (+36%)
+error,Moe's Southwest Grill,"Pork Carnitas, Regular, Tacos",atwater,макросы дают 89 ккал против заявленных 71 (+25%)
+error,Moe's Southwest Grill,"Pork Carnitas, Regular, for Kids",atwater,макросы дают 68 ккал против заявленных 50 (+36%)
+error,Moe's Southwest Grill,"Pork, Double, for Tacos",atwater,макросы дают 178 ккал против заявленных 142 (+25%)
+error,Noodles & Company,Baguette,atwater,макросы дают 142 ккал против заявленных 90 (+57%)
+warning,O'Charley's,"Country Apple Pie, Whole",portion,3190 ккал — вероятно целая порция на компанию
+warning,O'Charley's,"Double Crust Cherry Pie, Whole",portion,3030 ккал — вероятно целая порция на компанию
+warning,O'Charley's,"French Silk Pie, Whole",portion,4050 ккал — вероятно целая порция на компанию
+warning,O'Charley's,"Mint Brownie Blast Pie, Whole",portion,4530 ккал — вероятно целая порция на компанию
+error,O'Charley's,"O Charleys BBQ Ribs, Platter",range,protein=269.0 выше потолка 250
+warning,O'Charley's,"O Charleys BBQ Ribs, Platter",portion,4960 ккал — вероятно целая порция на компанию
+error,O'Charley's,"Ooey Gooey Caramel Pie, Whole",range,carbs=588.0 выше потолка 500
+warning,O'Charley's,"Ooey Gooey Caramel Pie, Whole",portion,4320 ккал — вероятно целая порция на компанию
+warning,O'Charley's,"Perfect Pumpkin Pie w/ Whipped Cream, Whole",portion,3920 ккал — вероятно целая порция на компанию
+warning,O'Charley's,"Southern Pecan Pie, Whole",portion,3840 ккал — вероятно целая порция на компанию
+warning,Olive Garden,"Angry Orchard Hard Cider, Bottle",atwater,"220 ккал, макросы объясняют только 124 (44%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Berry Sangria, Glass",atwater,"210 ккал, макросы объясняют только 120 (43%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Berry Sangria, Pitcher",atwater,"870 ккал, макросы объясняют только 508 (42%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Cranberry Mule,atwater,"160 ккал, макросы объясняют только 68 (57%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Frozen Traditional Margarita,atwater,"290 ккал, макросы объясняют только 192 (34%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Imports & Specialty, Bottle",atwater,"220 ккал, макросы объясняют только 124 (44%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Light Draft, 16 oz",atwater,"140 ккал, макросы объясняют только 28 (80%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Light Draft, 22 fl oz",atwater,"190 ккал, макросы объясняют только 40 (79%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Long Island Limoncello,atwater,"230 ккал, макросы объясняют только 124 (46%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Mango Martini,atwater,"180 ккал, макросы объясняют только 124 (31%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Merry Cranberry,atwater,"210 ккал, макросы объясняют только 88 (58%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Milan Mai Tai,atwater,"260 ккал, макросы объясняют только 168 (35%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Moscow Mule,atwater,"170 ккал, макросы объясняют только 68 (60%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Peach Sangria, Glass",atwater,"230 ккал, макросы объясняют только 140 (39%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Peach Sangria, Pitcher",atwater,"940 ккал, макросы объясняют только 576 (39%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Raspberry Italian Ice Mule,atwater,"230 ккал, макросы объясняют только 108 (53%) — алкоголь или потерянный макрос"
+error,Olive Garden,Raspberry Lemonade,atwater,"170 ккал, макросы объясняют только 40 (76%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Raspberry Lemonade, Kids",atwater,"110 ккал, макросы объясняют только 28 (75%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds Menu, Bottle",atwater,"660 ккал, макросы объясняют только 84 (87%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds Menu, Glass",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds Menu, Magnum Bottle",atwater,"1310 ккал, макросы объясняют только 176 (87%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds, Glass",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds, Magnum Bottle",atwater,"1310 ккал, макросы объясняют только 176 (87%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Reds, Quartino",atwater,"230 ккал, макросы объясняют только 32 (86%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Regular Bottle,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Regular Draft, 16 fl oz",atwater,"230 ккал, макросы объясняют только 76 (67%) — алкоголь или потерянный макрос"
+warning,Olive Garden,"Regular Draft, 22 fl oz",atwater,"310 ккал, макросы объясняют только 104 (66%) — алкоголь или потерянный макрос"
+warning,Olive Garden,Sangarita,atwater,"230 ккал, макросы объясняют только 100 (57%) — алкоголь или потерянный макрос"
+error,Olive Garden,"White & Rose Menu, Magnum Bottle",atwater,"1250 ккал, макросы объясняют только 132 (89%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Whites & Rose Menu, Glass",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Whites & Rose Menu, Quartino",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Whites & Rose, Glass",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Whites & Rose, Magnum Bottle",atwater,"1250 ккал, макросы объясняют только 132 (89%) — алкоголь или потерянный макрос"
+error,Olive Garden,"Whites & Rose, Quartino",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+error,On the Border,3 Corn Tortillas,atwater,макросы дают 174 ккал против заявленных 130 (+34%)
+warning,On the Border,Border Sampler,portion,2180 ккал — вероятно целая порция на компанию
+warning,On the Border,Stacked Nachos,portion,2280 ккал — вероятно целая порция на компанию
+error,Outback Steakhouse,Grilled Chicken On The Barbie w/ Broccoli & Apple Juice,atwater,макросы дают 644 ккал против заявленных 310 (+108%)
+error,Panera Bread,Joia Grapefruit Soda,atwater,макросы дают 144 ккал против заявленных 110 (+31%)
+warning,Papa John's,16 Garlic Parmesan Wings,portion,2080 ккал — вероятно целая порция на компанию
+warning,Papa John's,24 Garlic Parmesan Wings,portion,3120 ккал — вероятно целая порция на компанию
+warning,Papa John's,24 Unsauced Roasted Wings,portion,2430 ккал — вероятно целая порция на компанию
+warning,Papa John's,24 Wings w/ BBQ Sauce,portion,2630 ккал — вероятно целая порция на компанию
+warning,Papa John's,24 Wings w/ Buffalo Sauce,portion,2510 ккал — вероятно целая порция на компанию
+warning,Papa John's,24 Wings w/ Honey Chipotle Sauce,portion,2710 ккал — вероятно целая порция на компанию
+error,Papa John's,32 Garlic Parmesan Wings,range,protein=273.0 выше потолка 250
+warning,Papa John's,32 Garlic Parmesan Wings,portion,4160 ккал — вероятно целая порция на компанию
+error,Papa John's,32 Unsauced Roasted Wings,range,protein=265.0 выше потолка 250
+warning,Papa John's,32 Unsauced Roasted Wings,portion,3240 ккал — вероятно целая порция на компанию
+error,Papa John's,32 Wings w/ BBQ Sauce,range,protein=267.0 выше потолка 250
+warning,Papa John's,32 Wings w/ BBQ Sauce,portion,3500 ккал — вероятно целая порция на компанию
+error,Papa John's,32 Wings w/ Buffalo Sauce,range,protein=267.0 выше потолка 250
+warning,Papa John's,32 Wings w/ Buffalo Sauce,portion,3340 ккал — вероятно целая порция на компанию
+error,Papa John's,32 Wings w/ Honey Chipotle Sauce,range,protein=267.0 выше потолка 250
+warning,Papa John's,32 Wings w/ Honey Chipotle Sauce,portion,3610 ккал — вероятно целая порция на компанию
+warning,Papa John's,45 Chicken Poppers,portion,2390 ккал — вероятно целая порция на компанию
+error,Papa John's,50 Garlic Parmesan Wings,range,kcal=6500.0 выше потолка 5000
+error,Papa John's,50 Garlic Parmesan Wings,range,protein=427.0 выше потолка 250
+error,Papa John's,50 Garlic Parmesan Wings,range,fat=507.0 выше потолка 400
+warning,Papa John's,50 Garlic Parmesan Wings,portion,6500 ккал — вероятно целая порция на компанию
+error,Papa John's,50 Unsauced Roasted Wings,range,kcal=5060.0 выше потолка 5000
+error,Papa John's,50 Unsauced Roasted Wings,range,protein=415.0 выше потолка 250
+warning,Papa John's,50 Unsauced Roasted Wings,portion,5060 ккал — вероятно целая порция на компанию
+error,Papa John's,50 Wings w/ BBQ Sauce,range,kcal=5470.0 выше потолка 5000
+error,Papa John's,50 Wings w/ BBQ Sauce,range,protein=418.0 выше потолка 250
+warning,Papa John's,50 Wings w/ BBQ Sauce,portion,5470 ккал — вероятно целая порция на компанию
+error,Papa John's,50 Wings w/ Buffalo Sauce,range,kcal=5220.0 выше потолка 5000
+error,Papa John's,50 Wings w/ Buffalo Sauce,range,protein=417.0 выше потолка 250
+warning,Papa John's,50 Wings w/ Buffalo Sauce,portion,5220 ккал — вероятно целая порция на компанию
+error,Papa John's,50 Wings w/ Honey Chipotle Sauce,range,kcal=5640.0 выше потолка 5000
+error,Papa John's,50 Wings w/ Honey Chipotle Sauce,range,protein=417.0 выше потолка 250
+warning,Papa John's,50 Wings w/ Honey Chipotle Sauce,portion,5640 ккал — вероятно целая порция на компанию
+warning,Papa John's,60 Chicken Poppers,portion,3180 ккал — вероятно целая порция на компанию
+error,Papa John's,"Hawaiian Punch, 2 Liter",range,protein=279.0 выше потолка 250
+warning,Papa John's,"Hawaiian on Original Crust, Extra Large, 1 Slice",atwater,"310 ккал, макросы объясняют только 209 (33%) — алкоголь или потерянный макрос"
+warning,Papa John's,"Pepperoni, for Pan Crust",atwater,"50 ккал, макросы объясняют только 31 (38%) — алкоголь или потерянный макрос"
+error,Papa John's,"White Pizza on Thin Crust, 1 Slice",atwater,макросы дают 299 ккал против заявленных 210 (+42%)
+error,Papa Murphy's,Bleu Cheese Dressing,atwater,макросы дают 548 ккал против заявленных 150 (+265%)
+error,Papa Murphy's,Chocolate Chip Cookie,atwater,макросы дают 1952 ккал против заявленных 1390 (+40%)
+error,Papa Murphy's,"Chocolate Chip Cookie, 1 Slice",atwater,макросы дают 243 ккал против заявленных 170 (+43%)
+warning,Papa Murphy's,Smores Dessert Pizza,portion,2050 ккал — вероятно целая порция на компанию
+warning,Perkins,Alaskan Amber,atwater,"180 ккал, макросы объясняют только 80 (56%) — алкоголь или потерянный макрос"
+warning,Perkins,Alexander Keiths,atwater,"150 ккал, макросы объясняют только 44 (71%) — алкоголь или потерянный макрос"
+warning,Perkins,AmberBock,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Perkins,Arthur Guiness,atwater,"130 ккал, макросы объясняют только 40 (69%) — алкоголь или потерянный макрос"
+warning,Perkins,Bacardi Strawberry,atwater,"230 ккал, макросы объясняют только 132 (43%) — алкоголь или потерянный макрос"
+error,Perkins,Beringer White Zinfandel,atwater,"100 ккал, макросы объясняют только 20 (80%) — алкоголь или потерянный макрос"
+warning,Perkins,Blue Moon,atwater,"160 ккал, макросы объясняют только 60 (62%) — алкоголь или потерянный макрос"
+warning,Perkins,Boulevard Wheat,atwater,"130 ккал, макросы объясняют только 68 (48%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone Cabernet,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone Chardonnay,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone Merlot,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Brownstone Moscato,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone Pinot Grigio,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone Syrah,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Brownstone White Zinfandel,atwater,"110 ккал, макросы объясняют только 20 (82%) — алкоголь или потерянный макрос"
+warning,Perkins,Bud Light,atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+warning,Perkins,Budweiser,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+error,Perkins,Cabernet,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
+error,Perkins,Cedar Creek Pinot Gris,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Chardonnay,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Coors Banquet,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Perkins,Coors Light,atwater,"100 ккал, макросы объясняют только 44 (56%) — алкоголь или потерянный макрос"
+warning,Perkins,Copa Chardonnay,atwater,"150 ккал, макросы объясняют только 40 (73%) — алкоголь или потерянный макрос"
+error,Perkins,Copa Merlot,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Copa Pinot,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Copa Zinfandel,atwater,"130 ккал, макросы объясняют только 16 (88%) — алкоголь или потерянный макрос"
+error,Perkins,Copper Moon Sauvignon Blanc,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+warning,Perkins,Corona Extra,atwater,"150 ккал, макросы объясняют только 52 (65%) — алкоголь или потерянный макрос"
+warning,Perkins,Fat Tire,atwater,"160 ккал, макросы объясняют только 56 (65%) — алкоголь или потерянный макрос"
+error,Perkins,Gallo Cabernet,atwater,"110 ккал, макросы объясняют только 4 (96%) — алкоголь или потерянный макрос"
+error,Perkins,Gallo Chardonnay,atwater,"100 ккал, макросы объясняют только 4 (96%) — алкоголь или потерянный макрос"
+error,Perkins,Gallo Merlot,atwater,"110 ккал, макросы объясняют только 20 (82%) — алкоголь или потерянный макрос"
+error,Perkins,Gerwurtztraminer,atwater,"130 ккал, макросы объясняют только 28 (78%) — алкоголь или потерянный макрос"
+warning,Perkins,Heineken,atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+warning,Perkins,India Pale Ale,atwater,"150 ккал, макросы объясняют только 44 (71%) — алкоголь или потерянный макрос"
+warning,Perkins,Jackson Triggs Malbec,atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+warning,Perkins,Jackson Triggs Merlot,atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+error,Perkins,Jackson Triggs Sauvignon Blanc,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Labatt Blue,atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Labatt Blue Light,atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+warning,Perkins,Leinenkugal Honey Weiss,atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+error,Perkins,Merlot,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Michelob,atwater,"160 ккал, макросы объясняют только 52 (68%) — алкоголь или потерянный макрос"
+warning,Perkins,Michelob Golden Draft Light,atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+warning,Perkins,Michelob Light,atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+error,Perkins,Michelob Ultra,atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+warning,Perkins,Miller Genuine Draft,atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+warning,Perkins,Miller High Life,atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+error,Perkins,Mini Oatmeal Cranberry Cookie,atwater,макросы дают 199 ккал против заявленных 150 (+33%)
+warning,Perkins,Molson Canadian Ale,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Perkins,Molson Old Style Pilsner,atwater,"150 ккал, макросы объясняют только 40 (73%) — алкоголь или потерянный макрос"
+warning,Perkins,Moosehead,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,Perkins,Moscato,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+error,Perkins,Naked Grape Chardonnay,atwater,"120 ккал, макросы объясняют только 4 (97%) — алкоголь или потерянный макрос"
+warning,Perkins,New Castle Brown Ale,atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+error,Perkins,Oatmeal Cranberry Cookie,atwater,макросы дают 390 ккал против заявленных 290 (+34%)
+error,Perkins,Pasqua Pinot Grigio Italy,atwater,"110 ккал, макросы объясняют только 8 (93%) — алкоголь или потерянный макрос"
+error,Perkins,Peller Estates Shiraz,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+warning,Perkins,Pick 4 Sampler,portion,2110 ккал — вероятно целая порция на компанию
+error,Perkins,Pinot Grigio,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Pinot Noir,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Quails Gate Pinot Noir,atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Red Wine Blend,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Rickards Red Beer,atwater,"160 ккал, макросы объясняют только 44 (72%) — алкоголь или потерянный макрос"
+error,Perkins,Riesling,atwater,"120 ккал, макросы объясняют только 24 (80%) — алкоголь или потерянный макрос"
+warning,Perkins,Rolling Rock,atwater,"130 ккал, макросы объясняют только 44 (66%) — алкоголь или потерянный макрос"
+warning,Perkins,Sam Adams Boston Lager,atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+error,Perkins,Santa Carolina Cabernet Chile,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
+error,Perkins,Santa Carolina Chardonnay Chile,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
+error,Perkins,Santa Carolina Merlot Chile,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Santa Carolina Shiraz Chile,atwater,"130 ккал, макросы объясняют только 16 (88%) — алкоголь или потерянный макрос"
+error,Perkins,Sauvignon Blanc,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Shiraz,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Smirnoff Grape,atwater,"230 ккал, макросы объясняют только 144 (37%) — алкоголь или потерянный макрос"
+error,Perkins,Smirnoff Green Apple,atwater,макросы дают 700 ккал против заявленных 180 (+289%)
+error,Perkins,Sparkling Brut,atwater,"80 ккал, макросы объясняют только 4 (95%) — алкоголь или потерянный макрос"
+warning,Perkins,Spotted Cow,atwater,"150 ккал, макросы объясняют только 52 (65%) — алкоголь или потерянный макрос"
+warning,Perkins,Stella,atwater,"170 ккал, макросы объясняют только 88 (48%) — алкоголь или потерянный макрос"
+error,Perkins,Sutter Home Cabernet,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Sutter Home Chardonnay,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Sutter Home Merlot,atwater,"120 ккал, макросы объясняют только 36 (70%) — алкоголь или потерянный макрос"
+error,Perkins,Sutter Home Riesling,atwater,"130 ккал, макросы объясняют только 32 (75%) — алкоголь или потерянный макрос"
+error,Perkins,Sutter Home White Wine Spritzer,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+warning,Perkins,Sutter Home White Zinfandel,atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+error,Perkins,Syrah Wine,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Perkins,Tinhorn Creek Cab Franc,atwater,"110 ккал, макросы объясняют только 4 (96%) — алкоголь или потерянный макрос"
+error,Perkins,White Wine Spritzer,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,White Zinfandel,atwater,"110 ккал, макросы объясняют только 20 (82%) — алкоголь или потерянный макрос"
+error,Perkins,William Hill Estates Chardonnay,atwater,"120 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Perkins,Woodbridge Chardonnay,atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Perkins,Yuengling,atwater,"130 ккал, макросы объясняют только 44 (66%) — алкоголь или потерянный макрос"
+warning,Popeyes,"Cajun Fries, Regular",atwater,"268 ккал, макросы объясняют только 154 (43%) — алкоголь или потерянный макрос"
+error,Popeyes,Hot Cinnamon Apple Pie,atwater,макросы дают 296 ккал против заявленных 236 (+25%)
+error,Popeyes,Pepsi,atwater,макросы дают 280 ккал против заявленных 200 (+40%)
+warning,Popeyes,Sweet Tea,atwater,"180 ккал, макросы объясняют только 64 (64%) — алкоголь или потерянный макрос"
+error,Qdoba,Lite Sour Cream,atwater,макросы дают 65 ккал против заявленных 50 (+30%)
+error,Quiznos,"Base, for Honey Mustard on Flatbread",atwater,макросы дают 255 ккал против заявленных 80 (+219%)
+warning,Red Lobster,Bahama Mama,atwater,"370 ккал, макросы объясняют только 248 (33%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Berry Mango Daiquiri,atwater,"320 ккал, макросы объясняют только 216 (32%) — алкоголь или потерянный макрос"
+error,Red Lobster,Bloody Mary,atwater,"110 ккал, макросы объясняют только 24 (78%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Caramel Appletini,atwater,"200 ккал, макросы объясняют только 108 (46%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Chocolate Martini,atwater,"340 ккал, макросы объясняют только 222 (35%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Classic Margarita, Frozen",atwater,"180 ккал, макросы объясняют только 92 (49%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Classic Margarita, On the Rocks",atwater,"120 ккал, макросы объясняют только 32 (73%) — алкоголь или потерянный макрос"
+error,Red Lobster,Cosmopolitan,atwater,"170 ккал, макросы объясняют только 40 (76%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Grand Patron Margarita,atwater,"200 ккал, макросы объясняют только 64 (68%) — алкоголь или потерянный макрос"
+error,Red Lobster,Hand Breaded Shrimp,atwater,макросы дают 534 ккал против заявленных 310 (+72%)
+warning,Red Lobster,"Hard Cider, 10 oz",atwater,"200 ккал, макросы объясняют только 116 (42%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Irish Coffee,atwater,"200 ккал, макросы объясняют только 122 (39%) — алкоголь или потерянный макрос"
+error,Red Lobster,"Light Beer, 12 oz",atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
+error,Red Lobster,"Light Draft Beer, 14 oz",atwater,"120 ккал, макросы объясняют только 28 (77%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Light Draft Beer, 20 oz",atwater,"170 ккал, макросы объясняют только 44 (74%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Lobsterita, Raspberry, Frozen",atwater,"500 ккал, макросы объясняют только 328 (34%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Lobsterita, Strawberry, Frozen",atwater,"500 ккал, макросы объясняют только 328 (34%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Lobsterita, Traditional, Frozen",atwater,"410 ккал, макросы объясняют только 228 (44%) — алкоголь или потерянный макрос"
+error,Red Lobster,Manhattan,atwater,"160 ккал, макросы объясняют только 32 (80%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Mojito,atwater,"200 ккал, макросы объясняют только 128 (36%) — алкоголь или потерянный макрос"
+error,Red Lobster,Old Fashioned,atwater,"170 ккал, макросы объясняют только 24 (86%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Peach Margarita, Frozen",atwater,"290 ккал, макросы объясняют только 200 (31%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Peach Margarita, On the Rocks",atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Perfect 1800 Margarita,atwater,"160 ккал, макросы объясняют только 52 (68%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Raspberry Margarita, Frozen",atwater,"280 ккал, макросы объясняют только 184 (34%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Raspberry Margarita, On the Rocks",atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Regular Beer, 12 oz",atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Regular Draft Beer, 14 oz",atwater,"180 ккал, макросы объясняют только 68 (62%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Regular Draft Beer, 20 oz",atwater,"260 ккал, макросы объясняют только 96 (63%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Sparkling, Spit",atwater,"160 ккал, макросы объясняют только 40 (75%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Strawberry Margarita, Frozen",atwater,"280 ккал, макросы объясняют только 188 (33%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Strawberry Margarita, On the Rocks",atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Strawberry Mojito,atwater,"290 ккал, макросы объясняют только 196 (32%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Tiki Passion Punch,atwater,"220 ккал, макросы объясняют только 152 (31%) — алкоголь или потерянный макрос"
+warning,Red Lobster,Top Shelf Long Island Iced Tea,atwater,"180 ккал, макросы объясняют только 60 (67%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Top Shelf Margarita, Frozen",atwater,"220 ккал, макросы объясняют только 104 (53%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Top Shelf Margarita, On the Rocks",atwater,"160 ккал, макросы объясняют только 44 (72%) — алкоголь или потерянный макрос"
+warning,Red Lobster,"Wine, 6 oz",atwater,"150 ккал, макросы объясняют только 40 (73%) — алкоголь или потерянный макрос"
+error,Red Lobster,"Wine, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,Red Lobster,"Wine, Bottle",atwater,"640 ккал, макросы объясняют только 128 (80%) — алкоголь или потерянный макрос"
+warning,Red Robin,Absolut Lemonade,atwater,"200 ккал, макросы объясняют только 116 (42%) — алкоголь или потерянный макрос"
+warning,Red Robin,Alaskan Amber,atwater,"180 ккал, макросы объясняют только 76 (58%) — алкоголь или потерянный макрос"
+warning,Red Robin,Angry Orchard Hard Cider,atwater,"200 ккал, макросы объясняют только 100 (50%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Barefoot Refresh Moscato Spritzer, 6 oz",atwater,"110 ккал, макросы объясняют только 52 (53%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Barefoot Refresh Moscato Spritzer, 9 oz",atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Red Robin,Belgium Fat Tire,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,Red Robin,Blue Moon Belgian White,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Red Robin,Blue Moon Can Crafted Cocktail,atwater,"220 ккал, макросы объясняют только 140 (36%) — алкоголь или потерянный макрос"
+warning,Red Robin,Boulevard Wheat,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+error,Red Robin,Bud Light,atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
+warning,Red Robin,Budweiser,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Cabernet Sauvignon, 6 oz",atwater,"170 ккал, макросы объясняют только 28 (84%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Cabernet Sauvignon, 9 oz",atwater,"250 ккал, макросы объясняют только 44 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Chardonnay, 6 oz",atwater,"160 ккал, макросы объясняют только 24 (85%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Chardonnay, 9 oz",atwater,"230 ккал, макросы объясняют только 36 (84%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Merlot, 6 oz",atwater,"170 ккал, макросы объясняют только 28 (84%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Merlot, 9 oz",atwater,"250 ккал, макросы объясняют только 44 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Pinot Grigio, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,Red Robin,"Canyon Road Pinot Grigio, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Canyon Road White Zinfandel, 6 oz",atwater,"130 ккал, макросы объясняют только 40 (69%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Canyon Road White Zinfandel, 9 oz",atwater,"200 ккал, макросы объясняют только 56 (72%) — алкоголь или потерянный макрос"
+error,Red Robin,"Carnivor Cabernet Sauvignon, 6 oz",atwater,"170 ккал, макросы объясняют только 28 (84%) — алкоголь или потерянный макрос"
+error,Red Robin,"Carnivor Cabernet Sauvignon, 9 oz",atwater,"260 ккал, макросы объясняют только 40 (85%) — алкоголь или потерянный макрос"
+error,Red Robin,"Clos Du Bois Cabernet Sauvignon, 9 oz",atwater,"190 ккал, макросы объясняют только 12 (94%) — алкоголь или потерянный макрос"
+error,Red Robin,"Clos du Bois Cabernet Sauvignon, 6 oz",atwater,"130 ккал, макросы объясняют только 8 (94%) — алкоголь или потерянный макрос"
+error,Red Robin,Coors Light,atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Cabernet Sauvignon, 6 oz",atwater,"140 ккал, макросы объясняют только 24 (83%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Cabernet Sauvignon, 9 oz",atwater,"220 ккал, макросы объясняют только 40 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Chardonnay, 6 oz",atwater,"140 ккал, макросы объясняют только 24 (83%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 40 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Merlot, 6 oz",atwater,"150 ккал, макросы объясняют только 28 (81%) — алкоголь или потерянный макрос"
+error,Red Robin,"Copper Ridge Merlot, 9 oz",atwater,"220 ккал, макросы объясняют только 48 (78%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Copper Ridge White Zinfandel, 6 oz",atwater,"130 ккал, макросы объясняют только 40 (69%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Copper Ridge White Zinfandel, 9 oz",atwater,"190 ккал, макросы объясняют только 60 (68%) — алкоголь или потерянный макрос"
+warning,Red Robin,Corona Extra,atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+error,Red Robin,"Cupcake Merlot, 6 oz",atwater,"160 ккал, макросы объясняют только 28 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"Cupcake Merlot, 9 oz",atwater,"230 ккал, макросы объясняют только 44 (81%) — алкоголь или потерянный макрос"
+error,Red Robin,"Cupcake Sauvignon Blanc, 6 oz",atwater,"130 ккал, макросы объясняют только 20 (85%) — алкоголь или потерянный макрос"
+error,Red Robin,"Cupcake Sauvignon Blanc, 9 oz",atwater,"200 ккал, макросы объясняют только 28 (86%) — алкоголь или потерянный макрос"
+warning,Red Robin,Deschutes Mirror Pond Pale Ale,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+error,Red Robin,"Ecco Domani Pinot Grigio, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,Red Robin,"Ecco Domani Pinot Grigio, 9 oz",atwater,"230 ккал, макросы объясняют только 24 (90%) — алкоголь или потерянный макрос"
+warning,Red Robin,Electric Watermelon,atwater,"380 ккал, макросы объясняют только 208 (45%) — алкоголь или потерянный макрос"
+warning,Red Robin,Flat on Your Beak,atwater,"370 ккал, макросы объясняют только 196 (47%) — алкоголь или потерянный макрос"
+warning,Red Robin,Guinness,atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+warning,Red Robin,Heineken,atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
+error,Red Robin,"Hogue Pinot Grigio, 6 oz",atwater,"120 ккал, макросы объясняют только 24 (80%) — алкоголь или потерянный макрос"
+error,Red Robin,"Hogue Pinot Grigio, 9 oz",atwater,"180 ккал, макросы объясняют только 32 (82%) — алкоголь или потерянный макрос"
+warning,Red Robin,House Margarita,atwater,"220 ккал, макросы объясняют только 124 (44%) — алкоголь или потерянный макрос"
+error,Red Robin,"Jacobs Creek Chardonnay, 6 oz",atwater,"130 ккал, макросы объясняют только 4 (97%) — алкоголь или потерянный макрос"
+error,Red Robin,"Jacobs Creek Chardonnay, 9 oz",atwater,"200 ккал, макросы объясняют только 4 (98%) — алкоголь или потерянный макрос"
+error,Red Robin,"Jacobs Creek Shiraz, 9 oz",atwater,"200 ккал, макросы объясняют только 4 (98%) — алкоголь или потерянный макрос"
+error,Red Robin,"Kendall Jackson Merlot, 6 oz",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,Red Robin,"Kendall Jackson Merlot, 9 oz",atwater,"230 ккал, макросы объясняют только 28 (88%) — алкоголь или потерянный макрос"
+error,Red Robin,"Kendall Jackson V R Chardonnay, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,Red Robin,"Kendall Jackson V R Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+warning,Red Robin,Killians Irish Red,atwater,"170 ккал, макросы объясняют только 68 (60%) — алкоголь или потерянный макрос"
+warning,Red Robin,Lagunitas IPA,atwater,"180 ккал, макросы объясняют только 68 (62%) — алкоголь или потерянный макрос"
+warning,Red Robin,Long Island Iced Tea,atwater,"400 ккал, макросы объясняют только 224 (44%) — алкоголь или потерянный макрос"
+error,Red Robin,MGD 64,atwater,"60 ккал, макросы объясняют только 12 (80%) — алкоголь или потерянный макрос"
+warning,Red Robin,Michelob AmberBock,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+error,Red Robin,Michelob Ultra,atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+warning,Red Robin,Miller Genuine Draft,atwater,"140 ккал, макросы объясняют только 56 (60%) — алкоголь или потерянный макрос"
+error,Red Robin,Miller Lite,atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+warning,Red Robin,Mojito,atwater,"150 ккал, макросы объясняют только 56 (63%) — алкоголь или потерянный макрос"
+warning,Red Robin,Not Your Fathers Root Beer,atwater,"320 ккал, макросы объясняют только 204 (36%) — алкоголь или потерянный макрос"
+warning,Red Robin,"One Great Margarita With Grand Marnier, On The Rocks",atwater,"250 ккал, макросы объясняют только 144 (42%) — алкоголь или потерянный макрос"
+warning,Red Robin,"One Great Margarita, On the Rocks",atwater,"260 ккал, макросы объясняют только 152 (42%) — алкоголь или потерянный макрос"
+warning,Red Robin,Pyramid Breweries,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Red Robin,Rebel IPA,atwater,"200 ккал, макросы объясняют только 68 (66%) — алкоголь или потерянный макрос"
+warning,Red Robin,Red Spanish Sangria,atwater,"130 ккал, макросы объясняют только 60 (54%) — алкоголь или потерянный макрос"
+warning,Red Robin,Reds Citron Freckled Mojito,atwater,"160 ккал, макросы объясняют только 104 (35%) — алкоголь или потерянный макрос"
+warning,Red Robin,Reds Signature Margarita,atwater,"260 ккал, макросы объясняют только 156 (40%) — алкоголь или потерянный макрос"
+warning,Red Robin,Samuel Adams Boston Lager,atwater,"170 ккал, макросы объясняют только 84 (51%) — алкоголь или потерянный макрос"
+warning,Red Robin,Sand In Your Shorts,atwater,"310 ккал, макросы объясняют только 212 (32%) — алкоголь или потерянный макрос"
+warning,Red Robin,Screaming Red Zombie,atwater,"366 ккал, макросы объясняют только 216 (41%) — алкоголь или потерянный макрос"
+warning,Red Robin,Shiner Bock,atwater,"140 ккал, макросы объясняют только 52 (63%) — алкоголь или потерянный макрос"
+warning,Red Robin,Sierra Nevada Pale Ale,atwater,"180 ккал, макросы объясняют только 52 (71%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Silver Patron Margarita, Frozen",atwater,"260 ккал, макросы объясняют только 156 (40%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Silver Patron Margarita, On The Rocks",atwater,"260 ккал, макросы объясняют только 156 (40%) — алкоголь или потерянный макрос"
+warning,Red Robin,"Skinny Margarita, Frozen",atwater,"120 ккал, макросы объясняют только 48 (60%) — алкоголь или потерянный макрос"
+warning,Red Robin,Skinny Spiked Freckled Lemonade,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+warning,Red Robin,Skinny Stoli Raspberry Lemonade,atwater,"70 ккал, макросы объясняют только 20 (71%) — алкоголь или потерянный макрос"
+warning,Red Robin,Spiked Freckled Lemonade,atwater,"270 ккал, макросы объясняют только 176 (35%) — алкоголь или потерянный макрос"
+warning,Red Robin,Stella Artois,atwater,"150 ккал, макросы объясняют только 52 (65%) — алкоголь или потерянный макрос"
+error,Red Robin,"The Naked Grape Chardonnay, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,Red Robin,"The Naked Grape Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 32 (85%) — алкоголь или потерянный макрос"
+error,Red Robin,"The Naked Grape Harvest Blend, 6 oz",atwater,"160 ккал, макросы объясняют только 28 (82%) — алкоголь или потерянный макрос"
+error,Red Robin,"The Naked Grape Harvest Blend, 9 oz",atwater,"230 ккал, макросы объясняют только 48 (79%) — алкоголь или потерянный макрос"
+error,Red Robin,"Trinity Oaks Pinot Noir, 6 oz",atwater,"150 ккал, макросы объясняют только 28 (81%) — алкоголь или потерянный макрос"
+error,Red Robin,"Trinity Oaks Pinot Noir, 9 oz",atwater,"230 ккал, макросы объясняют только 44 (81%) — алкоголь или потерянный макрос"
+warning,Red Robin,Tropical Mai Tai,atwater,"300 ккал, макросы объясняют только 184 (39%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Cabernet Sauvignon, 6 oz",atwater,"120 ккал, макросы объясняют только 4 (97%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Cabernet Sauvignon, 9 oz",atwater,"180 ккал, макросы объясняют только 8 (96%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Chardonnay, 6 oz",atwater,"130 ккал, макросы объясняют только 12 (91%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Chardonnay, 9 oz",atwater,"190 ккал, макросы объясняют только 20 (89%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Merlot, 6 oz",atwater,"130 ккал, макросы объясняют только 12 (91%) — алкоголь или потерянный макрос"
+error,Red Robin,"Woodbridge Merlot, 9 oz",atwater,"190 ккал, макросы объясняют только 20 (89%) — алкоголь или потерянный макрос"
+warning,Red Robin,Yuengling,atwater,"140 ккал, макросы объясняют только 52 (63%) — алкоголь или потерянный макрос"
+warning,Romano's Macaroni Grill,Mamas Trio,portion,2110 ккал — вероятно целая порция на компанию
+error,Romano's Macaroni Grill,Pesto Folded Ravioli,atwater,макросы дают 1253 ккал против заявленных 590 (+112%)
+error,Romano's Macaroni Grill,Ratatouille,atwater,макросы дают 1368 ккал против заявленных 580 (+136%)
+warning,Round Table Pizza,Beer,atwater,"153 ккал, макросы объясняют только 52 (66%) — алкоголь или потерянный макрос"
+error,Round Table Pizza,Garlic Bread,atwater,макросы дают 83 ккал против заявленных 60 (+38%)
+error,Round Table Pizza,Garlic Bread w/ Cheese,atwater,макросы дают 118 ккал против заявленных 90 (+31%)
+error,Round Table Pizza,Light Beer,atwater,"103 ккал, макросы объясняют только 24 (77%) — алкоголь или потерянный макрос"
+error,Round Table Pizza,Wine,atwater,"122 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Ruby Tuesday,Chicken Fresco,atwater,макросы дают 329 ккал против заявленных 153 (+115%)
+warning,Ruby Tuesday,"Crispy Chicken Bites, Buffalo Hot",atwater,"521 ккал, макросы объясняют только 276 (47%) — алкоголь или потерянный макрос"
+warning,Ruby Tuesday,"Crispy Onions, for Endless Garden Bar",atwater,"228 ккал, макросы объясняют только 134 (41%) — алкоголь или потерянный макрос"
+warning,Ruby Tuesday,Grilled Chicken,atwater,"191 ккал, макросы объясняют только 131 (31%) — алкоголь или потерянный макрос"
+error,Ruby Tuesday,Hand Breaded Chicken Tenders,atwater,макросы дают 336 ккал против заявленных 253 (+33%)
+error,Ruby Tuesday,Kids Side of Grapes,atwater,макросы дают 77 ккал против заявленных 60 (+28%)
+error,Ruby Tuesday,"Potato Salad, for Endless Garden Bar",atwater,макросы дают 370 ккал против заявленных 252 (+47%)
+warning,Ruby Tuesday,Sampler Trio,portion,2451 ккал — вероятно целая порция на компанию
+warning,Sbarro,"4 Cheese White Stromboli, Family Style",portion,3160 ккал — вероятно целая порция на компанию
+warning,Sbarro,"BBQ Chicken Stromboli, Family Style",portion,3200 ккал — вероятно целая порция на компанию
+error,Sbarro,"Breakfast Platter w/ Eggs, Meat, Potatoes & Bacon",atwater,макросы дают 856 ккал против заявленных 600 (+43%)
+warning,Sbarro,"Buffalo Chicken Stromboli, Family Style",portion,3450 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Classic Hawaiian Stromboli, Family Style",portion,2810 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Double Duo Pep Stromboli, Family Style",portion,3790 ккал — вероятно целая порция на компанию
+warning,Sbarro,"G2, Grape",atwater,"60 ккал, макросы объясняют только 16 (73%) — алкоголь или потерянный макрос"
+warning,Sbarro,Hot & Spicy Stromboli,atwater,"780 ккал, макросы объясняют только 492 (37%) — алкоголь или потерянный макрос"
+warning,Sbarro,"Hot & Spicy Stromboli, Family Style",portion,3120 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Mamas Meatball Stromboli, Family Style",portion,3420 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Meat Primo Stromboli, Family Style",portion,3900 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY 4 Cheese White Pizza, 17""",portion,3080 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY BBQ Chicken Pizza, 17""",portion,3370 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Buffalo Chicken Pizza, 17""",portion,3210 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Cheese Pizza, 17""",portion,2630 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Classic Hawaiian Pizza, 17"", XL NY Pizza",portion,2810 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Double Duo Pepperoni Pizza, 17""",portion,3700 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Hot & Spicy Pizza, 17""",portion,3280 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Mamas Meatball Pizza, 17""",portion,3550 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Meat Primo Pizza, 17""",portion,3860 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Pepperoni & Sausage Pizza, 17""",portion,3560 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Pepperoni Pizza, 17""",portion,3310 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Sausage Pizza, 17""",portion,3290 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Supremo Pizza, 17""",portion,3210 ккал — вероятно целая порция на компанию
+warning,Sbarro,"NY Veggie Pizza, 17""",portion,2660 ккал — вероятно целая порция на компанию
+error,Sbarro,"Pancake Platter, Max",atwater,макросы дают 876 ккал против заявленных 620 (+41%)
+warning,Sbarro,"Roasted Veggie Stromboli, Family Style",portion,2750 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman 4 Cheese White Pizza, 16""",portion,4000 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman BBQ Chicken Pizza, 16""",portion,4040 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Buffalo Chicken Pizza, 16""",portion,3450 ккал — вероятно целая порция на компанию
+error,Sbarro,Roman Cheese Pizza,atwater,макросы дают 556 ккал против заявленных 440 (+26%)
+warning,Sbarro,"Roman Cheese Pizza, 16""",portion,3320 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Classic Hawaiian Pizza, 16""",portion,3570 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Double Duo Pizza, 16""",portion,4450 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Hot & Spicy Pizza, 16""",portion,3990 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Mamas Meatball Pizza, 16""",portion,4310 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Meat Primo Pizza, 16""",portion,4610 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Pepperoni & Bacon Pizza, 16""",portion,4250 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Sausage & Pepperoni Pizza, 16""",portion,4340 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Supremo Pizza, 16""",portion,4040 ккал — вероятно целая порция на компанию
+warning,Sbarro,"Roman Veggie Pizza, 16""",portion,3390 ккал — вероятно целая порция на компанию
+error,Sbarro,"Sausage, Sides",atwater,макросы дают 459 ккал против заявленных 200 (+130%)
+warning,Sbarro,"Supremo Stromboli, Family Style",portion,3250 ккал — вероятно целая порция на компанию
+warning,Sonic,24 Asian Sweet Chili Boneless Wings,portion,2130 ккал — вероятно целая порция на компанию
+warning,Sonic,24 Buffalo Boneless Wings,portion,2060 ккал — вероятно целая порция на компанию
+warning,Sonic,24 Honey BBQ Boneless Wings,portion,2090 ккал — вероятно целая порция на компанию
+warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Large",portion,2120 ккал — вероятно целая порция на компанию
+error,Starbucks,"Dark Mocha Light Frappuccino Blended Beverage w/ Whole Milk & Whipped Cream, Tall",atwater,макросы дают 148 ккал против заявленных 110 (+35%)
+warning,Steak 'N Shake,Budweiser,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
+warning,Steak 'N Shake,Draft Brooklyn Lager,atwater,"170 ккал, макросы объясняют только 76 (55%) — алкоголь или потерянный макрос"
+error,Steak 'N Shake,"Fresh Lemonade, Regular",atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+error,Steak 'N Shake,Kendall Jackson Cabernet,atwater,"125 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
+error,Steak 'N Shake,Kendall Jackson Chardonnay,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
+error,Steak 'N Shake,Meiomi Pinot Noir,atwater,"125 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
+warning,Steak 'N Shake,Shiner Bock Draft,atwater,"140 ккал, макросы объясняют только 52 (63%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Abso Bloody Lutely,atwater,"170 ккал, макросы объясняют только 61 (64%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Absolut & Cranberry Juice,atwater,"170 ккал, макросы объясняют только 72 (58%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Absolut & Orange Juice,atwater,"160 ккал, макросы объясняют только 56 (65%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Absolut & Soda Water,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Absolut & Tonic,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Add On Lobster Tail,atwater,"120 ккал, макросы объясняют только 66 (45%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Apple Tini,atwater,"160 ккал, макросы объясняют только 84 (48%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Barbados Rum Punch,atwater,"230 ккал, макросы объясняют только 132 (43%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Berry Sangria,atwater,"220 ккал, макросы объясняют только 104 (53%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Black Russian,atwater,"160 ккал, макросы объясняют только 40 (75%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Blackberry Long Island Iced Tea,atwater,"250 ккал, макросы объясняют только 108 (57%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Blackberry Margarita,atwater,"160 ккал, макросы объясняют только 80 (50%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Blackberry Mojito,atwater,"200 ккал, макросы объясняют только 108 (46%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Bloody Orange Cooler,atwater,"200 ккал, макросы объясняют только 108 (46%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Blue Fire Lemonade,atwater,"170 ккал, макросы объясняют только 92 (46%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Blue Rita Shaker,atwater,"250 ккал, макросы объясняют только 108 (57%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Buttery Nipple,atwater,"120 ккал, макросы объясняют только 83 (31%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Captain Morgan & Coke,atwater,"120 ккал, макросы объясняют только 60 (50%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Captain Morgan Island Rum Punch,atwater,"380 ккал, макросы объясняют только 248 (35%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Captain Morgans Spiced Rum, 1.5 oz",atwater,"90 ккал, макросы объясняют только 4 (96%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Cinnamon Toast Shooter,atwater,"170 ккал, макросы объясняют только 98 (42%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Corona Rita,atwater,"340 ккал, макросы объясняют только 160 (53%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Cosmopolitan,atwater,"150 ккал, макросы объясняют только 36 (76%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Diddy On The Beach,atwater,"310 ккал, макросы объясняют только 216 (30%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Double Berry Bellini,atwater,"200 ккал, макросы объясняют только 88 (56%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Double Berry Mojito Shaker,atwater,"190 ккал, макросы объясняют только 104 (45%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Dreamsicle Shooter,atwater,"210 ккал, макросы объясняют только 122 (42%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Electric Lemonade,atwater,"180 ккал, макросы объясняют только 76 (58%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Espresso Martini,atwater,"240 ккал, макросы объясняют только 142 (41%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fiery Apple,atwater,"210 ккал, макросы объясняют только 120 (43%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Firecracker Sangria,atwater,"180 ккал, макросы объясняют только 80 (56%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fresh Lynchburg Lemonade,atwater,"180 ккал, макросы объясняют только 84 (53%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fresh Squeezed Mimosa,atwater,"110 ккал, макросы объясняют только 56 (49%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fresh Strawberry Daiquiri,atwater,"190 ккал, макросы объясняют только 116 (39%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fresh Strawberry Mule,atwater,"190 ккал, макросы объясняют только 108 (43%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Fridays Light Cosmo Cooler,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,German Chocolate Cake Sipper,atwater,"190 ккал, макросы объясняют только 49 (74%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Gold Coast Blackberry Mule,atwater,"170 ккал, макросы объясняют только 80 (53%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Gold Coast Winter Storm,atwater,"170 ккал, макросы объясняют только 88 (48%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Grey Goose Cooler,atwater,"210 ккал, макросы объясняют только 112 (47%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Grey Goose Punch Shaker,atwater,"220 ккал, макросы объясняют только 104 (53%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Guinness Draught Stout,atwater,"160 ккал, макросы объясняют только 52 (68%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Hendricks Cooler,atwater,"180 ккал, макросы объясняют только 96 (47%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Honey Badger Shooter,atwater,"150 ккал, макросы объясняют только 50 (67%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Horny Rita Frozen,atwater,"250 ккал, макросы объясняют только 124 (50%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Horny Rita Rocks,atwater,"250 ккал, макросы объясняют только 124 (50%) — алкоголь или потерянный макрос"
+error,TGI Friday's,House Bloody Mary,atwater,"120 ккал, макросы объясняют только 28 (77%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,House Long Island Iced Tea,atwater,"210 ккал, макросы объясняют только 84 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,House Mojito,atwater,"180 ккал, макросы объясняют только 88 (51%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Irish Rita,atwater,"200 ккал, макросы объясняют только 96 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Irish Rita Rocks,atwater,"210 ккал, макросы объясняют только 128 (39%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Jack Daniels & Coke,atwater,"130 ккал, макросы объясняют только 56 (57%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Jack Daniels & Ginger,atwater,"110 ккал, макросы объясняют только 32 (71%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Jager Bomb,atwater,"210 ккал, макросы объясняют только 52 (75%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Jameson & Sprite,atwater,"120 ккал, макросы объясняют только 40 (67%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Kamikaze,atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Kentucky Lemonade,atwater,"190 ккал, макросы объясняют только 88 (54%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Key Lime Pie Shooter,atwater,"220 ккал, макросы объясняют только 134 (39%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"LaMarca Prosecco, 750 ml, Bottle",atwater,"510 ккал, макросы объясняют только 40 (92%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Lamarca Prosecco Split, 187 ml",atwater,"130 ккал, макросы объясняют только 12 (91%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Lemon Drop,atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Mango Lemonade,atwater,"250 ккал, макросы объясняют только 156 (38%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Margarita Frozen,atwater,"230 ккал, макросы объясняют только 104 (55%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Margarita Rocks,atwater,"200 ккал, макросы объясняют только 96 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Melon Ball,atwater,"110 ккал, макросы объясняют только 40 (64%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Michelada,atwater,"100 ккал, макросы объясняют только 56 (44%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Mimosa, Orange",atwater,"110 ккал, макросы объясняют только 56 (49%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Mimosa, Ruby Red Vanilla",atwater,"130 ккал, макросы объясняют только 72 (45%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Mojito, Signature",atwater,"180 ккал, макросы объясняют только 88 (51%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,One Two Rum Punch,atwater,"210 ккал, макросы объясняют только 88 (58%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Pabst Blue Ribbon,atwater,"200 ккал, макросы объясняют только 64 (68%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Patron Cosmo Rita Shaker,atwater,"270 ккал, макросы объясняют только 112 (59%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Patron Cosmo Rita Shaker w/ Patron Reposado,atwater,"270 ккал, макросы объясняют только 112 (59%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Peach Honey Smash,atwater,"210 ккал, макросы объясняют только 100 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Peach Long Island Tea,atwater,"240 ккал, макросы объясняют только 108 (55%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Peach Sangria,atwater,"240 ккал, макросы объясняют только 152 (37%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Petite Sirloin & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,atwater,макросы дают 1406 ккал против заявленных 890 (+58%)
+error,TGI Friday's,"Petite Sirloin, Local",atwater,макросы дают 932 ккал против заявленных 370 (+152%)
+warning,TGI Friday's,Pink Punk Martini,atwater,"160 ккал, макросы объясняют только 52 (68%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Purple Hooter,atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Red Bull & Vodka,atwater,"140 ккал, макросы объясняют только 52 (63%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Red Head,atwater,"140 ккал, макросы объясняют только 32 (77%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Red Snapper,atwater,"170 ккал, макросы объясняют только 112 (34%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,range,protein=308.0 выше потолка 250
+error,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,atwater,макросы дают 1722 ккал против заявленных 1080 (+59%)
+error,TGI Friday's,"Rib Eye, Local",range,protein=280.0 выше потолка 250
+error,TGI Friday's,"Rib Eye, Local",atwater,макросы дают 1248 ккал против заявленных 560 (+123%)
+warning,TGI Friday's,Ruby Red Greyhound,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ruby Red Spiked Lemonade,atwater,"160 ккал, макросы объясняют только 80 (50%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Sangria Rita,atwater,"220 ккал, макросы объясняют только 92 (58%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Barbados Rum Punch,atwater,"480 ккал, макросы объясняют только 288 (40%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Peach Sangria,atwater,"480 ккал, макросы объясняют только 304 (37%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Strawberry Henny,atwater,"400 ккал, макросы объясняют только 212 (47%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita,atwater,"670 ккал, макросы объясняют только 320 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Mango Swirl,atwater,"860 ккал, макросы объясняют только 512 (40%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Peach Mango Swirl,atwater,"860 ккал, макросы объясняют только 508 (41%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Peach Swirl,atwater,"860 ккал, макросы объясняют только 508 (41%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Sangria Swirl,atwater,"790 ккал, макросы объясняют только 336 (57%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Strawberry Passion Swirl,atwater,"820 ккал, макросы объясняют только 472 (42%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Strawberry Swirl,atwater,"780 ккал, макросы объясняют только 436 (44%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Frozen Margarita Watermelon Swirl,atwater,"750 ккал, макросы объясняют только 452 (40%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Long Island Tea,atwater,"390 ккал, макросы объясняют только 128 (67%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Shareable Ultimate Margarita, Rocks",atwater,"560 ккал, макросы объясняют только 260 (54%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Shareable Ultimate Mojito,atwater,"480 ккал, макросы объясняют только 232 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"SoCo Hurricane, Frozen",atwater,"270 ккал, макросы объясняют только 164 (39%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Stella Artois,atwater,"210 ккал, макросы объясняют только 76 (64%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Strawberry Henny,atwater,"210 ккал, макросы объясняют только 108 (49%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Tequila Hornitos Sunrise,atwater,"210 ккал, макросы объясняют только 132 (37%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"The BFM, The Best Fridays Margarita",atwater,"200 ккал, макросы объясняют только 80 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"The BFM, The Best Fridays Margarita w/ Patron Reposado",atwater,"200 ккал, макросы объясняют только 80 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Titos Mule,atwater,"150 ккал, макросы объясняют только 68 (55%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Top Shelf Long Island Tea,atwater,"210 ккал, макросы объясняют только 84 (60%) — алкоголь или потерянный макрос"
+error,TGI Friday's,Tortilla Soup,atwater,макросы дают 1020 ккал против заявленных 230 (+343%)
+warning,TGI Friday's,Tropical Berry Mojito Shaker,atwater,"280 ккал, макросы объясняют только 148 (47%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Tropical Long Island Tea,atwater,"250 ккал, макросы объясняют только 172 (31%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate 77 Sunset Strip,atwater,"290 ккал, макросы объясняют только 128 (56%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Bloody Mary,atwater,"160 ккал, макросы объясняют только 53 (67%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Blueberry Pom Long Island Tea,atwater,"280 ккал, макросы объясняют только 148 (47%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Boba Long Island Tea,atwater,"250 ккал, макросы объясняют только 120 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Casamigos Rita,atwater,"280 ккал, макросы объясняют только 108 (61%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Casamigos Spicy Rita,atwater,"280 ккал, макросы объясняют только 108 (61%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Casamigos Strawberry Rita,atwater,"270 ккал, макросы объясняют только 108 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita,atwater,"330 ккал, макросы объясняют только 160 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Blue Swirl,atwater,"410 ккал, макросы объясняют только 188 (54%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Mango Swirl,atwater,"430 ккал, макросы объясняют только 256 (40%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Midori Swirl,atwater,"410 ккал, макросы объясняют только 204 (50%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Peach Mango Swirl,atwater,"430 ккал, макросы объясняют только 252 (41%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Peach Swirl,atwater,"430 ккал, макросы объясняют только 252 (41%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Raspberry Peach Swirl,atwater,"410 ккал, макросы объясняют только 184 (55%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Regal Apple Swirl,atwater,"400 ккал, макросы объясняют только 208 (48%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Sangria Swirl,atwater,"370 ккал, макросы объясняют только 164 (56%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Strawberry Passion Swirl,atwater,"410 ккал, макросы объясняют только 236 (42%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Strawberry Swirl,atwater,"390 ккал, макросы объясняют только 216 (45%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Frozen Margarita Watermelon Swirl,atwater,"370 ккал, макросы объясняют только 224 (39%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Hawaiian Volcano,atwater,"310 ккал, макросы объясняют только 188 (39%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Long Island Tea,atwater,"260 ккал, макросы объясняют только 92 (65%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Ultimate Margarita, Rocks",atwater,"280 ккал, макросы объясняют только 128 (54%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Ultimate Mojito,atwater,"240 ккал, макросы объясняют только 116 (52%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Ultimate Tropical Berry Margarita, Frozen",atwater,"350 ккал, макросы объясняют только 180 (49%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,"Ultimate Tropical Berry Margarita, Rocks",atwater,"330 ккал, макросы объясняют только 180 (45%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Vegas Bomb,atwater,"150 ккал, макросы объясняют только 104 (31%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Watermelon Cooler,atwater,"160 ккал, макросы объясняют только 64 (60%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,White Russian,atwater,"240 ккал, макросы объясняют только 116 (51%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine Red Menu, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine Red Menu, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine Red Menu, Bottle",atwater,"630 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine White Menu, 6 oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine White Menu, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+error,TGI Friday's,"Wine White Menu, Bottle",atwater,"610 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"Domestic Beer, Light, 16 fl oz",atwater,"140 ккал, макросы объясняют только 36 (74%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"Domestic Beer, Regular, 16 fl oz",atwater,"200 ккал, макросы объясняют только 76 (62%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"Premium Beer, Light, 16 fl oz",atwater,"140 ккал, макросы объясняют только 36 (74%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"Premium Beer, Regular, 16 fl oz",atwater,"200 ккал, макросы объясняют только 76 (62%) — алкоголь или потерянный макрос"
+error,Taco Bell,Prosecco Sparkling Wine,atwater,"280 ккал, макросы объясняют только 36 (87%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"Red Sangria, 16 fl oz",atwater,"330 ккал, макросы объясняют только 108 (67%) — алкоголь или потерянный макрос"
+error,Taco Bell,"Red Wine, 6.3 fl oz",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,Taco Bell,"Red Wine, 8 fl oz",atwater,"200 ккал, макросы объясняют только 24 (88%) — алкоголь или потерянный макрос"
+warning,Taco Bell,"White Sangria, 16 fl oz",atwater,"340 ккал, макросы объясняют только 116 (66%) — алкоголь или потерянный макрос"
+error,Taco Bell,"White Wine, 8 fl oz",atwater,"190 ккал, макросы объясняют только 24 (87%) — алкоголь или потерянный макрос"
+error,The Capital Grille,Adults Only Arnold Palmer,atwater,макросы дают 500 ккал против заявленных 180 (+178%)
+warning,The Capital Grille,Blackberry Bourbon Sidecar,atwater,"180 ккал, макросы объясняют только 56 (69%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,Capital Cosmopolitan,atwater,"250 ккал, макросы объясняют только 72 (71%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Cordials, Cream, 2 oz",atwater,"250 ккал, макросы объясняют только 112 (55%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Cordials, Herbal or Fruit, 2 oz",atwater,"150 ккал, макросы объясняют только 76 (49%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Dessert Wine, 3 oz",atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,Fire & Ice,atwater,"300 ккал, макросы объясняют только 116 (61%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,Grapefruit Buck,atwater,"190 ккал, макросы объясняют только 88 (54%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,In Fashion,atwater,"220 ккал, макросы объясняют только 56 (75%) — алкоголь или потерянный макрос"
+error,The Capital Grille,Manhattan 46,atwater,"220 ккал, макросы объясняют только 32 (85%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,Mojito de Uvas,atwater,"210 ккал, макросы объясняют только 84 (60%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Port, 3 oz",atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+error,The Capital Grille,"Red Wine, 1.5 L",atwater,"1310 ккал, макросы объясняют только 176 (87%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Red Wine, 3 L",portion,2620 ккал — вероятно целая порция на компанию
+error,The Capital Grille,"Red Wine, 3 L",atwater,"2620 ккал, макросы объясняют только 348 (87%) — алкоголь или потерянный макрос"
+error,The Capital Grille,"Red Wine, 6 oz",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"Sparkling Wine, 5 oz",atwater,"120 ккал, макросы объясняют только 32 (73%) — алкоголь или потерянный макрос"
+error,The Capital Grille,Stoli Doli,atwater,"170 ккал, макросы объясняют только 32 (81%) — алкоголь или потерянный макрос"
+error,The Capital Grille,The Bohemian,atwater,"150 ккал, макросы объясняют только 32 (79%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,The Elder Brother,atwater,"230 ккал, макросы объясняют только 68 (70%) — алкоголь или потерянный макрос"
+error,The Capital Grille,Veal Tomahawk Chop,atwater,макросы дают 1067 ккал против заявленных 660 (+62%)
+error,The Capital Grille,"White Wine, 1.5 L",atwater,"1250 ккал, макросы объясняют только 132 (89%) — алкоголь или потерянный макрос"
+warning,The Capital Grille,"White Wine, 3 L",portion,2510 ккал — вероятно целая порция на компанию
+error,The Capital Grille,"White Wine, 3 L",atwater,"2510 ккал, макросы объясняют только 264 (89%) — алкоголь или потерянный макрос"
+error,The Capital Grille,"White Wine, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,Wawa,BBQ Ranch Salad,atwater,макросы дают 335 ккал против заявленных 180 (+86%)
+error,Wawa,Black Forest Ham & Cheese Pretzel Roll Sandwich,atwater,макросы дают 1139 ккал против заявленных 600 (+90%)
+warning,Wawa,"Caramel Iced Coffee, 16 oz",atwater,"410 ккал, макросы объясняют только 266 (35%) — алкоголь или потерянный макрос"
+warning,Wawa,"Caramel Iced Coffee, 22 oz",atwater,"550 ккал, макросы объясняют только 360 (35%) — алкоголь или потерянный макрос"
+warning,Wawa,"Caramel Iced Coffee, 32 oz",atwater,"810 ккал, макросы объясняют только 519 (36%) — алкоголь или потерянный макрос"
+warning,Wawa,"Caramel Iced Coffee, 44 oz",atwater,"1110 ккал, макросы объясняют только 711 (36%) — алкоголь или потерянный макрос"
+error,Wawa,Chicken Caesar Wrap,atwater,макросы дают 469 ккал против заявленных 190 (+147%)
+error,Wawa,Chicken Salad & Green Leaf Lettuce Multigrain Thin,atwater,макросы дают 256 ккал против заявленных 200 (+28%)
+error,Wawa,"Chicken Steak Breakfast Hoagie, Classic",atwater,макросы дают 228 ккал против заявленных 180 (+27%)
+error,Wawa,"Chocolate Chip Muffin, FL",atwater,макросы дают 692 ккал против заявленных 530 (+31%)
+error,Wawa,Hash Brown,atwater,макросы дают 140 ккал против заявленных 100 (+40%)
+error,Wawa,"Oven Roasted Turkey Breakfast Hoagie, Classic",atwater,макросы дают 243 ккал против заявленных 120 (+102%)
+warning,Wawa,Thai Style Chicken Mango Salad,atwater,"240 ккал, макросы объясняют только 157 (35%) — алкоголь или потерянный макрос"
+error,Wawa,Wheat Bread FL,atwater,макросы дают 130 ккал против заявленных 100 (+30%)
+error,Wawa,"Wheat Bread, FL, for Club Sandwiches",atwater,макросы дают 195 ккал против заявленных 150 (+30%)
+error,Wendy's,"Skinny Vanilla Iced Coffee, Medium",atwater,макросы дают 140 ккал против заявленных 100 (+40%)
+error,White Castle,Black Bean Slider w/ Honey Mustard,atwater,макросы дают 560 ккал против заявленных 160 (+250%)
+error,White Castle,"Fanta Orange Soda, Kids",atwater,макросы дают 176 ккал против заявленных 140 (+26%)
+error,White Castle,"Fanta Orange Soda, Small",atwater,макросы дают 368 ккал против заявленных 290 (+27%)
+error,Yard House,"Beer, 6% ABV And Up, 1/2 Yard",atwater,"550 ккал, макросы объясняют только 48 (91%) — алкоголь или потерянный макрос"
+error,Yard House,"Beer, 6% ABV And Up, Growler",atwater,"1100 ккал, макросы объясняют только 88 (92%) — алкоголь или потерянный макрос"
+error,Yard House,"Beer, 6% ABV And Up, Pint or Goblet",atwater,"270 ккал, макросы объясняют только 20 (93%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Light, 1/2 Yard",atwater,"270 ккал, макросы объясняют только 68 (75%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Light, Growler",atwater,"550 ккал, макросы объясняют только 144 (74%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Light, Pint or Goblet",atwater,"140 ккал, макросы объясняют только 36 (74%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Under 6% ABV, 1/2 Yard",atwater,"410 ккал, макросы объясняют только 152 (63%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Under 6% ABV, Bottle",atwater,"150 ккал, макросы объясняют только 60 (60%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Under 6% ABV, Growler",atwater,"820 ккал, макросы объясняют только 304 (63%) — алкоголь или потерянный макрос"
+warning,Yard House,"Beer, Under 6% ABV, Pint or Goblet",atwater,"200 ккал, макросы объясняют только 76 (62%) — алкоголь или потерянный макрос"
+warning,Yard House,Black Barrel Paloma,atwater,"210 ккал, макросы объясняют только 88 (58%) — алкоголь или потерянный макрос"
+warning,Yard House,Black Orchid,atwater,"230 ккал, макросы объясняют только 84 (63%) — алкоголь или потерянный макрос"
+warning,Yard House,Blackberry Smash,atwater,"220 ккал, макросы объясняют только 108 (51%) — алкоголь или потерянный макрос"
+warning,Yard House,Caribbean Breeze,atwater,"160 ккал, макросы объясняют только 96 (40%) — алкоголь или потерянный макрос"
+warning,Yard House,Cherry Limeade,atwater,"260 ккал, макросы объясняют только 152 (42%) — алкоголь или потерянный макрос"
+warning,Yard House,Chicken Nachos,portion,2380 ккал — вероятно целая порция на компанию
+error,Yard House,Chilled Edamame,atwater,макросы дают 181 ккал против заявленных 100 (+81%)
+warning,Yard House,"Cider, 1/2 Yard",atwater,"530 ккал, макросы объясняют только 224 (58%) — алкоголь или потерянный макрос"
+warning,Yard House,"Cider, Growler",atwater,"1060 ккал, макросы объясняют только 448 (58%) — алкоголь или потерянный макрос"
+warning,Yard House,"Cider, Pint or Goblet",atwater,"270 ккал, макросы объясняют только 112 (59%) — алкоголь или потерянный макрос"
+warning,Yard House,Citrus Crush,atwater,"190 ккал, макросы объясняют только 100 (47%) — алкоголь или потерянный макрос"
+warning,Yard House,El Picante,atwater,"280 ккал, макросы объясняют только 116 (59%) — алкоголь или потерянный макрос"
+warning,Yard House,Gardein Orange Chicken,portion,2120 ккал — вероятно целая порция на компанию
+warning,Yard House,Guavarita,atwater,"270 ккал, макросы объясняют только 144 (47%) — алкоголь или потерянный макрос"
+warning,Yard House,"Hard Root Beer, Bottle",atwater,"240 ккал, макросы объясняют только 144 (40%) — алкоголь или потерянный макрос"
+warning,Yard House,Hawaiian Five O,atwater,"180 ккал, макросы объясняют только 104 (42%) — алкоголь или потерянный макрос"
+warning,Yard House,Hawaiian Mule,atwater,"280 ккал, макросы объясняют только 184 (34%) — алкоголь или потерянный макрос"
+warning,Yard House,Hawaiian Sunset,atwater,"260 ккал, макросы объясняют только 108 (58%) — алкоголь или потерянный макрос"
+warning,Yard House,Jameson Mule,atwater,"280 ккал, макросы объясняют только 184 (34%) — алкоголь или потерянный макрос"
+warning,Yard House,Juniper Fusion,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
+warning,Yard House,Malibu Peach,atwater,"280 ккал, макросы объясняют только 120 (57%) — алкоголь или потерянный макрос"
+warning,Yard House,Midnight Sangria,atwater,"220 ккал, макросы объясняют только 100 (55%) — алкоголь или потерянный макрос"
+warning,Yard House,Moscow Mule,atwater,"280 ккал, макросы объясняют только 184 (34%) — алкоголь или потерянный макрос"
+warning,Yard House,Old 43,atwater,"230 ккал, макросы объясняют только 88 (62%) — алкоголь или потерянный макрос"
+warning,Yard House,"Old Fashioned, Bulleit Rye",atwater,"260 ккал, макросы объясняют только 96 (63%) — алкоголь или потерянный макрос"
+warning,Yard House,"Old Fashioned, Del Maguey Vida Mezcal",atwater,"230 ккал, макросы объясняют только 76 (67%) — алкоголь или потерянный макрос"
+warning,Yard House,"Old Fashioned, Four Roses Bourbon",atwater,"270 ккал, макросы объясняют только 104 (61%) — алкоголь или потерянный макрос"
+warning,Yard House,Orange Blossom Special,atwater,"160 ккал, макросы объясняют только 68 (57%) — алкоголь или потерянный макрос"
+warning,Yard House,Pineapple Express,atwater,"220 ккал, макросы объясняют только 112 (49%) — алкоголь или потерянный макрос"
+warning,Yard House,Pineapple Lych Ini,atwater,"260 ккал, макросы объясняют только 116 (55%) — алкоголь или потерянный макрос"
+warning,Yard House,Polu Hawaiian,atwater,"260 ккал, макросы объясняют только 108 (58%) — алкоголь или потерянный макрос"
+warning,Yard House,Pomegranate Margarita,atwater,"330 ккал, макросы объясняют только 196 (41%) — алкоголь или потерянный макрос"
+warning,Yard House,Pomegranate Press,atwater,"290 ккал, макросы объясняют только 136 (53%) — алкоголь или потерянный макрос"
+error,Yard House,"Sake, 2 oz",atwater,"100 ккал, макросы объясняют только 16 (84%) — алкоголь или потерянный макрос"
+error,Yard House,"Sake, Bottle",atwater,"950 ккал, макросы объясняют только 156 (84%) — алкоголь или потерянный макрос"
+warning,Yard House,Salted Watermelon Margarita,atwater,"300 ккал, макросы объясняют только 144 (52%) — алкоголь или потерянный макрос"
+warning,Yard House,Skinny Margarita,atwater,"180 ккал, макросы объясняют только 88 (51%) — алкоголь или потерянный макрос"
+warning,Yard House,Southern Belle,atwater,"200 ккал, макросы объясняют только 124 (38%) — алкоголь или потерянный макрос"
+warning,Yard House,"St Louis Style BBQ Ribs, Full Rack",portion,2340 ккал — вероятно целая порция на компанию
+warning,Yard House,Strawberry Fields,atwater,"240 ккал, макросы объясняют только 68 (72%) — алкоголь или потерянный макрос"
+warning,Yard House,Sunkissed Sangria,atwater,"230 ккал, макросы объясняют только 88 (62%) — алкоголь или потерянный макрос"
+warning,Yard House,Sweet Tart,atwater,"250 ккал, макросы объясняют только 112 (55%) — алкоголь или потерянный макрос"
+warning,Yard House,Tahitian Moonshine,atwater,"240 ккал, макросы объясняют только 92 (62%) — алкоголь или потерянный макрос"
+warning,Yard House,The Local Mai Tai,atwater,"340 ккал, макросы объясняют только 184 (46%) — алкоголь или потерянный макрос"
+error,Yard House,"Wine, Red, 6 oz",atwater,"160 ккал, макросы объясняют только 20 (88%) — алкоголь или потерянный макрос"
+error,Yard House,"Wine, Red, 9 oz",atwater,"230 ккал, макросы объясняют только 32 (86%) — алкоголь или потерянный макрос"
+error,Yard House,"Wine, Sparkling, 5 oz",atwater,"130 ккал, макросы объясняют только 32 (75%) — алкоголь или потерянный макрос"
+warning,Yard House,"Wine, Sparkling, Bottle",atwater,"630 ккал, макросы объясняют только 160 (75%) — алкоголь или потерянный макрос"
+error,Yard House,"Wine, White, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
+error,Yard House,"Wine, White, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
+warning,Yard House,Yuzu Gin Cooler,atwater,"230 ккал, макросы объясняют только 116 (50%) — алкоголь или потерянный макрос"
+warning,Zaxby's,20 Chicken Finger w/ BBQ Sauce,portion,2520 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ HHM Sauce,portion,2620 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Insane Sauce,portion,2120 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Nuclear Sauce,portion,2120 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Original Sauce,portion,2320 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Sweet & Spicy Sauce,portion,2420 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Teriyaki Sauce,portion,2420 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Tongue Torch Sauce,portion,2120 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Finger w/ Wimpy Sauce,portion,2220 ккал — вероятно целая порция на компанию
+warning,Zaxby's,20 Chicken Fingers,portion,2020 ккал — вероятно целая порция на компанию
