@@ -32,6 +32,12 @@ pip install -r backend/requirements.txt
 python3 backend/scripts/load_seed.py           # залить в Postgres
 ```
 
+## Откуда берётся сырой файл
+
+Локально — с Harvard Dataverse (обязательно с честным `User-Agent`, дефолтный
+`Python-urllib` получает 403). В CI — из релиза `menustat-2018` этого репозитория
+(`gh release download`), чтобы сборка не зависела от чужого зеркала.
+
 ## Очистка MenuStat — три шага, каждый обязателен
 
 1. Выбросить строки `Customizable_Builds = 'Accompanying Item'` — это перестановки

@@ -19,10 +19,12 @@ jobs:
 
       # Сырой MenuStat — 31 МБ с Harvard Dataverse. Кэшируем, чтобы не дёргать
       # зеркало на каждый пуш; ключ фиксирован, файл 2018 года не меняется.
-      - uses: actions/cache@v4
-        with:
-          path: backend/data/raw
-          key: menustat-2018-v1
+      # Сырой MenuStat (31 МБ, CC0) зафиксирован как ассет релиза menustat-2018,
+      # чтобы конвейер не зависел от доступности Harvard Dataverse.
+      - name: MenuStat raw из релиза
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download menustat-2018 -p menustat-2018.tab -D backend/data/raw
 
       - run: pip install -r backend/requirements.txt
       - run: python3 backend/scripts/build_seed.py

@@ -27,6 +27,10 @@ DOWNLOAD_URL = "https://dataverse.harvard.edu/api/access/datafile/{file_id}?form
 SOURCE = "menustat-2018"
 OBSERVED_AT = "2018-12-31"
 
+# Dataverse режет дефолтный Python-urllib/x.y как бота (403). Представляемся
+# честно, с адресом проекта — так же будут ходить и адаптеры сетей.
+USER_AGENT = "plateful-data/1.0 (+https://github.com/uladluch/plateful)"
+
 # Строки с этой пометкой — перестановки комбо (напиток × гарнир × основное),
 # а не отдельные позиции меню. Их 41 052 из 71 172, и без фильтра каталог
 # распухает дублями.
@@ -61,7 +65,8 @@ def download(year: int = LATEST_YEAR, cache: Path | None = None) -> str:
         return cache.read_text(encoding="utf-8", errors="replace")
 
     url = DOWNLOAD_URL.format(file_id=DATAVERSE_FILE_IDS[year])
-    with urllib.request.urlopen(url, timeout=300) as resp:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=300) as resp:
         raw = resp.read().decode("utf-8", errors="replace")
 
     if cache:
