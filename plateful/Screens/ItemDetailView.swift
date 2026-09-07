@@ -9,6 +9,9 @@ struct ItemDetailView: View {
 
     @Environment(\.modelContext) private var context
 
+    @State private var isPickingRival = false
+    @State private var rival: MenuItem?
+
     var body: some View {
         List {
             Section {
@@ -54,11 +57,27 @@ struct ItemDetailView: View {
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            NavigationLink {
-                OrderView(startingWith: item)
-            } label: {
-                Label("Build order", systemImage: "plus.forwardslash.minus")
+            ToolbarItem(placement: .primaryAction) {
+                Button("Compare", systemImage: "arrow.left.arrow.right") {
+                    isPickingRival = true
+                }
             }
+            ToolbarItem(placement: .primaryAction) {
+                NavigationLink {
+                    OrderView(startingWith: item)
+                } label: {
+                    Label("Build order", systemImage: "plus.forwardslash.minus")
+                }
+            }
+        }
+        .sheet(isPresented: $isPickingRival) {
+            ItemPickerView(chain: nil, excluding: item.persistentID) { picked in
+                rival = picked
+                isPickingRival = false
+            }
+        }
+        .navigationDestination(item: $rival) { other in
+            ComparisonView(comparison: Comparison(left: item, right: other))
         }
         .task {
             // Сбой истории не должен мешать смотреть калории — это справочник,
