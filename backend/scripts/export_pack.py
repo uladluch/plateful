@@ -33,7 +33,7 @@ PAGE = 5000
 class Row:
     """Утиный двойник menustat.Item — pack.build читает только эти поля."""
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
-                 "kcal", "protein", "carbs", "fat")
+                 "kcal", "protein", "carbs", "fat", "source", "observed", "stale")
 
     def __init__(self, item: dict, key: str):
         self.chain = item["chain"]
@@ -45,6 +45,10 @@ class Row:
         self.protein = float(item["protein"])
         self.carbs = float(item["carbs"])
         self.fat = float(item["fat"])
+        # После override у позиции может быть свой источник и дата — пак их несёт.
+        self.source = item.get("source")
+        self.observed = item.get("observed")
+        self.stale = bool(item.get("stale", False))
 
 
 def query(sql: str) -> list[dict]:
@@ -90,7 +94,7 @@ def main() -> int:
         return 1
     rows.sort(key=lambda r: (r.chain, r.name))
 
-    built = pack.build(rows, version=args.version, source="plateful-db", observed="")
+    built = pack.build(rows, version=args.version, source="", observed="")
     meta = pack.write(built,
                       json_path=DATA / f"pack-v{args.version}.json",
                       deflate_path=DATA / f"pack-v{args.version}.deflate")

@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		D4AF860A304F2CA300DDA46A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D4AF8586304F2CA300DDA46A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D4AF858D304F2CA300DDA46A;
+			remoteInfo = plateful;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		D4AF858E304F2CA300DDA46A /* plateful.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = plateful.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4AF8601304F2CA300DDA46A /* platefulTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = platefulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = plateful;
 			sourceTree = "<group>";
 		};
+		D4AF8602304F2CA300DDA46A /* platefulTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = platefulTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D4AF858B304F2CA300DDA46A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4AF8604304F2CA300DDA46A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				D4AF8590304F2CA300DDA46A /* plateful */,
+				D4AF8602304F2CA300DDA46A /* platefulTests */,
 				D4AF858F304F2CA300DDA46A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				D4AF858E304F2CA300DDA46A /* plateful.app */,
+				D4AF8601304F2CA300DDA46A /* platefulTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -69,6 +94,29 @@
 			productName = plateful;
 			productReference = D4AF858E304F2CA300DDA46A /* plateful.app */;
 			productType = "com.apple.product-type.application";
+		};
+		D4AF8600304F2CA300DDA46A /* platefulTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4AF8606304F2CA300DDA46A /* Build configuration list for PBXNativeTarget "platefulTests" */;
+			buildPhases = (
+				D4AF8603304F2CA300DDA46A /* Sources */,
+				D4AF8604304F2CA300DDA46A /* Frameworks */,
+				D4AF8605304F2CA300DDA46A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D4AF8609304F2CA300DDA46A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D4AF8602304F2CA300DDA46A /* platefulTests */,
+			);
+			name = platefulTests;
+			packageProductDependencies = (
+			);
+			productName = platefulTests;
+			productReference = D4AF8601304F2CA300DDA46A /* platefulTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -100,12 +148,20 @@
 			projectRoot = "";
 			targets = (
 				D4AF858D304F2CA300DDA46A /* plateful */,
+				D4AF8600304F2CA300DDA46A /* platefulTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		D4AF858C304F2CA300DDA46A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4AF8605304F2CA300DDA46A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +178,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D4AF8603304F2CA300DDA46A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D4AF8609304F2CA300DDA46A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D4AF858D304F2CA300DDA46A /* plateful */;
+			targetProxy = D4AF860A304F2CA300DDA46A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		D4AF8599304F2CA400DDA46A /* Debug */ = {
@@ -310,6 +381,44 @@
 			};
 			name = Release;
 		};
+		D4AF8607304F2CA300DDA46A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.anluch.platefulTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/plateful.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/plateful";
+			};
+			name = Debug;
+		};
+		D4AF8608304F2CA300DDA46A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.anluch.platefulTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/plateful.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/plateful";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +436,15 @@
 			buildConfigurations = (
 				D4AF859C304F2CA400DDA46A /* Debug */,
 				D4AF859D304F2CA400DDA46A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D4AF8606304F2CA300DDA46A /* Build configuration list for PBXNativeTarget "platefulTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D4AF8607304F2CA300DDA46A /* Debug */,
+				D4AF8608304F2CA300DDA46A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
