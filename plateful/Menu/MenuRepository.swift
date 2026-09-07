@@ -40,7 +40,13 @@ final class MenuRepository {
 
     /// Разбор пака идёт вне главного потока: это мегабайты JSON, на главном
     /// они видны как подвисший запуск.
-    func load() async {
+    /// Загружает каталог. Повторный вызов на готовом каталоге ничего не делает.
+    ///
+    /// `.task` может сработать не один раз за жизнь окна, а разбор пака стоит
+    /// четверть секунды — повторять его незачем.
+    func load(force: Bool = false) async {
+        if case .ready = state, !force { return }
+
         state = .loading
         let store = store
         let started = ContinuousClock.now
@@ -57,7 +63,14 @@ final class MenuRepository {
                 """)
         } catch {
             state = .failed(error.localizedDescription)
-            log.error("Каталог не загрузился: \(error.localizedDescription)")
+            // Без указания, нашёлся ли сид, по логу не понять, чинить сборку
+            // или искать файл.
+            log.error("""
+                Каталог не загрузился: \(error.localizedDescription). \
+                Сид в бандле: \(store.seedURL?.lastPathComponent ?? "НЕ НАЙДЕН"), \
+                скачанный пак: \(FileManager.default.fileExists(
+                    atPath: store.installedURL.path(percentEncoded: false)) ? "есть" : "нет")
+                """)
         }
     }
 

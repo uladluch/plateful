@@ -34,7 +34,7 @@ struct platefulApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ChainsView()
+            RootView()
                 .environment(menu)
                 .task { await menu.load() }
         }

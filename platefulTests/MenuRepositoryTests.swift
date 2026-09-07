@@ -53,6 +53,23 @@ struct MenuRepositoryTests {
         #expect(resolved?.kcal == bigMac.kcal)
     }
 
+    /// `.task` может сработать не один раз за жизнь окна, а разбор пака стоит
+    /// четверть секунды. Повторный вызов должен быть бесплатным.
+    @Test("повторная загрузка не пересобирает каталог")
+    func reloadIsIdempotent() async throws {
+        let repository = try await loadedRepository()
+        let first = try #require(repository.catalog)
+
+        await repository.load()
+        let second = try #require(repository.catalog)
+        #expect(first.items.count == second.items.count)
+
+        guard case .ready = repository.state else {
+            Issue.record("состояние должно остаться .ready, а не уйти в .loading")
+            return
+        }
+    }
+
     @Test("до загрузки репозиторий отвечает пусто, а не падает")
     func emptyBeforeLoad() {
         let repository = MenuRepository(store: PackStore(

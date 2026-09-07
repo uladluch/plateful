@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Сборка заказа с пересчётом на лету.
@@ -7,8 +8,12 @@ import SwiftUI
 struct OrderView: View {
 
     @Environment(MenuRepository.self) private var menu
+    @Environment(\.modelContext) private var context
+
     @State private var order: Order
     @State private var isPickingItem = false
+    @State private var isNamingOrder = false
+    @State private var title = ""
 
     init(startingWith item: MenuItem) {
         _order = State(initialValue: Order(startingWith: item))
@@ -43,10 +48,30 @@ struct OrderView: View {
         }
         .navigationTitle(order.chain)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { EditButton() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Save", systemImage: "bookmark") { isNamingOrder = true }
+                    .disabled(order.isEmpty)
+            }
+            ToolbarItem(placement: .secondaryAction) { EditButton() }
+        }
+        .alert("Save order", isPresented: $isNamingOrder) {
+            TextField("Name", text: $title)
+            Button("Cancel", role: .cancel) { title = "" }
+            Button("Save") { save() }
+        } message: {
+            Text("Saved orders keep up with the data: if a chain updates a figure, the total updates too.")
+        }
         .sheet(isPresented: $isPickingItem) {
             ItemPickerView(chain: order.chain) { order.add($0) }
         }
+    }
+
+    private func save() {
+        let name = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        try? UserDataStore(context: context)
+            .save(order, title: name.isEmpty ? order.chain : name)
+        title = ""
     }
 
     /// Говорим прямо, что итог — сумма опубликованных цифр, а не наша оценка.

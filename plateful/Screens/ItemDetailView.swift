@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Карточка блюда: число, ради которого открывали приложение, и честная
@@ -5,6 +6,8 @@ import SwiftUI
 struct ItemDetailView: View {
 
     let item: MenuItem
+
+    @Environment(\.modelContext) private var context
 
     var body: some View {
         List {
@@ -56,6 +59,11 @@ struct ItemDetailView: View {
             } label: {
                 Label("Build order", systemImage: "plus.forwardslash.minus")
             }
+        }
+        .task {
+            // Сбой истории не должен мешать смотреть калории — это справочник,
+            // а история лишь удобство.
+            try? UserDataStore(context: context).recordView(of: item)
         }
     }
 

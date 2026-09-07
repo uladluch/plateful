@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Корневой экран: список сетей и поиск по всему каталогу.
@@ -8,6 +9,11 @@ struct ChainsView: View {
 
     @Environment(MenuRepository.self) private var menu
     @State private var query = ""
+
+    /// Последние просмотры. Бесплатны и лежат локально; через iCloud
+    /// подхватятся на другом устройстве, когда включим entitlement.
+    @Query(sort: \ViewedItem.viewedAt, order: .reverse)
+    private var recent: [ViewedItem]
 
     var body: some View {
         NavigationStack {
@@ -39,18 +45,40 @@ struct ChainsView: View {
     }
 
     private var chainList: some View {
-        List(menu.chains) { chain in
-            NavigationLink(value: chain) {
-                LabeledContent {
-                    Text(chain.itemCount.formatted())
-                        .monospacedDigit()
-                } label: {
-                    Label(chain.name, systemImage: Tokens.Symbol.chain)
+        List {
+            if !recentItems.isEmpty {
+                Section("Recent") {
+                    ForEach(recentItems) { item in
+                        NavigationLink(value: item) {
+                            MenuItemRow(item: item, showsChain: true)
+                        }
+                    }
+                }
+            }
+
+            Section(recentItems.isEmpty ? "" : "Chains") {
+                ForEach(menu.chains) { chain in
+                    NavigationLink(value: chain) {
+                        LabeledContent {
+                            Text(chain.itemCount.formatted())
+                                .monospacedDigit()
+                        } label: {
+                            Label(chain.name, systemImage: Tokens.Symbol.chain)
+                        }
+                    }
                 }
             }
         }
         .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
         .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
+    }
+
+    /// Просмотренные позиции, которые ещё есть в текущем каталоге.
+    ///
+    /// Исчезнувшие из меню в истории не показываем: история — это ярлык
+    /// «открыть снова», и вести он должен на живую карточку.
+    private var recentItems: [MenuItem] {
+        recent.prefix(10).compactMap { menu.item($0.reference) }
     }
 
     @ViewBuilder
