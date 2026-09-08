@@ -95,9 +95,43 @@ def fetch_all() -> list[Row]:
     return rows
 
 
+# Насколько пак может обеднеть по сравнению с прошлым, прежде чем это
+# перестанет быть обновлением и станет поломкой.
+MAX_LOSS = 0.05
+
+
+def check_against_previous(pack: dict, version: int) -> list[str]:
+    """Не потерял ли новый пак того, что было в прошлом.
+
+    Ловит поломки не в цифрах, а в выборке: пак собирается из вью
+    `items_export`, и достаточно пересоздать её по устаревшему определению,
+    чтобы молча отвалились снимки блюд и пометки о снятых с меню. Так и
+    случилось с v12 — 150 фотографий и 121 архивная позиция исчезли, и
+    заметить это можно было только глазами.
+    """
+    previous = DATA / f"pack-v{version - 1}.json"
+    if not previous.exists():
+        return []
+
+    was = json.loads(previous.read_text())["items"]
+    now = pack["items"]
+    problems = []
+    for field, label in (("photo", "снимков блюд"), ("offMenu", "снятых с меню"),
+                         ("variant", "вариантов")):
+        before = sum(1 for i in was if i.get(field))
+        after = sum(1 for i in now if i.get(field))
+        if before and after < before * (1 - MAX_LOSS):
+            problems.append(f"{label}: было {before:,}, стало {after:,}")
+    if len(now) < len(was) * (1 - MAX_LOSS):
+        problems.append(f"позиций: было {len(was):,}, стало {len(now):,}")
+    return problems
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", type=int, required=True)
+    ap.add_argument("--allow-loss", action="store_true",
+                    help="пак беднее прошлого намеренно")
     args = ap.parse_args()
 
     rows = fetch_all()
@@ -107,6 +141,16 @@ def main() -> int:
     rows.sort(key=lambda r: (r.chain, r.name))
 
     built = pack.build(rows, version=args.version, source="", observed="")
+
+    if losses := check_against_previous(built, args.version):
+        print("\nПак беднее прошлого:", file=sys.stderr)
+        for loss in losses:
+            print(f"  {loss}", file=sys.stderr)
+        if not args.allow_loss:
+            print("Публиковать нельзя. Проверьте items_export — обычно дело в ней."
+                  " Если потеря намеренная, --allow-loss.", file=sys.stderr)
+            return 1
+
     meta = pack.write(built,
                       json_path=DATA / f"pack-v{args.version}.json",
                       deflate_path=DATA / f"pack-v{args.version}.deflate")

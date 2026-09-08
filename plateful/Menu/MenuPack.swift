@@ -23,6 +23,11 @@ nonisolated struct MenuPack: Decodable, Sendable {
     let observed: String
     let stale: Bool
 
+    /// Порядок разделов меню, один на весь каталог. Приходит из пака, а не
+    /// зашит в приложение: у источника порядка нет вовсе, и менять его
+    /// хочется публикацией, а не релизом.
+    let sections: [String]?
+
     let chains: [Chain]
     let items: [Item]
 
@@ -42,6 +47,18 @@ nonisolated struct MenuPack: Decodable, Sendable {
         let fit: String?
 
         var fitsInside: Bool { fit == "contain" }
+    }
+
+    /// Вариант блюда: «Small», «10», «w/ Egg».
+    struct Variant: Decodable, Sendable, Hashable {
+        /// Ключ группы. Уникален внутри сети, но не между сетями:
+        /// `coca-cola` есть у половины каталога.
+        let group: String
+        let label: String
+        let order: Int
+        /// `size` — порция, `kind` — исполнение. Порции сокращаются до
+        /// буквы, опции нет: «Egg» не сократить.
+        let kind: String
     }
 
     struct Chain: Decodable, Sendable {
@@ -67,13 +84,14 @@ nonisolated struct MenuPack: Decodable, Sendable {
         /// Снимок именно этого блюда, если он найден. Есть у немногих позиций.
         let photo: Photo?
 
-        /// Размерный вариант: ключ группы внутри сети, подпись и порядок в
-        /// переключателе. Приходят втроём или не приходят вовсе — группу
-        /// считает конвейер, чтобы ошибочную склейку чинила публикация пака,
-        /// а не релиз в App Store.
-        let group: String?
-        let size: String?
-        let sizeOrder: Int?
+        /// Раздел меню. Категория источника, а поверх неё выделенный
+        /// завтрак: он не категория, а время дня, и в источнике размазан
+        /// по сэндвичам и горячему.
+        let section: String?
+
+        /// Порция или опция одного блюда. Позиции с одинаковым `group`
+        /// внутри сети приложение показывает одной карточкой.
+        let variant: Variant?
 
         /// Позиции больше нет в меню сети. Приходит только когда это правда.
         let offMenu: Bool?

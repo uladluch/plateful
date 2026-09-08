@@ -12,16 +12,17 @@ nonisolated struct MenuSection: Identifiable, Hashable, Sendable {
 
 nonisolated extension MenuCatalog {
 
-    /// Позиции сети, разбитые по категориям.
+    /// Позиции сети, разбитые по разделам меню.
     ///
-    /// Порядок категорий — как в паке: он идёт от источника, а не от
-    /// алфавита, и завтраки там раньше десертов.
+    /// Порядок разделов — из пака, один на все 96 сетей: сначала то, ради
+    /// чего пришли, в конце напитки и добавки. У источника порядка нет
+    /// вовсе, и раньше разделы шли по алфавиту первого блюда — меню
+    /// McDonald's открывалось напитками, а соусы стояли выше картошки.
     ///
     /// Блюда, которых больше нет в меню, собираются в отдельный раздел
     /// в самом конце. Держать их вперемешку с текущими — вводить в
     /// заблуждение: человек стоит у кассы и не может это заказать.
     func sections(for chain: String) -> [MenuSection] {
-        var order: [String] = []
         var grouped: [String: [MenuItem]] = [:]
         var archived: [MenuItem] = []
 
@@ -30,12 +31,12 @@ nonisolated extension MenuCatalog {
                 archived.append(item)
                 continue
             }
-            let title = item.category ?? MenuSection.uncategorized
-            if grouped[title] == nil { order.append(title) }
-            grouped[title, default: []].append(item)
+            grouped[item.section, default: []].append(item)
         }
 
-        var sections = order.map { MenuSection(title: $0, items: grouped[$0] ?? []) }
+        var sections = grouped.keys
+            .sorted { (order(of: $0), $0) < (order(of: $1), $1) }
+            .map { MenuSection(title: $0, items: grouped[$0] ?? []) }
         if !archived.isEmpty {
             sections.append(MenuSection(title: MenuSection.archived, items: archived))
         }
@@ -45,14 +46,14 @@ nonisolated extension MenuCatalog {
 
 nonisolated extension MenuCatalog {
 
-    /// Те же разделы, но по одной строке на группу размеров.
+    /// Те же разделы, но по одной строке на группу вариантов.
     ///
     /// Отдельным шагом, а не внутри `sections(for:)`: свёртка обязана идти
     /// после фильтра по целям, иначе группа исчезает из-за размера, который
     /// в цель не влез, — а маленький влезал.
-    func collapsingSizeVariants(_ sections: [MenuSection]) -> [MenuSection] {
+    func collapsingVariants(_ sections: [MenuSection]) -> [MenuSection] {
         sections.map { MenuSection(title: $0.title,
-                                   items: collapsingSizeVariants($0.items)) }
+                                   items: collapsingVariants($0.items)) }
     }
 }
 
@@ -100,7 +101,7 @@ nonisolated extension Array where Element == MenuItem {
     }
 }
 
-nonisolated extension MenuItem.Size {
+nonisolated extension MenuItem.Variant {
 
     /// Сокращения размеров. Ключи в нижнем регистре: источник пишет и
     /// «Large», и «large».
@@ -115,6 +116,9 @@ nonisolated extension MenuItem.Size {
     /// влезает в сегмент шириной с палец. Полное слово остаётся у VoiceOver:
     /// «эс» вслух — не размер.
     ///
+    /// Сокращаются только порции. Исполнение блюда («Egg», «Mayo») сократить
+    /// нечем: там не шкала, а список, и первая буква ничего не значит.
+    ///
     /// У объёмов буквы нет, поэтому остаётся число: единица повторяется в
     /// каждом сегменте, места не стоит, а под переключателем её всё равно
     /// показывает строка «Serving».
@@ -122,6 +126,7 @@ nonisolated extension MenuItem.Size {
     /// Фирменные размеры не трогаем: «Grande» — имя, а не мера, и «G»
     /// рядом с «Venti» ничего не значит.
     var shortLabel: String {
+        guard kind == .size else { return label }
         if let short = Self.abbreviations[label.lowercased()] { return short }
 
         let parts = label.split(separator: " ")

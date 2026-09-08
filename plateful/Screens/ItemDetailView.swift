@@ -13,18 +13,18 @@ struct ItemDetailView: View {
     @State private var isPickingRival = false
     @State private var rival: MenuItem?
 
-    /// Выбранный размер. Ключ, а не индекс: индекс живёт до перезагрузки
+    /// Выбранный вариант. Ключ, а не индекс: индекс живёт до перезагрузки
     /// каталога, а обновление пака может прийти прямо с открытой карточкой.
     @State private var sizeKey: String
 
     init(item: MenuItem) {
         self.item = item
-        // Открываемся на том размере, который человек выбрал в списке.
+        // Открываемся на том варианте, который человек выбрал в списке.
         _sizeKey = State(initialValue: item.key)
     }
 
-    /// Размеры одного блюда, слева направо. Пусто — блюдо одного размера.
-    private var variants: [MenuItem] { menu.sizeVariants(of: item) }
+    /// Варианты одного блюда, слева направо. Пусто — вариант один.
+    private var variants: [MenuItem] { menu.variants(of: item) }
 
     /// Позиция, о которой сейчас говорит вся карточка.
     private var shown: MenuItem {
@@ -64,7 +64,7 @@ struct ItemDetailView: View {
             }
 
             Section {
-                // Размер — первым: он меняет все числа под собой, и читать
+                // Вариант — первым: он меняет все числа под собой, и читать
                 // карточку сверху вниз надо уже с выбранным сегментом.
                 if variants.count > 1 { sizePicker }
                 calories
@@ -161,7 +161,7 @@ struct ItemDetailView: View {
         }
     }
 
-    /// Сегментов столько же, сколько размеров: у кассы выбирают из того,
+    /// Сегментов столько же, сколько вариантов: у кассы выбирают из того,
     /// что на табло, а не из выпадающего списка.
     ///
     /// Потолок — шесть: на узком iPhone это по 57 pt на сегмент, ещё выше
@@ -172,12 +172,13 @@ struct ItemDetailView: View {
 
     @ViewBuilder
     private var sizePicker: some View {
-        let picker = Picker("Size", selection: $sizeKey) {
+        let picker = Picker(item.variant?.kind == .option ? "Option" : "Size",
+                            selection: $sizeKey) {
             ForEach(variants) { variant in
                 // На сегменте — «L», в озвучке — «Large»: сокращение
                 // экономит ширину, а не смысл.
-                Text(variant.size?.shortLabel ?? variant.name)
-                    .accessibilityLabel(variant.size?.label ?? variant.name)
+                Text(variant.variant?.shortLabel ?? variant.name)
+                    .accessibilityLabel(variant.variant?.label ?? variant.name)
                     .tag(variant.key)
             }
         }

@@ -21,7 +21,9 @@ nonisolated struct MenuCatalog: Sendable {
 
     private let index: TextIndex
     private let chainItems: [String: [Int32]]
-    private let sizeGroups: [MenuItem.SizeGroupID: [Int32]]
+    private let variantGroups: [MenuItem.VariantGroupID: [Int32]]
+    /// Порядок разделов меню из пака: у источника его нет.
+    private let sectionOrder: [String: Int]
 
     init(pack: MenuPack) {
         self.version = pack.version
@@ -33,14 +35,14 @@ nonisolated struct MenuCatalog: Sendable {
         var chainItems: [String: [Int32]] = [:]
         var names = TextIndex.Builder(capacity: pack.items.count)
         var chainNames = TextIndex.Builder(capacity: pack.items.count)
-        var sizeGroups: [MenuItem.SizeGroupID: [Int32]] = [:]
+        var variantGroups: [MenuItem.VariantGroupID: [Int32]] = [:]
 
         for (offset, packItem) in pack.items.enumerated() {
             let item = MenuItem(id: offset, packItem: packItem, defaults: pack)
             items.append(item)
             chainItems[packItem.chain, default: []].append(Int32(offset))
-            if let group = item.sizeGroupID {
-                sizeGroups[group, default: []].append(Int32(offset))
+            if let group = item.variantGroupID {
+                variantGroups[group, default: []].append(Int32(offset))
             }
             names.append(packItem.name)
             chainNames.append(packItem.chain)
@@ -48,14 +50,29 @@ nonisolated struct MenuCatalog: Sendable {
 
         // Порядок сегментов задаёт пак; полагаться на порядок позиций в нём
         // нельзя — они отсортированы по названию, и «Large» идёт первой.
-        for (group, offsets) in sizeGroups where offsets.count > 1 {
-            sizeGroups[group] = offsets.sorted {
-                (items[Int($0)].size?.order ?? 0) < (items[Int($1)].size?.order ?? 0)
+        for (group, offsets) in variantGroups where offsets.count > 1 {
+            variantGroups[group] = offsets.sorted {
+                (items[Int($0)].variant?.order ?? 0) < (items[Int($1)].variant?.order ?? 0)
             }
         }
-        // Группа из одного размера — не группа: переключатель с одним
+        // Группа из одного варианта — не группа: переключатель с одним
         // сегментом бесполезен, а карточка теряет размер из названия.
-        self.sizeGroups = sizeGroups.filter { $0.value.count > 1 }
+        self.variantGroups = variantGroups.filter { $0.value.count > 1 }
+
+        // Порядок разделов задаёт пак. Пак, выпущенный до того, как порядок
+        // появился, его не несёт — там берём порядок первого появления, как
+        // было раньше. Алфавит был бы хуже обоих: он ставит напитки первыми.
+        let declared = pack.sections ?? []
+        if declared.isEmpty {
+            var seen: [String: Int] = [:]
+            for item in items where seen[item.section] == nil {
+                seen[item.section] = seen.count
+            }
+            self.sectionOrder = seen
+        } else {
+            self.sectionOrder = Dictionary(
+                uniqueKeysWithValues: declared.enumerated().map { ($1, $0) })
+        }
 
         self.items = items
         self.chainItems = chainItems
@@ -70,14 +87,20 @@ nonisolated struct MenuCatalog: Sendable {
         (chainItems[chain] ?? []).map { items[Int($0)] }
     }
 
-    /// Все размеры одного блюда, слева направо. Пусто, если размер один.
+    /// Все варианты одного блюда, слева направо. Пусто, если он один.
     ///
     /// Пустой массив, а не массив из самой позиции: вызывающему нужно
-    /// различать «блюдо с размерами» и «обычное блюдо», и `isEmpty` читается
-    /// понятнее, чем `count == 1`.
-    func sizeVariants(of item: MenuItem) -> [MenuItem] {
-        guard let group = item.sizeGroupID, let offsets = sizeGroups[group] else { return [] }
+    /// различать «блюдо с вариантами» и «обычное блюдо», и `isEmpty`
+    /// читается понятнее, чем `count == 1`.
+    func variants(of item: MenuItem) -> [MenuItem] {
+        guard let group = item.variantGroupID,
+              let offsets = variantGroups[group] else { return [] }
         return offsets.map { items[Int($0)] }
+    }
+
+    /// Место раздела в общем порядке. Незнакомые — в конец.
+    func order(of section: String) -> Int {
+        sectionOrder[section] ?? sectionOrder.count
     }
 
     /// Вариант, которым группа представлена в списке.
@@ -93,7 +116,7 @@ nonisolated struct MenuCatalog: Sendable {
         // «Large» первая), и то, что уцелело после фильтра. Середина имеет
         // смысл только в ряду размеров.
         let candidates = (photographed.isEmpty ? variants : photographed)
-            .sorted { ($0.size?.order ?? 0) < ($1.size?.order ?? 0) }
+            .sorted { ($0.variant?.order ?? 0) < ($1.variant?.order ?? 0) }
         return candidates[(candidates.count - 1) / 2]
     }
 
@@ -154,7 +177,7 @@ nonisolated struct MenuCatalog: Sendable {
         return hits.prefix(limit).map { items[Int($0.item)] }
     }
 
-    /// Одна строка на группу размеров вместо четырёх карточек колы подряд.
+    /// Одна строка на группу вариантов вместо четырёх карточек колы подряд.
     ///
     /// Свёртка идёт последней, уже после фильтра: иначе цель «до 500 ккал»
     /// вычёркивала бы всю группу из-за среднего размера, хотя маленький
@@ -162,21 +185,21 @@ nonisolated struct MenuCatalog: Sendable {
     ///
     /// Порядок сохраняется: группа встаёт на место своего первого вхождения.
     /// В выдаче поиска это важно — там позиции упорядочены релевантностью.
-    func collapsingSizeVariants(_ items: [MenuItem]) -> [MenuItem] {
-        var members: [MenuItem.SizeGroupID: [MenuItem]] = [:]
+    func collapsingVariants(_ items: [MenuItem]) -> [MenuItem] {
+        var members: [MenuItem.VariantGroupID: [MenuItem]] = [:]
         for item in items {
-            if let group = item.sizeGroupID, sizeGroups[group] != nil {
+            if let group = item.variantGroupID, variantGroups[group] != nil {
                 members[group, default: []].append(item)
             }
         }
         guard !members.isEmpty else { return items }
 
-        var shown: [MenuItem.SizeGroupID: Int] = [:]
+        var shown: [MenuItem.VariantGroupID: Int] = [:]
         for (group, variants) in members {
             shown[group] = Self.representative(of: variants)?.id
         }
         return items.filter { item in
-            guard let group = item.sizeGroupID, let chosen = shown[group] else { return true }
+            guard let group = item.variantGroupID, let chosen = shown[group] else { return true }
             return chosen == item.id
         }
     }

@@ -28,6 +28,12 @@ backend/.venv/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/data/raw/
+# Генерируется скриптами конвейера: SQL для заливки и сами паки.
+backend/data/seed-sql/
+backend/data/taxonomy-sql/
+backend/data/pack-v*.json
+backend/data/pack-v*.deflate
+backend/data/seed-pack-v*.deflate
 
 # Сгенерированные артефакты конвейера
 backend/data/*.deflate

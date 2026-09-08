@@ -21,4 +21,5 @@ values ('photos', 'photos', true) on conflict (id) do nothing;
 
 create policy photos_public_read on storage.objects
   for select using (bucket_id = 'photos');
--- Вью items_export пересоздаётся с полем photo — см. миграцию в истории проекта.
+-- Вью items_export пересоздаётся с полем photo. Полное определение —
+-- в миграции menu_taxonomy: только там оно записано целиком.

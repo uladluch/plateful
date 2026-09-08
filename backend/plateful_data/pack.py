@@ -4,10 +4,21 @@
 
     manifest.json  {format, version, url, sha256, itemCount, releasedAt}
     pack           {format, version, source, observed, stale,
+                    sections: [name],            порядок разделов в меню
                     chains: [{name, itemCount}],
-                    items:  [{chain, key, name, category, serving,
+                    items:  [{chain, key, name, category, section, serving,
                               kcal, protein, carbs, fat, image,
+                              variant?: {group, label, order, kind},
                               source?, observed?, stale?}]}
+
+`section` — раздел, в котором приложение покажет позицию: категория
+источника, а поверх неё выделенный завтрак. Порядок разделов лежит в паке,
+а не в приложении: у источника его нет вовсе, а менять его хочется
+публикацией, не релизом.
+
+`variant` — порция или опция одного блюда («Small», «10», «w/ Egg»).
+Позиции с одинаковым `group` внутри сети приложение показывает одной
+карточкой с переключателем.
 
 Происхождение (`source`, `observed`, `stale`) вынесено на уровень пака, а у
 позиции появляется только там, где отличается. В сиде все позиции из одного
@@ -27,7 +38,8 @@ import zlib
 from collections import Counter
 
 from .archetype import classify
-from .sizes import assign_groups
+from .taxonomy import SECTION_ORDER, section
+from .variants import assign_groups
 from datetime import date
 from pathlib import Path
 
@@ -66,6 +78,9 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             "key": item.ext_key,
             "name": item.name,
             "category": item.category,
+            # Раздел меню. Считается здесь, а не на клиенте: правило одно на
+            # 96 сетей, и ошибку в нём чинит публикация пака.
+            "section": section(item.name, item.category),
             "serving": item.serving,
             "kcal": item.kcal,
             "protein": item.protein,
@@ -76,8 +91,10 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             # можно было исправить публикацией пака, без релиза.
             "image": classify(item.name, item.category),
         }
-        if group := groups.get((item.chain, item.ext_key)):
-            row["group"], row["size"], row["sizeOrder"] = group
+        if variant := groups.get((item.chain, item.ext_key)):
+            group, label, order, kind = variant
+            row["variant"] = {"group": group, "label": label,
+                              "order": order, "kind": kind}
         # Только отличия от умолчаний пака — иначе пак раздувается втрое.
         if item_source != pack_source:
             row["source"] = item_source
@@ -101,6 +118,9 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
         "source": pack_source,
         "observed": pack_observed,
         "stale": pack_stale,
+        # Только те разделы, что реально встретились, — в общем порядке.
+        "sections": [name for name in SECTION_ORDER
+                     if any(row["section"] == name for row in encoded)],
         "chains": [
             {"name": name, "itemCount": count}
             for name, count in sorted(chains.items())
