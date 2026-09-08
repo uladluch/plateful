@@ -27,6 +27,7 @@ import zlib
 from collections import Counter
 
 from .archetype import classify
+from .sizes import assign_groups
 from datetime import date
 from pathlib import Path
 
@@ -44,6 +45,9 @@ def _mode(values, fallback):
 
 def build(items, *, version: int, source: str, observed: str) -> dict:
     chains = Counter(i.chain for i in items)
+    # Размерные варианты одного блюда склеиваются в группу: приложение
+    # покажет их переключателем вместо четырёх карточек колы подряд.
+    groups = assign_groups(items)
 
     sources = [getattr(i, "source", None) or source for i in items]
     observations = [getattr(i, "observed", None) or observed for i in items]
@@ -72,6 +76,8 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             # можно было исправить публикацией пака, без релиза.
             "image": classify(item.name, item.category),
         }
+        if group := groups.get((item.chain, item.ext_key)):
+            row["group"], row["size"], row["sizeOrder"] = group
         # Только отличия от умолчаний пака — иначе пак раздувается втрое.
         if item_source != pack_source:
             row["source"] = item_source

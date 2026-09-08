@@ -10,22 +10,41 @@ struct MenuItemRow: View {
     let item: MenuItem
     let showsChain: Bool
 
+    /// Размеры одного блюда. Непусто — строка представляет всю группу:
+    /// название без размера, числа диапазоном. Четыре карточки колы подряд
+    /// не помогают выбрать, а мешают.
+    var variants: [MenuItem] = []
+
+    private var isGroup: Bool { variants.count > 1 }
+
+    private var title: String { isGroup ? item.baseName : item.name }
+
+    private var calories: String {
+        isGroup ? variants.calorieRangeText : item.calorieText
+    }
+
+    private var protein: String {
+        isGroup ? variants.proteinRangeText : item.proteinText
+    }
+
+    /// Подпись под названием. Собирается из того, что верно для этой строки:
+    /// сеть — когда список смешанный, «archived» — когда блюда больше нет,
+    /// число размеров — когда строка представляет группу.
     private var subtitle: String? {
-        switch (item.isOffMenu, showsChain) {
-        case (true, true): "\(item.chain) · archived"
-        case (true, false): "Archived"
-        case (false, true): item.chain
-        case (false, false): nil
-        }
+        var parts: [String] = []
+        if showsChain { parts.append(item.chain) }
+        if item.isOffMenu { parts.append(showsChain ? "archived" : "Archived") }
+        if isGroup { parts.append("\(variants.count) sizes") }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     var body: some View {
         LabeledContent {
             VStack(alignment: .trailing, spacing: Tokens.Spacing.xs) {
-                Text(item.calorieText)
+                Text(calories)
                     .font(.body)
                     .monospacedDigit()
-                Text(item.proteinText)
+                Text(protein)
                     .font(.caption)
                     .foregroundStyle(Tokens.Color.textSecondary)
                     .monospacedDigit()
@@ -37,7 +56,7 @@ struct MenuItemRow: View {
                     ChainMarkView(chain: item.chain, size: 22)
                 }
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
-                    Text(item.name)
+                    Text(title)
                         .foregroundStyle(item.isOffMenu
                                          ? Tokens.Color.textSecondary
                                          : Tokens.Color.textPrimary)

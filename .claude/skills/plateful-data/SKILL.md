@@ -86,7 +86,8 @@ Seed-пак зашит в бандл — без сети и при лежаще�
 {"format":1,"version":1,"source":"menustat-2018","observed":"2018-12-31",
  "chains":[{"name":"McDonald's","itemCount":223}],
  "items":[{"chain":"McDonald's","key":"big-mac","name":"Big Mac","category":"Burgers","serving":null,
-           "kcal":540.0,"protein":25.0,"carbs":46.0,"fat":28.0}]}
+           "kcal":540.0,"protein":25.0,"carbs":46.0,"fat":28.0,
+           "group":"coca-cola","size":"Large","sizeOrder":3}]}
 ```
 Пак детерминирован (без даты внутри) — CI сверяет `plateful/Resources/seed-pack.json` с пересборкой.
 Версии immutable.
@@ -94,6 +95,26 @@ Seed-пак зашит в бандл — без сети и при лежаще�
 Сжатие для Storage — **сырой DEFLATE** (`zlib.compressobj(..., -zlib.MAX_WBITS)`), а не
 zlib-контейнер: у Apple `Data.decompressed(using: .zlib)` понимает именно его, и с обычным
 `zlib.compress()` клиент бы не распаковал. Хеш в манифесте — по сжатым байтам.
+
+## Размеры одного блюда
+
+`sizes.py` склеивает «Coca Cola, Small/Medium/Large» в группу: позиция получает
+`group` (slug базового имени), `size` (подпись сегмента) и `sizeOrder`. Три поля
+приходят вместе или не приходят вовсе; одиночный размер группой не считается.
+25 366 позиций → 2 296 групп → **20 986 карточек** в списках.
+
+Ключ соответствия — **`(chain, ext_key)`, не `ext_key`**: он уникален только
+внутри сети, и «Coca Cola, Small» есть у половины каталога. Пока ключом был
+один `ext_key`, сети затирали друг другу позиции — у McDonald's кола получала
+0, 0, 1, 2. Тесты: `backend/tests/`, `python3 -m unittest discover -s backend/tests`.
+
+На клиенте: `MenuItem.size`, `MenuCatalog.sizeVariants(of:)`, свёртка списка —
+`collapsingSizeVariants(_:)`. Порядок шагов **выборка → фильтр → свёртка**:
+свёртка последней, иначе цель «до 500 ккал» вычеркнет группу из-за среднего
+размера, хотя маленький в цель укладывается. Представитель группы — средний
+размер, а если снят только один — снятый (у «Waffle Potato Fries» сеть сняла
+только Large). Свёртки нет там, где выбирают порцию: `ItemPickerView`
+(сравнение и сборка заказа) и «Recent» показывают конкретный размер.
 
 Происхождение (`source`, `observed`, `stale`) лежит на уровне пака, а у позиции появляется
 только если отличается — то есть после правки в `overrides`. В сиде таких нет, в паке из базы
@@ -116,7 +137,7 @@ zlib-контейнер: у Apple `Data.decompressed(using: .zlib)` понима
 Апостроф при нормализации **выпадает**, а не становится пробелом: иначе «McDonald's» → `mcdonald s`
 и запрос «mcdonalds» не находит ничего. Это поймал живой прогон, тест закреплён.
 
-30 тестов в `platefulTests/` (Swift Testing), гоняет `.github/workflows/ios-ci.yml`.
+136 тестов в `platefulTests/` (Swift Testing), гоняет `.github/workflows/ios-ci.yml`.
 Загрузка сида на симуляторе — около 260 мс, вне главного потока.
 
 ## Оркестрация

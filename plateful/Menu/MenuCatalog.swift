@@ -21,6 +21,7 @@ nonisolated struct MenuCatalog: Sendable {
 
     private let index: TextIndex
     private let chainItems: [String: [Int32]]
+    private let sizeGroups: [MenuItem.SizeGroupID: [Int32]]
 
     init(pack: MenuPack) {
         self.version = pack.version
@@ -32,13 +33,29 @@ nonisolated struct MenuCatalog: Sendable {
         var chainItems: [String: [Int32]] = [:]
         var names = TextIndex.Builder(capacity: pack.items.count)
         var chainNames = TextIndex.Builder(capacity: pack.items.count)
+        var sizeGroups: [MenuItem.SizeGroupID: [Int32]] = [:]
 
         for (offset, packItem) in pack.items.enumerated() {
-            items.append(MenuItem(id: offset, packItem: packItem, defaults: pack))
+            let item = MenuItem(id: offset, packItem: packItem, defaults: pack)
+            items.append(item)
             chainItems[packItem.chain, default: []].append(Int32(offset))
+            if let group = item.sizeGroupID {
+                sizeGroups[group, default: []].append(Int32(offset))
+            }
             names.append(packItem.name)
             chainNames.append(packItem.chain)
         }
+
+        // Порядок сегментов задаёт пак; полагаться на порядок позиций в нём
+        // нельзя — они отсортированы по названию, и «Large» идёт первой.
+        for (group, offsets) in sizeGroups where offsets.count > 1 {
+            sizeGroups[group] = offsets.sorted {
+                (items[Int($0)].size?.order ?? 0) < (items[Int($1)].size?.order ?? 0)
+            }
+        }
+        // Группа из одного размера — не группа: переключатель с одним
+        // сегментом бесполезен, а карточка теряет размер из названия.
+        self.sizeGroups = sizeGroups.filter { $0.value.count > 1 }
 
         self.items = items
         self.chainItems = chainItems
@@ -51,6 +68,33 @@ nonisolated struct MenuCatalog: Sendable {
     /// Позиции одной сети, в порядке пака (по названию).
     func items(in chain: String) -> [MenuItem] {
         (chainItems[chain] ?? []).map { items[Int($0)] }
+    }
+
+    /// Все размеры одного блюда, слева направо. Пусто, если размер один.
+    ///
+    /// Пустой массив, а не массив из самой позиции: вызывающему нужно
+    /// различать «блюдо с размерами» и «обычное блюдо», и `isEmpty` читается
+    /// понятнее, чем `count == 1`.
+    func sizeVariants(of item: MenuItem) -> [MenuItem] {
+        guard let group = item.sizeGroupID, let offsets = sizeGroups[group] else { return [] }
+        return offsets.map { items[Int($0)] }
+    }
+
+    /// Вариант, которым группа представлена в списке.
+    ///
+    /// Середина ряда, а не край: «Medium» описывает блюдо честнее, чем
+    /// детская порция или ведро. Но если снимок есть не у всех размеров,
+    /// выбираем среди снятых — пустая карточка там, где фотография лежит
+    /// у соседнего сегмента, читается как потерянная картинка.
+    static func representative(of variants: [MenuItem]) -> MenuItem? {
+        guard !variants.isEmpty else { return nil }
+        let photographed = variants.filter { $0.photo != nil }
+        // Сортируем сами: сюда приходит и порядок пака (по алфавиту, где
+        // «Large» первая), и то, что уцелело после фильтра. Середина имеет
+        // смысл только в ряду размеров.
+        let candidates = (photographed.isEmpty ? variants : photographed)
+            .sorted { ($0.size?.order ?? 0) < ($1.size?.order ?? 0) }
+        return candidates[(candidates.count - 1) / 2]
     }
 
     /// Поиск по названию блюда и названию сети.
@@ -108,5 +152,32 @@ nonisolated struct MenuCatalog: Sendable {
             return $0.item < $1.item
         }
         return hits.prefix(limit).map { items[Int($0.item)] }
+    }
+
+    /// Одна строка на группу размеров вместо четырёх карточек колы подряд.
+    ///
+    /// Свёртка идёт последней, уже после фильтра: иначе цель «до 500 ккал»
+    /// вычёркивала бы всю группу из-за среднего размера, хотя маленький
+    /// в цель укладывается. Представителя выбираем среди уцелевших.
+    ///
+    /// Порядок сохраняется: группа встаёт на место своего первого вхождения.
+    /// В выдаче поиска это важно — там позиции упорядочены релевантностью.
+    func collapsingSizeVariants(_ items: [MenuItem]) -> [MenuItem] {
+        var members: [MenuItem.SizeGroupID: [MenuItem]] = [:]
+        for item in items {
+            if let group = item.sizeGroupID, sizeGroups[group] != nil {
+                members[group, default: []].append(item)
+            }
+        }
+        guard !members.isEmpty else { return items }
+
+        var shown: [MenuItem.SizeGroupID: Int] = [:]
+        for (group, variants) in members {
+            shown[group] = Self.representative(of: variants)?.id
+        }
+        return items.filter { item in
+            guard let group = item.sizeGroupID, let chosen = shown[group] else { return true }
+            return chosen == item.id
+        }
     }
 }

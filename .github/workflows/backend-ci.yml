@@ -27,6 +27,7 @@ jobs:
         run: gh release download menustat-2018 -p menustat-2018.tab -D backend/data/raw
 
       - run: pip install -r backend/requirements.txt
+      - run: python3 -m unittest discover -s backend/tests -v
       - run: python3 backend/scripts/build_seed.py
 
       # Пак в бандле обязан совпадать с тем, что собирается из исходника.

@@ -43,6 +43,19 @@ nonisolated extension MenuCatalog {
     }
 }
 
+nonisolated extension MenuCatalog {
+
+    /// Те же разделы, но по одной строке на группу размеров.
+    ///
+    /// Отдельным шагом, а не внутри `sections(for:)`: свёртка обязана идти
+    /// после фильтра по целям, иначе группа исчезает из-за размера, который
+    /// в цель не влез, — а маленький влезал.
+    func collapsingSizeVariants(_ sections: [MenuSection]) -> [MenuSection] {
+        sections.map { MenuSection(title: $0.title,
+                                   items: collapsingSizeVariants($0.items)) }
+    }
+}
+
 nonisolated extension MenuSection {
     /// Для позиций, у которых источник не указал категорию.
     static let uncategorized = "Other"
@@ -53,6 +66,38 @@ nonisolated extension MenuSection {
     static let archived = "Archive"
 
     var isArchive: Bool { title == Self.archived }
+}
+
+nonisolated extension Array where Element == MenuItem {
+
+    /// «140–380» или «140», если во всех размерах число одно.
+    ///
+    /// Диапазон, а не число представителя: в списке он честнее — человек
+    /// видит, во что обойдётся выбор размера, ещё до открытия карточки.
+    var calorieRangeText: String {
+        range(of: \.kcal) { $0.formatted(.number.precision(.fractionLength(0))) }
+    }
+
+    /// «20–25 g» — единица одна на весь диапазон, а не по разу на конец.
+    var proteinRangeText: String {
+        range(of: \.protein, unit: MenuItem.grams) {
+            $0.formatted(.number.precision(.fractionLength(0)))
+        }
+    }
+
+    /// - Parameter unit: как оформить верхнюю границу; на неё вешается
+    ///   единица измерения. Нижняя остаётся голым числом.
+    private func range(of value: (MenuItem) -> Double,
+                       unit: (Double) -> String = { _ in "" },
+                       number: (Double) -> String) -> String {
+        let values = map(value)
+        guard let low = values.min(), let high = values.max() else { return "" }
+        let highText = unit(high).isEmpty ? number(high) : unit(high)
+        // Сравниваем округлённое, а не исходное: 139.6 и 140.4 дают одно
+        // число, и «140–140» выглядело бы поломкой.
+        guard number(low) != number(high) else { return highText }
+        return "\(number(low))–\(highText)"
+    }
 }
 
 nonisolated extension MenuItem {

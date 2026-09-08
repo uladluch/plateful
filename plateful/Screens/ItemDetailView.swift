@@ -8,18 +8,44 @@ struct ItemDetailView: View {
     let item: MenuItem
 
     @Environment(\.modelContext) private var context
+    @Environment(MenuRepository.self) private var menu
 
     @State private var isPickingRival = false
     @State private var rival: MenuItem?
 
+    /// Выбранный размер. Ключ, а не индекс: индекс живёт до перезагрузки
+    /// каталога, а обновление пака может прийти прямо с открытой карточкой.
+    @State private var sizeKey: String
+
+    init(item: MenuItem) {
+        self.item = item
+        // Открываемся на том размере, который человек выбрал в списке.
+        _sizeKey = State(initialValue: item.key)
+    }
+
+    /// Размеры одного блюда, слева направо. Пусто — блюдо одного размера.
+    private var variants: [MenuItem] { menu.sizeVariants(of: item) }
+
+    /// Позиция, о которой сейчас говорит вся карточка.
+    private var shown: MenuItem {
+        variants.first { $0.key == sizeKey } ?? item
+    }
+
+    /// Снимок берём у того размера, у которого он есть: у «Waffle Potato
+    /// Fries» сеть сняла только Large, и подмена фотографии на заглушку при
+    /// переключении сегмента читалась бы как поломка.
+    private var illustrated: MenuItem {
+        shown.photo != nil ? shown : (variants.first { $0.photo != nil } ?? shown)
+    }
+
     var body: some View {
         List {
             Section {
-                DishImage(item: item, size: 220, isHero: true)
+                DishImage(item: illustrated, size: 220, isHero: true)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
             } footer: {
-                if let photo = item.photo {
+                if let photo = illustrated.photo {
                     PhotoCaption(photo: photo)
                 }
             }
@@ -38,15 +64,27 @@ struct ItemDetailView: View {
             }
 
             Section {
+                // Размер — первым: он меняет все числа под собой, и читать
+                // карточку сверху вниз надо уже с выбранным сегментом.
+                if variants.count > 1 {
+                    Picker("Size", selection: $sizeKey) {
+                        ForEach(variants) { variant in
+                            Text(variant.size?.label ?? variant.name).tag(variant.key)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(EdgeInsets(top: Tokens.Spacing.s, leading: Tokens.Spacing.m,
+                                              bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
+                }
                 calories
-                macro("Protein", value: item.proteinText, color: Tokens.Color.protein)
-                macro("Carbs", value: item.carbsText, color: Tokens.Color.carbs)
-                macro("Fat", value: item.fatText, color: Tokens.Color.fat)
+                macro("Protein", value: shown.proteinText, color: Tokens.Color.protein)
+                macro("Carbs", value: shown.carbsText, color: Tokens.Color.carbs)
+                macro("Fat", value: shown.fatText, color: Tokens.Color.fat)
             } header: {
                 Text(item.chain)
             }
 
-            if let serving = item.serving {
+            if let serving = shown.serving {
                 Section {
                     LabeledContent {
                         Text(serving)
@@ -60,24 +98,28 @@ struct ItemDetailView: View {
             // откуда цифра и на какой год, — это одно из трёх отличий.
             Section {
                 LabeledContent {
-                    Text(item.sourceDisplayName)
+                    Text(shown.sourceDisplayName)
                         .multilineTextAlignment(.trailing)
                 } label: {
                     Label("Source", systemImage: Tokens.Symbol.source)
                 }
                 LabeledContent {
-                    Text(item.observedDisplay)
+                    Text(shown.observedDisplay)
                         .monospacedDigit()
                 } label: {
                     Label("Figures from", systemImage: Tokens.Symbol.stale)
                 }
             } footer: {
-                if let notice = item.staleNotice {
+                if let notice = shown.staleNotice {
                     Text(notice)
                 }
             }
         }
-        .navigationTitle(item.name)
+        // Заголовок без размера: он не должен прыгать при переключении
+        // сегмента — размер и так виден в переключателе. Но только там, где
+        // переключатель есть: у одинокой «Apple Slices, 1 Package» размер —
+        // часть названия, и отрезать его нечестно.
+        .navigationTitle(variants.count > 1 ? item.baseName : item.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -87,25 +129,25 @@ struct ItemDetailView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 NavigationLink {
-                    OrderView(startingWith: item)
+                    OrderView(startingWith: shown)
                 } label: {
                     Label("Build order", systemImage: "plus.forwardslash.minus")
                 }
             }
         }
         .sheet(isPresented: $isPickingRival) {
-            ItemPickerView(chain: nil, excluding: item.persistentID) { picked in
+            ItemPickerView(chain: nil, excluding: shown.persistentID) { picked in
                 rival = picked
                 isPickingRival = false
             }
         }
         .navigationDestination(item: $rival) { other in
-            ComparisonView(comparison: Comparison(left: item, right: other))
+            ComparisonView(comparison: Comparison(left: shown, right: other))
         }
-        .task {
+        .task(id: shown.persistentID) {
             // Сбой истории не должен мешать смотреть калории — это справочник,
             // а история лишь удобство.
-            try? UserDataStore(context: context).recordView(of: item)
+            try? UserDataStore(context: context).recordView(of: shown)
         }
     }
 
@@ -130,7 +172,7 @@ struct ItemDetailView: View {
 
     private var calories: some View {
         HStack(alignment: .firstTextBaseline, spacing: Tokens.Spacing.s) {
-            Text(item.calorieText)
+            Text(shown.calorieText)
                 .font(.largeTitle)
                 .fontWeight(.semibold)
                 .monospacedDigit()
@@ -139,7 +181,7 @@ struct ItemDetailView: View {
                 .font(.subheadline)
                 .foregroundStyle(Tokens.Color.textSecondary)
             Spacer()
-            if item.isStale {
+            if shown.isStale {
                 Image(systemName: Tokens.Symbol.stale)
                     .foregroundStyle(Tokens.Color.staleWarning)
                     .accessibilityLabel("Figures may be out of date")
@@ -168,10 +210,12 @@ struct ItemDetailView: View {
     NavigationStack {
         ItemDetailView(item: MenuRepository.previewItem(name: "Big Mac"))
     }
+    .environment(MenuRepository.preview)
 }
 
 #Preview("Сверено с сайтом сети") {
     NavigationStack {
         ItemDetailView(item: MenuRepository.previewItem(name: "Quarter Pounder w/ Cheese"))
     }
+    .environment(MenuRepository.preview)
 }

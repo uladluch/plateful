@@ -32,6 +32,13 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     /// по архетипу — она есть всегда.
     let photo: MenuPack.Photo?
 
+    /// Размер порции, если блюдо выпускается в нескольких.
+    ///
+    /// «Coca Cola, Small» и «Coca Cola, Large» — одно блюдо в двух порциях,
+    /// и четыре карточки колы подряд в меню — это шум. Группу считает
+    /// конвейер, приложение только показывает её переключателем.
+    let size: Size?
+
     /// Блюда больше нет в меню сети.
     ///
     /// Не прячем: человек мог сохранить его в заказ или прийти по истории,
@@ -46,6 +53,38 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     let isStale: Bool
 
     var persistentID: PersistentID { PersistentID(chain: chain, key: key) }
+
+    /// Размерный вариант блюда.
+    struct Size: Hashable, Sendable {
+        /// Ключ группы. Уникален внутри сети, но не между сетями:
+        /// `coca-cola` есть у половины каталога.
+        let group: String
+        /// Подпись на сегменте: «Small», «12 fl oz».
+        let label: String
+        /// Порядок слева направо. Считается конвейером по словарю размеров.
+        let order: Int
+    }
+
+    /// Ссылка на группу размеров, с сетью — иначе колы разных сетей склеятся.
+    struct SizeGroupID: Hashable, Sendable {
+        let chain: String
+        let group: String
+    }
+
+    var sizeGroupID: SizeGroupID? {
+        size.map { SizeGroupID(chain: chain, group: $0.group) }
+    }
+
+    /// Название без размера: «Coca Cola, Large» → «Coca Cola».
+    ///
+    /// Режем по последней запятой, а не по подписи размера: конвейер собрал
+    /// имя ровно так, и обратная операция должна быть той же, иначе
+    /// «Iced Coffee, Vanilla, Medium» потеряет ваниль.
+    var baseName: String {
+        guard size != nil,
+              let comma = name.range(of: ",", options: .backwards) else { return name }
+        return String(name[..<comma.lowerBound])
+    }
 
     /// Ссылка на позицию, переживающая обновление пака.
     struct PersistentID: Hashable, Codable, Sendable {
@@ -69,6 +108,13 @@ nonisolated extension MenuItem {
         self.fat = packItem.fat
         self.image = packItem.image
         self.photo = packItem.photo
+        // Три поля приходят вместе или не приходят вовсе.
+        if let group = packItem.group, let label = packItem.size {
+            self.size = MenuItem.Size(group: group, label: label,
+                                      order: packItem.sizeOrder ?? 0)
+        } else {
+            self.size = nil
+        }
         self.isOffMenu = packItem.offMenu ?? false
         self.source = packItem.source ?? defaults.source
         self.observed = packItem.observed ?? defaults.observed

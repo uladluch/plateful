@@ -18,7 +18,7 @@ extension MenuRepository {
             "source": "menustat-2018", "observed": "2018-12-31", "stale": true,
             "chains": [
                 ["name": "Chick-Fil-A", "itemCount": 1],
-                ["name": "McDonald's", "itemCount": 3],
+                ["name": "McDonald's", "itemCount": 5],
             ],
             "items": [
                 ["chain": "Chick-Fil-A", "key": "chicken-sandwich", "name": "Chicken Sandwich",
@@ -31,9 +31,20 @@ extension MenuRepository {
                  "serving": "1 sandwich",
                  "kcal": 520, "protein": 30, "carbs": 42, "fat": 26,
                  "source": "mcdonalds.com", "observed": "2026-09-07", "stale": false],
+                // Одно блюдо в трёх размерах: превью должно показывать
+                // переключатель, а не три карточки картошки подряд.
+                ["chain": "McDonald's", "key": "world-famous-fries-small",
+                 "name": "World Famous Fries, Small", "category": "Fried Potatoes",
+                 "kcal": 230, "protein": 3, "carbs": 30, "fat": 11,
+                 "group": "world-famous-fries", "size": "Small", "sizeOrder": 0],
                 ["chain": "McDonald's", "key": "world-famous-fries-medium",
                  "name": "World Famous Fries, Medium", "category": "Fried Potatoes",
-                 "kcal": 340, "protein": 4, "carbs": 44, "fat": 16],
+                 "kcal": 340, "protein": 4, "carbs": 44, "fat": 16,
+                 "group": "world-famous-fries", "size": "Medium", "sizeOrder": 1],
+                ["chain": "McDonald's", "key": "world-famous-fries-large",
+                 "name": "World Famous Fries, Large", "category": "Fried Potatoes",
+                 "kcal": 490, "protein": 7, "carbs": 66, "fat": 23,
+                 "group": "world-famous-fries", "size": "Large", "sizeOrder": 2],
             ],
         ]
         let data = try! JSONSerialization.data(withJSONObject: json)

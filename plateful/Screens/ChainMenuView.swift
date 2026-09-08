@@ -15,7 +15,10 @@ struct ChainMenuView: View {
     var body: some View {
         List {
             if query.isEmpty {
-                let sections = filter.apply(to: menu.sections(for: chain.name))
+                // Свёртка размеров — последней: фильтр по целям должен
+                // видеть все размеры, иначе группа пропадёт из-за среднего.
+                let sections = menu.collapsingSizeVariants(
+                    filter.apply(to: menu.sections(for: chain.name)))
                 if sections.isEmpty {
                     noMatches
                 } else {
@@ -23,7 +26,8 @@ struct ChainMenuView: View {
                         Section {
                             ForEach(section.items) { item in
                                 NavigationLink(value: item) {
-                                    MenuItemRow(item: item, showsChain: false)
+                                    MenuItemRow(item: item, showsChain: false,
+                                                variants: menu.sizeVariants(of: item))
                                 }
                             }
                         } header: {
@@ -36,13 +40,15 @@ struct ChainMenuView: View {
                     }
                 }
             } else {
-                let results = filter.apply(to: menu.search(query, in: chain.name, limit: 200))
+                let results = menu.collapsingSizeVariants(
+                    filter.apply(to: menu.search(query, in: chain.name, limit: 200)))
                 if results.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
                     ForEach(results) { item in
                         NavigationLink(value: item) {
-                            MenuItemRow(item: item, showsChain: false)
+                            MenuItemRow(item: item, showsChain: false,
+                                        variants: menu.sizeVariants(of: item))
                         }
                     }
                 }

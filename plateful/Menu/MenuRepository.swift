@@ -129,6 +129,21 @@ final class MenuRepository {
         catalog?.sections(for: chain) ?? []
     }
 
+    /// Все размеры одного блюда. Пусто, если размер один.
+    func sizeVariants(of item: MenuItem) -> [MenuItem] {
+        catalog?.sizeVariants(of: item) ?? []
+    }
+
+    /// Свернуть размерные варианты в одну строку. Применяется последней,
+    /// уже после фильтра по целям.
+    func collapsingSizeVariants(_ items: [MenuItem]) -> [MenuItem] {
+        catalog?.collapsingSizeVariants(items) ?? items
+    }
+
+    func collapsingSizeVariants(_ sections: [MenuSection]) -> [MenuSection] {
+        catalog?.collapsingSizeVariants(sections) ?? sections
+    }
+
     /// Позиция по ссылке, пережившей обновление пака, — для сохранённых
     /// заказов и истории.
     func item(_ id: MenuItem.PersistentID) -> MenuItem? {

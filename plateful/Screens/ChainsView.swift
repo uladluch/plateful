@@ -90,13 +90,14 @@ struct ChainsView: View {
 
     @ViewBuilder
     private var searchResults: some View {
-        let results = menu.search(query)
+        let results = menu.collapsingSizeVariants(menu.search(query))
         if results.isEmpty {
             ContentUnavailableView.search(text: query)
         } else {
             List(results) { item in
                 NavigationLink(value: item) {
-                    MenuItemRow(item: item, showsChain: true)
+                    MenuItemRow(item: item, showsChain: true,
+                                variants: menu.sizeVariants(of: item))
                 }
             }
             .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
