@@ -39,3 +39,8 @@ backend/data/seed-pack-v*.deflate
 backend/data/*.deflate
 backend/data/seed-sql/
 backend/data/pack-v*.json
+
+# Скачанные гиды сетей и сгенерированный кроулом SQL — производные.
+# Гид скачивается заново по адресу из chains.source_url.
+backend/data/guides/
+backend/data/crawls/

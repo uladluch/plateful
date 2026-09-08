@@ -4,6 +4,7 @@
     python3 backend/scripts/crawl_chain.py chick-fil-a --menu https://www.chick-fil-a.com/menu
     python3 backend/scripts/crawl_chain.py chick-fil-a           # адрес уже в chains
     python3 backend/scripts/crawl_chain.py chick-fil-a --apply   # записать в базу
+    python3 backend/scripts/crawl_chain.py subway --guide URL    # гид в PDF вместо обхода
 
 Без `--apply` не пишется ничего — ни в базу, ни на диск, кроме отчёта.
 Так и задумано: человек сначала смотрит, что кроул собрался сделать.
@@ -12,6 +13,12 @@
 и навсегда. Этот заводит новую версию позиции в `items` — закрывает старую
 `valid_to` и вставляет свежую со своим источником и датой. Правки из
 `overrides` при этом остаются сверху: они на то и отдельная таблица.
+
+Источник может быть двух видов, а всё, что после него, — одно и то же.
+Обход сайта и гид в PDF отличаются только тем, откуда взялись позиции;
+дальше их одинаково сопоставляют с каталогом, проверяют и версионируют.
+Для сетей, чей сайт рисует меню скриптом, гид — единственный путь, и один
+файл даёт всю сеть разом.
 
 Ходим по правилам `adapters/base.py`: пауза между запросами, честный
 User-Agent с адресом проекта, только домен сети, никаких обходов защиты.
@@ -30,7 +37,7 @@ from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plateful_data import crawl, validate
+from plateful_data import crawl, pdf_guide, validate
 from plateful_data.adapters import site
 from plateful_data.adapters.base import Fetcher, curl_get
 from plateful_data.slug import slugify
@@ -39,6 +46,8 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "backend" / "data"
 
 # Часть сетей за Akamai не отвечает Python-у: там смотрят на отпечаток TLS.
+GUIDE_AGENT = "plateful-data/1.0 (+https://github.com/uladluch/plateful)"
+
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/125.0 Safari/537.36",
@@ -199,6 +208,53 @@ def walk(menu_url: str, *, limit: int | None, browser: bool) -> list[Crawled]:
     return items
 
 
+def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
+    """Позиции из PDF-гида сети.
+
+    Раскладка колонок своя у каждой сети и лежит в `pdf_guide.LAYOUTS`:
+    прочитать её из шапки нельзя, там текст повёрнут на 90°. Зато
+    `pdf_guide.read` проверяет и страну, и раскладку, и отказывается, если
+    гид не тот, — молча испорченный каталог хуже, чем несобранный.
+    """
+    layout = pdf_guide.LAYOUTS.get(slug)
+    if layout is None:
+        raise SystemExit(
+            f"раскладка колонок для {slug} не описана — добавьте её в "
+            f"pdf_guide.LAYOUTS, посмотрев файл глазами")
+
+    try:
+        import pdfplumber
+    except ImportError:
+        raise SystemExit("pdfplumber не установлен: pip install -r backend/requirements.txt")
+
+    print(f"  гид: {url}")
+    path = DATA / "guides" / f"{slug}.pdf"
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        blob = subprocess.run(
+            ["curl", "-sL", "-m", "120", "-A", GUIDE_AGENT, "-o", str(path), url],
+            capture_output=True)
+        if blob.returncode != 0 or not path.exists():
+            raise SystemExit(f"гид не скачался: {url}")
+    print(f"  {path.stat().st_size / 1024:.0f} КБ")
+
+    with pdfplumber.open(path) as pdf:
+        text = "\n".join((page.extract_text() or "") for page in pdf.pages)
+
+    try:
+        items = pdf_guide.read(text, layout=layout)
+    except pdf_guide.WrongGuide as wrong:
+        raise SystemExit(f"гид не подходит: {wrong}")
+
+    host = urlparse(url).netloc.removeprefix("www.").removeprefix("media.")
+    return [Crawled(chain=chain, ext_key=slugify(item.name), name=item.name,
+                    source=host, source_url=url,
+                    **{field: item.values.get(field) for field in
+                       ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
+                        "trans_fat", "cholesterol", "sodium", "fiber")})
+            for item in items]
+
+
 def report(plan: crawl.Plan) -> None:
     broken = len({(p.chain, p.name) for p in validate.errors(plan.problems)})
     print(f"\nСнято со страниц: {plan.crawled}")
@@ -290,8 +346,9 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
             f" date {sql_text(observed)}, false, 1.00\n"
             f"from closed;\n")
 
+    kind = "pdf" if plan.menu_url.endswith(".pdf") else "json_in_html"
     lines.append(f"update chains set last_crawl_at = now(), source_url = "
-                 f"{sql_text(plan.menu_url)}, source_kind = 'json_in_html'"
+                 f"{sql_text(plan.menu_url)}, source_kind = {sql_text(kind)}"
                  f" where id = {chain_id};")
     lines.append(crawl_record(plan, chain_id))
     lines.append("commit;")
@@ -302,6 +359,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("chain", help="slug сети в chains")
     parser.add_argument("--menu", help="адрес меню; иначе берётся chains.source_url")
+    parser.add_argument("--guide", metavar="URL",
+                        help="взять позиции из PDF-гида сети вместо обхода сайта")
     parser.add_argument("--apply", action="store_true", help="записать в базу")
     parser.add_argument("--limit", type=int, help="взять только первые N страниц")
     parser.add_argument("--browser", action="store_true",
@@ -312,13 +371,15 @@ def main() -> int:
 
     row = chain_row(args.chain)
     row_id = row["id"]
-    menu_url = args.menu or row.get("source_url")
+    menu_url = args.guide or args.menu or row.get("source_url")
     if not menu_url:
         raise SystemExit("адрес меню неизвестен: укажите --menu (он запомнится в chains)")
 
     print(f"── {row['name']} ── {menu_url}")
 
-    if args.cache and args.cache.exists():
+    if args.guide:
+        live = from_guide(args.guide, row["name"], args.chain)
+    elif args.cache and args.cache.exists():
         print(f"  из кэша {args.cache}")
         live = [Crawled(**item) for item in json.loads(args.cache.read_text())]
     else:

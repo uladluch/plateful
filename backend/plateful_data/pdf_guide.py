@@ -1,0 +1,179 @@
+"""Гид по питанию в PDF: единственный источник для сетей, чей сайт не читается.
+
+Разведка двенадцати крупнейших сетей показала, что общий читатель страниц
+берёт меньшинство: остальные рисуют меню скриптом, и в HTML нет ни ссылок
+на блюда, ни цифр. Зато почти у каждой такой сети есть PDF с полной
+таблицей — тот самый документ, которым она исполняет 21 CFR 101.11. Один
+файл даёт всю сеть разом, без обхода двухсот страниц.
+
+Разбор простой: строка блюда — это название и хвост из чисел в известном
+порядке. Сложное здесь не разбор, а две проверки, без которых гид молча
+портит каталог.
+
+**Страна.** У Wendy's на собственном домене лежит `2025-02/Core Menu.pdf`
+без единого признака страны в адресе — и это британский гид: «Pain au
+Chocolat», «Curry Bean Burger» и колонка «Salt» в граммах вместо натрия
+в миллиграммах. Прочитать его как американский значит записать 0.46 вместо
+460 и не заметить. Поэтому страна определяется по самим числам, а не по
+заголовку: заголовки в этих PDF повёрнуты на 90° и склеиваются в кашу,
+а натрий в миллиграммах ни с чем не спутать.
+
+**Порядок колонок.** Он свой у каждой сети и задаётся вручную — прочитать
+его из шапки нельзя по той же причине. Зато можно проверить: если колонки
+съехали, макросы перестанут сходиться с калориями. Атуотер, которым мы и
+так проверяем каждую позицию, здесь работает проверкой самой раскладки.
+"""
+
+from __future__ import annotations
+
+import re
+import statistics
+from dataclasses import dataclass
+
+from . import validate
+
+#: Число, «меньше единицы» или прочерк — всё, что бывает в клетке таблицы.
+_VALUE = re.compile(r"^(?:<\s*)?\d+(?:[.,]\d+)?$|^[-–—]$|^N/?A$", re.I)
+
+# Натрий в миллиграммах у любого блюда идёт сотнями; соль в граммах — единицами.
+# Медиана ниже этого значит, что перед нами не американский гид.
+MIN_MEDIAN_SODIUM_MG = 50.0
+
+# Насколько в среднем макросы вправе расходиться с калориями, прежде чем
+# мы решим, что дело не в блюдах, а в раскладке колонок.
+#
+# Меряем медиану отклонения в обе стороны, а не долю ошибок валидатора:
+# тот считает ошибкой только перебор (макросы дают больше калорий, чем
+# заявлено), а съехавшая колонка чаще даёт недобор — и он проходит как
+# предупреждение про алкоголь. На переставленных местами белке и клетчатке
+# у Subway валидатор не сказал ничего, а медиана отклонения подскочила
+# с 1% до 17%.
+MAX_ATWATER_DRIFT = 0.10
+
+
+class WrongGuide(Exception):
+    """Гид не тот: другая страна или другая раскладка колонок."""
+
+
+@dataclass(frozen=True)
+class Layout:
+    """Порядок числовых колонок в гиде одной сети.
+
+    `None` — колонка есть, но нам не нужна (проценты дневной нормы,
+    добавленный сахар, витамины). `count` — сколько чисел в строке блюда:
+    строка с другим числом клеток не блюдо, а заголовок раздела или
+    перенос, и угадывать по ней нечего.
+    """
+    columns: tuple[str | None, ...]
+    count: int
+
+
+@dataclass(frozen=True)
+class GuideItem:
+    name: str
+    values: dict[str, float | None]
+
+
+#: Subway, U.S. NUTRITION INFORMATION. Порядок — как на этикетке FDA.
+SUBWAY = Layout(
+    columns=("serving", "kcal", "fat", "sat_fat", "trans_fat", "cholesterol",
+             "sodium", "carbs", "fiber", "sugar", None, "protein",
+             None, None, None, None),
+    count=16,
+)
+
+LAYOUTS = {"subway": SUBWAY}
+
+
+def _number(token: str) -> float | None:
+    """«<1» — не ноль и не единица, а «меньше грамма».
+
+    Схема такого не хранит, а выдумать середину значит соврать точнее, чем
+    знаешь. Поэтому неизвестно.
+    """
+    if token.startswith("<") or token in ("-", "–", "—") or token.upper() in ("NA", "N/A"):
+        return None
+    return float(token.replace(",", "."))
+
+
+def _split(line: str, count: int) -> tuple[str, list[str]] | None:
+    """Название и хвост из `count` клеток. None — строка не про блюдо."""
+    tokens = line.split()
+    tail = 0
+    while tail < len(tokens) and _VALUE.match(tokens[len(tokens) - 1 - tail]):
+        tail += 1
+    if tail < count:
+        return None
+    name = " ".join(tokens[:len(tokens) - tail]).strip()
+    if not name:
+        return None
+    # Берём первые `count` клеток: дальше идут проценты дневной нормы,
+    # а они плавают от гида к гиду.
+    return name, tokens[len(tokens) - tail:][:count]
+
+
+def parse(text: str, layout: Layout) -> list[GuideItem]:
+    items: list[GuideItem] = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        split = _split(line, layout.count)
+        if not split:
+            continue
+        name, cells = split
+        values = {field: _number(cell)
+                  for field, cell in zip(layout.columns, cells)
+                  if field is not None}
+        items.append(GuideItem(name=name, values=values))
+    return items
+
+
+def check_american(items: list[GuideItem]) -> None:
+    """Натрий в миллиграммах или соль в граммах — вот и вся разница."""
+    sodium = [i.values["sodium"] for i in items
+              if i.values.get("sodium") is not None]
+    if not sodium:
+        raise WrongGuide("в гиде нет натрия — не американская этикетка")
+    median = statistics.median(sodium)
+    if median < MIN_MEDIAN_SODIUM_MG:
+        raise WrongGuide(
+            f"медиана натрия {median:g} — это соль в граммах, а не натрий "
+            f"в миллиграммах: гид не американский")
+
+
+def atwater_drift(items: list[GuideItem]) -> list[float]:
+    """Насколько макросы каждой строки расходятся с её калориями."""
+    drift = []
+    for item in items:
+        values = item.values
+        if any(values.get(f) is None for f in ("kcal", "protein", "carbs", "fat")):
+            continue
+        if values["kcal"] < validate.ATWATER_FLOOR_KCAL:
+            continue
+        expected = validate.atwater_kcal(values["protein"], values["carbs"],
+                                         values["fat"])
+        drift.append(abs(expected - values["kcal"]) / values["kcal"])
+    return drift
+
+
+def check_layout(items: list[GuideItem]) -> None:
+    """Съехавшие колонки видны по тому, что макросы перестают сходиться."""
+    drift = atwater_drift(items)
+    if not drift:
+        raise WrongGuide("ни одной строки с четырьмя макросами — раскладка не та")
+
+    median = statistics.median(drift)
+    if median > MAX_ATWATER_DRIFT:
+        raise WrongGuide(
+            f"макросы расходятся с калориями в среднем на {median:.0%} "
+            f"({len(drift)} строк) — колонки прочитаны не в том порядке")
+
+
+def read(text: str, *, layout: Layout) -> list[GuideItem]:
+    """Текст гида → позиции. Бросает `WrongGuide`, если гид не тот."""
+    items = parse(text, layout)
+    if not items:
+        raise WrongGuide("ни одной строки блюда — раскладка или файл не те")
+    check_american(items)
+    check_layout(items)
+    return items
