@@ -43,34 +43,78 @@ class Robots:
     проверить можно, девяносто шесть — нет, и обход, нарушающий
     собственное правило, отличается от бота-пылесоса только намерением.
 
-    Недоступный `robots.txt` считаем разрешением: так велит стандарт и так
-    делают поисковики — иначе упавший файл запрещал бы весь сайт. А вот
-    сам запрет соблюдаем молча и до конца, без «ну один раз можно».
+    **Файл забираем сами, а не через `RobotFileParser.read()`.** Тот
+    реализует старый черновик, где 401 и 403 значат «запрещено всё».
+    Действующий RFC 9309 говорит иначе, и разница не теоретическая: у
+    Taco Bell, Sonic, Dunkin' и Jack in the Box за `robots.txt` стоит
+    Cloudflare и отдаёт 302, 403 или 404 — самого файла нет вовсе. Через
+    стандартный разбор все четыре получали «сайт запретил всё» и вылетали
+    из очереди навсегда, хотя ничего не запрещали.
+
+    Поэтому по RFC 9309:
+
+      * **2xx** — разбираем и соблюдаем;
+      * **4xx** — файла нет, ходить можно (§2.3.1.3, «unavailable»);
+      * **5xx и обрыв связи** — сервер нездоров, считаем полный запрет
+        и не трогаем сайт до следующего раза (§2.3.1.4, «unreachable»).
+
+    Последнее — единственный случай, когда молчание значит «нельзя», и
+    он же противоположен прежнему поведению: раньше любая неудача читалась
+    как разрешение.
     """
 
     def __init__(self, user_agent: str = USER_AGENT):
         self.user_agent = user_agent
         self._parsers: dict[str, urllib.robotparser.RobotFileParser | None] = {}
+        #: Хосты, у которых сервер нездоров: ходить нельзя до следующего раза.
+        self._unreachable: set[str] = set()
+
+    def _fetch(self, url: str) -> str | None:
+        """Текст robots.txt, или None если файла нет. Бросает при 5xx."""
+        request = urllib.request.Request(url, headers={"User-Agent": self.user_agent})
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                body = response.read().decode("utf-8", errors="replace")
+        except urllib.error.HTTPError as error:
+            if 400 <= error.code < 500:
+                return None            # файла нет — ходить можно
+            raise                      # 5xx — сервер нездоров
+        # За CDN на месте robots.txt нередко лежит HTML: страница-заглушка,
+        # челлендж или 404 приложения. Это не правила, это отсутствие правил.
+        if "<html" in body[:2000].lower():
+            return None
+        return body
 
     def _parser(self, url: str):
         parts = urlsplit(url)
         host = f"{parts.scheme}://{parts.netloc}"
-        if host not in self._parsers:
-            parser = urllib.robotparser.RobotFileParser()
-            parser.set_url(urlunsplit((parts.scheme, parts.netloc,
-                                       "/robots.txt", "", "")))
-            try:
-                parser.read()
-            except Exception:
-                # Не отдался — читаем как разрешение, но говорим об этом.
-                print(f"  · robots.txt не прочитан у {parts.netloc}")
-                parser = None
-            self._parsers[host] = parser
-        return self._parsers[host]
+        if host in self._parsers:
+            return self._parsers[host]
+
+        robots_url = urlunsplit((parts.scheme, parts.netloc, "/robots.txt", "", ""))
+        try:
+            body = self._fetch(robots_url)
+        except Exception as error:
+            self._unreachable.add(host)
+            self._parsers[host] = None
+            print(f"  · robots.txt у {parts.netloc} не отдался ({error}) — не ходим")
+            return None
+
+        if body is None:
+            self._parsers[host] = None
+            return None
+
+        parser = urllib.robotparser.RobotFileParser()
+        parser.parse(body.splitlines())
+        self._parsers[host] = parser
+        return parser
 
     def allows(self, url: str) -> bool:
         parser = self._parser(url)
-        return True if parser is None else parser.can_fetch(self.user_agent, url)
+        if parser is not None:
+            return parser.can_fetch(self.user_agent, url)
+        parts = urlsplit(url)
+        return f"{parts.scheme}://{parts.netloc}" not in self._unreachable
 
     def crawl_delay(self, url: str) -> float | None:
         """Пауза, которую сайт просит сам. Его просьба важнее нашей ставки."""

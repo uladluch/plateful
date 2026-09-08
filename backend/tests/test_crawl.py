@@ -260,43 +260,55 @@ class RobotsRules(unittest.TestCase):
     Один сайт можно посмотреть руками, девяносто шесть — нет.
     """
 
-    class _Parser:
-        def __init__(self, allowed: bool, delay=None):
-            self.allowed, self.delay = allowed, delay
-
-        def can_fetch(self, agent, url):
-            return self.allowed
-
-        def crawl_delay(self, agent):
-            return self.delay
-
-    def _robots(self, parser):
+    def _robots_with(self, fetch):
+        """Robots со своим забиральщиком файла — без похода в сеть."""
         from plateful_data.adapters.base import Robots
         robots = Robots()
-        robots._parsers["https://example.com"] = parser
+        robots._fetch = fetch
         return robots
 
-    def test_запрет_соблюдается(self):
-        robots = self._robots(self._Parser(allowed=False))
+    def test_настоящий_запрет_соблюдается(self):
+        robots = self._robots_with(
+            lambda url: "User-agent: *\nDisallow: /wp-admin/\n")
+        self.assertTrue(robots.allows("https://example.com/menu"))
+        self.assertFalse(robots.allows("https://example.com/wp-admin/x"))
+
+    def test_отсутствие_файла_не_запрещает_сайт(self):
+        """RFC 9309 §2.3.1.3: 4xx значит «файла нет», а не «нельзя».
+
+        urllib.robotparser реализует старый черновик и читает 403 как
+        «запрещено всё». За robots.txt у Sonic, Dunkin' и Jack in the Box
+        стоит CDN и отдаёт 403 или 404 — все трое получали вечный запрет,
+        ничего не запретив.
+        """
+        robots = self._robots_with(lambda url: None)
+        self.assertTrue(robots.allows("https://example.com/menu"))
+
+    def test_больной_сервер_значит_не_ходить(self):
+        """RFC 9309 §2.3.1.4: 5xx и обрыв — «unreachable», полный запрет."""
+        def boom(url):
+            raise OSError("connection reset")
+        robots = self._robots_with(boom)
         self.assertFalse(robots.allows("https://example.com/menu"))
 
-    def test_нечитаемый_файл_не_запрещает_сайт(self):
-        """Так велит стандарт: упавший robots.txt иначе закрыл бы всё."""
-        robots = self._robots(None)
+    def test_html_на_месте_robots_это_не_правила(self):
+        """За CDN на месте файла лежит страница-заглушка или 404 приложения."""
+        robots = self._robots_with(
+            lambda url: "<!DOCTYPE html><html><head><title>404</title>")
         self.assertTrue(robots.allows("https://example.com/menu"))
-        self.assertIsNone(robots.crawl_delay("https://example.com/menu"))
 
     def test_просьба_сайта_о_паузе_важнее_нашей(self):
         from plateful_data.adapters.base import Fetcher
         fetcher = Fetcher(delay=5.0)
-        fetcher.robots = self._robots(self._Parser(allowed=True, delay=20))
-        # get() выдержит паузу и уйдёт в сеть, поэтому проверяем сам расчёт
-        self.assertEqual(max(fetcher.delay,
-                             fetcher.robots.crawl_delay("https://example.com/x")), 20.0)
+        fetcher.robots = self._robots_with(
+            lambda url: "User-agent: *\nCrawl-delay: 20\n")
+        asked = fetcher.robots.crawl_delay("https://example.com/x")
+        self.assertEqual(max(fetcher.delay, asked), 20.0)
 
     def test_запрещённый_адрес_не_ошибка_а_результат(self):
         from plateful_data.adapters.base import Fetcher
         fetcher = Fetcher()
-        fetcher.robots = self._robots(self._Parser(allowed=False))
+        fetcher.robots = self._robots_with(
+            lambda url: "User-agent: *\nDisallow: /\n")
         self.assertIsNone(fetcher.get("https://example.com/menu"))
         self.assertEqual(fetcher.forbidden, ["https://example.com/menu"])

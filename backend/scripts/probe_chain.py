@@ -3,7 +3,11 @@
 
     python3 backend/scripts/probe_chain.py https://www.chick-fil-a.com/menu/entrees/...
     python3 backend/scripts/probe_chain.py --menu https://www.wendys.com/menu
-    python3 backend/scripts/probe_chain.py --survey
+
+Разглядывание одной страницы: что на ней есть и каким видом разметки отдано.
+Разведка всех сетей подряд — `vacuum.py --probe N`, он берёт адреса из базы
+и туда же пишет вывод. Здесь — инструмент для рук, когда надо понять, почему
+сеть не читается.
 
 Подключение новой сети начинается отсюда. Скрипт берёт одну страницу
 (или страницу меню и первые несколько блюд с неё), прогоняет общий
@@ -29,22 +33,9 @@ from plateful_data.adapters.base import Fetcher, curl_get
 from plateful_data.adapters.mcdonalds import BROWSER_HEADERS
 from plateful_data.adapters.site import NUTRIENTS, item_links, read_page
 
-# Сети, до которых руки ещё не дошли. Адрес раздела меню — всё, что нужно
-# для разведки; сюда же дописывать новые.
-KNOWN_MENUS = {
-    "wendys": "https://www.wendys.com/menu",
-    "burger-king": "https://www.bk.com/menu",
-    "taco-bell": "https://www.tacobell.com/food",
-    "subway": "https://www.subway.com/en-US/MenuNutrition/Menu",
-    "popeyes": "https://www.popeyes.com/menu",
-    "kfc": "https://www.kfc.com/menu",
-    "dunkin": "https://www.dunkindonuts.com/en/menu",
-    "starbucks": "https://www.starbucks.com/menu",
-    "panera": "https://www.panerabread.com/en-us/menu.html",
-    "arbys": "https://arbys.com/menu",
-    "sonic": "https://www.sonicdrivein.com/menu",
-    "jack-in-the-box": "https://www.jackinthebox.com/menu",
-}
+# Адреса меню живут в `chains.source_url`, а не здесь: их читает `vacuum.py`,
+# он же записывает результат разведки обратно в базу. Вторая копия списка
+# в этом файле разошлась бы с базой на первой же добавленной сети.
 
 
 def fetch(url: str, fetcher: Fetcher) -> str | None:
@@ -92,23 +83,16 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("url", nargs="?", help="страница блюда")
     parser.add_argument("--menu", help="страница меню: пройти по первым блюдам")
-    parser.add_argument("--survey", action="store_true",
-                        help="пройтись по всем известным сетям")
     parser.add_argument("--depth", type=int, default=2,
                         help="сколько блюд смотреть с меню")
     args = parser.parse_args()
 
     fetcher = Fetcher()
-    if args.survey:
-        for chain, menu in KNOWN_MENUS.items():
-            print(f"\n=== {chain} ===")
-            probe_menu(menu, fetcher, args.depth)
-        return 0
     if args.menu:
         probe_menu(args.menu, fetcher, args.depth)
         return 0
     if not args.url:
-        parser.error("нужен адрес: url, --menu или --survey")
+        parser.error("нужен адрес: url или --menu")
 
     page = fetch(args.url, fetcher)
     if not page:
