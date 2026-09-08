@@ -94,7 +94,7 @@ Seed-пак зашит в бандл — без сети и при лежаще�
  "items":[{"chain":"McDonald's","key":"big-mac","name":"Big Mac","category":"Burgers","serving":null,
            "kcal":540.0,"protein":25.0,"carbs":46.0,"fat":28.0,
            "section":"Beverages",
-           "variant":{"group":"coca-cola","label":"Large","order":3,"kind":"size"}}]}
+           "variant":{"group":"coca-cola","label":"Large","order":3,"kind":"size","base":"Coca Cola"}}]}
 ```
 Пак детерминирован (без даты внутри) — CI сверяет `plateful/Resources/seed-pack.json` с пересборкой.
 Версии immutable.
@@ -127,8 +127,11 @@ zlib-контейнер: у Apple `Data.decompressed(using: .zlib)` понима
     10 Chicken McNuggets      счёт или вес перед названием
     Big Breakfast w/ Hotcakes опция после «w/»
 
-Позиция получает `variant: {group, label, order, kind}`, где `kind` — `size`
-или `option`. 25 366 позиций → 3 573 группы → **18 680 карточек**; у McDonald's
+Позиция получает `variant: {group, label, order, kind, base}`, где `kind` — `size`
+или `option`, а `base` — название без варианта («Chicken McNuggets»). База едет
+в паке, а не режется на клиенте: правило отрезания знает только тот, кто
+отрезал, и первая же попытка повторить его в Swift разошлась с конвейером в
+регистре единицы («3 piece» против «3 Piece»). 25 366 позиций → 3 573 группы → **18 680 карточек**; у McDonald's
 102 живые позиции складываются в 58 карточек.
 
 **Словарь размеров выводится из данных, а не пишется по сетям.** «Shorti» у Wawa,
@@ -200,7 +203,24 @@ zlib-контейнер: у Apple `Data.decompressed(using: .zlib)` понима
 снимки блюд и пометки о снятых с меню: так v12 потерял 150 фотографий и 121
 архивную позицию. Полное определение вью лежит в миграции `menu_taxonomy` —
 только там оно записано целиком. `export_pack.py` сравнивает новый пак с
-предыдущим и отказывается собирать пак, который беднее больше чем на 5%.
+предыдущим — с диска, а в CI из Storage — и отказывается собирать пак, который
+беднее больше чем на 5%. `publish_pack.sh` перед сборкой гоняет `sync_taxonomy.py`,
+чтобы база несла те же разделы и варианты, что и пак.
+
+## Что клиент берёт у Supabase — и чего нет
+
+Клиент ходит только за публичными файлами Storage (`manifest.json`, `vN.deflate`)
+обычным `URLSession`. SDK там нечего делать: это GET публичного объекта, и лишняя
+зависимость с Auth и Realtime внутри ничего не добавит. Единственное, что клиенту
+разрешено писать, — `search_events` (policy `search_events_insert_anon`), и это
+**не реализовано**: продуктовое решение о телеметрии поиска не принято. Если
+принимать — брать `supabase-swift` только с продуктом `PostgREST`, слать лишь
+`matched=false` и без текста запроса целиком.
+
+Бэкенд ходит через `supabase` CLI по access-токену, без service-ключа и пароля
+базы; `supabase-py` потребовал бы service-ключ в локальном окружении — не надо.
+Советники (`get_advisors`) чистые: 7 таблиц с RLS без политик — так и задумано,
+клиент их не читает.
 
 ## Правило одного slug
 `backend/plateful_data/slug.py` — единственная реализация `slugify`; `chains.slug` и `items.ext_key`

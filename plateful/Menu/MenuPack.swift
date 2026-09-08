@@ -56,9 +56,13 @@ nonisolated struct MenuPack: Decodable, Sendable {
         let group: String
         let label: String
         let order: Int
-        /// `size` — порция, `kind` — исполнение. Порции сокращаются до
+        /// `size` — порция, `option` — исполнение. Порции сокращаются до
         /// буквы, опции нет: «Egg» не сократить.
         let kind: String
+        /// Название без варианта: «Chicken McNuggets» для «10 Chicken
+        /// McNuggets». Считает конвейер: правило отрезания знает только тот,
+        /// кто отрезал. Необязательное — паки до v14 его не несут.
+        let base: String?
     }
 
     struct Chain: Decodable, Sendable {

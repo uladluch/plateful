@@ -8,7 +8,7 @@
                     chains: [{name, itemCount}],
                     items:  [{chain, key, name, category, section, serving,
                               kcal, protein, carbs, fat, image,
-                              variant?: {group, label, order, kind},
+                              variant?: {group, label, order, kind, base},
                               source?, observed?, stale?}]}
 
 `section` — раздел, в котором приложение покажет позицию: категория
@@ -92,9 +92,9 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             "image": classify(item.name, item.category),
         }
         if variant := groups.get((item.chain, item.ext_key)):
-            group, label, order, kind = variant
+            group, label, order, kind, base = variant
             row["variant"] = {"group": group, "label": label,
-                              "order": order, "kind": kind}
+                              "order": order, "kind": kind, "base": base}
         # Только отличия от умолчаний пака — иначе пак раздувается втрое.
         if item_source != pack_source:
             row["source"] = item_source

@@ -15,6 +15,11 @@ DEFLATE="backend/data/pack-v${VERSION}.deflate"
 MANIFEST="backend/data/manifest.json"
 BASE_URL="https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs"
 
+# Разделы и варианты — производные, и база должна нести те же значения, что
+# пак: их считает один код, но записывает разными путями. Сначала база.
+echo "── Разделы и варианты → база ──"
+python3 backend/scripts/sync_taxonomy.py
+
 echo "── Сборка пака из базы ──"
 python3 backend/scripts/export_pack.py --version "$VERSION"
 

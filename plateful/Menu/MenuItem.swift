@@ -70,6 +70,9 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
         /// Порядок слева направо. Считается конвейером.
         let order: Int
         let kind: Kind
+        /// Название без варианта. Пусто у паков, выпущенных до того, как
+        /// конвейер начал его считать.
+        let base: String?
 
         /// Порция меняет количество, исполнение — состав. Приложению это
         /// нужно для двух вещей: подписи под названием («4 sizes» против
@@ -95,23 +98,12 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     /// Название без варианта: «Coca Cola, Large» → «Coca Cola»,
     /// «10 Chicken McNuggets» → «Chicken McNuggets».
     ///
-    /// Отрезаем ровно то, что конвейер приписал: он собирал имя из базы и
-    /// подписи, и обратная операция должна быть той же, иначе
-    /// «Iced Coffee, Vanilla, Medium» потеряет ваниль.
+    /// Берём из пака, а не режем имя сами: правило отрезания знает только
+    /// конвейер, и первая же попытка повторить его здесь разошлась с ним в
+    /// регистре единицы («3 piece» против «3 Piece»). Пак без базы — старый;
+    /// там честнее показать полное имя, чем угадывать.
     var baseName: String {
-        guard let variant else { return name }
-        if let comma = name.range(of: ", \(variant.label)", options: [.backwards, .anchored]) {
-            return String(name[..<comma.lowerBound])
-        }
-        if let separator = name.range(of: " w/ ", options: .backwards),
-           variant.kind == .option {
-            return String(name[..<separator.lowerBound])
-        }
-        if name.hasPrefix(variant.label) {
-            return String(name.dropFirst(variant.label.count)).trimmingCharacters(
-                in: .whitespaces)
-        }
-        return name
+        variant?.base ?? name
     }
 
     /// Ссылка на позицию, переживающая обновление пака.
@@ -139,7 +131,7 @@ nonisolated extension MenuItem {
         self.photo = packItem.photo
         self.variant = packItem.variant.map {
             MenuItem.Variant(group: $0.group, label: $0.label, order: $0.order,
-                             kind: MenuItem.Variant.Kind(pack: $0.kind))
+                             kind: MenuItem.Variant.Kind(pack: $0.kind), base: $0.base)
         }
         self.isOffMenu = packItem.offMenu ?? false
         self.source = packItem.source ?? defaults.source

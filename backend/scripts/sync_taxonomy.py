@@ -97,7 +97,7 @@ def main() -> int:
     values = []
     for row in rows:
         variant = groups.get((row.chain, row.ext_key))
-        group, label, order, kind = variant if variant else (None, None, None, None)
+        group, label, order, kind = variant[:4] if variant else (None, None, None, None)
         values.append((row.chain, row.ext_key, section(row.name, row.category),
                        group, label, order, kind))
 

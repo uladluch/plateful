@@ -18,6 +18,9 @@ import json
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
+import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -100,6 +103,28 @@ def fetch_all() -> list[Row]:
 MAX_LOSS = 0.05
 
 
+def previous_items(version: int) -> list[dict] | None:
+    """Позиции прошлого пака — с диска, а если его там нет, из Storage.
+
+    В CI диска нет: паки не в репозитории. А сравнивать надо с тем, что
+    реально опубликовано, — это и есть то, чего не должен лишиться человек
+    с установленным приложением.
+    """
+    local = DATA / f"pack-v{version}.json"
+    if local.exists():
+        return json.loads(local.read_text())["items"]
+    try:
+        with urllib.request.urlopen(STORAGE_URL.format(v=version), timeout=120) as response:
+            raw = zlib.decompress(response.read(), -zlib.MAX_WBITS)
+    except urllib.error.HTTPError as error:
+        # Storage отвечает на отсутствующий объект 400 с телом «not_found»,
+        # а не 404. Оба значат одно: сравнивать не с чем.
+        if error.code in (400, 404):
+            return None
+        raise
+    return json.loads(raw)["items"]
+
+
 def check_against_previous(pack: dict, version: int) -> list[str]:
     """Не потерял ли новый пак того, что было в прошлом.
 
@@ -109,11 +134,10 @@ def check_against_previous(pack: dict, version: int) -> list[str]:
     случилось с v12 — 150 фотографий и 121 архивная позиция исчезли, и
     заметить это можно было только глазами.
     """
-    previous = DATA / f"pack-v{version - 1}.json"
-    if not previous.exists():
+    was = previous_items(version - 1)
+    if was is None:
         return []
 
-    was = json.loads(previous.read_text())["items"]
     now = pack["items"]
     problems = []
     for field, label in (("photo", "снимков блюд"), ("offMenu", "снятых с меню"),

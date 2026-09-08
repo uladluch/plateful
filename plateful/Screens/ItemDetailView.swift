@@ -15,12 +15,12 @@ struct ItemDetailView: View {
 
     /// Выбранный вариант. Ключ, а не индекс: индекс живёт до перезагрузки
     /// каталога, а обновление пака может прийти прямо с открытой карточкой.
-    @State private var sizeKey: String
+    @State private var variantKey: String
 
     init(item: MenuItem) {
         self.item = item
         // Открываемся на том варианте, который человек выбрал в списке.
-        _sizeKey = State(initialValue: item.key)
+        _variantKey = State(initialValue: item.key)
     }
 
     /// Варианты одного блюда, слева направо. Пусто — вариант один.
@@ -28,7 +28,7 @@ struct ItemDetailView: View {
 
     /// Позиция, о которой сейчас говорит вся карточка.
     private var shown: MenuItem {
-        variants.first { $0.key == sizeKey } ?? item
+        variants.first { $0.key == variantKey } ?? item
     }
 
     /// Снимок берём у того размера, у которого он есть: у «Waffle Potato
@@ -173,7 +173,7 @@ struct ItemDetailView: View {
     @ViewBuilder
     private var sizePicker: some View {
         let picker = Picker(item.variant?.kind == .option ? "Option" : "Size",
-                            selection: $sizeKey) {
+                            selection: $variantKey) {
             ForEach(variants) { variant in
                 // На сегменте — «L», в озвучке — «Large»: сокращение
                 // экономит ширину, а не смысл.

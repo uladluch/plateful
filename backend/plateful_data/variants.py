@@ -130,7 +130,9 @@ def count_label(name: str) -> tuple[str, str] | None:
     if not match:
         return None
     number, unit, base = match.groups()
-    return base.strip(), f"{number} {unit.lower()}" if unit else number
+    # Регистр единицы — как в названии: подпись должна отрезаться от него
+    # буква в букву, а не «почти».
+    return base.strip(), f"{number} {unit}" if unit else number
 
 
 def option_label(name: str) -> tuple[str, str] | None:
@@ -178,8 +180,13 @@ def _parse(name: str, known: set[str] = frozenset()) -> tuple[str, str, str] | N
     return None
 
 
-def assign_groups(items) -> dict[tuple[str, str], tuple[str, str, int, str]]:
-    """(сеть, ext_key) → (ключ группы, подпись, позиция, вид варианта).
+def assign_groups(items) -> dict[tuple[str, str], tuple[str, str, int, str, str]]:
+    """(сеть, ext_key) → (ключ группы, подпись, позиция, вид варианта, база).
+
+    База — название без варианта, «Chicken McNuggets» для «10 Chicken
+    McNuggets». Едет в паке, а не вычисляется приложением: правило отрезания
+    знает только тот, кто отрезал, и первая же попытка повторить его на
+    клиенте разошлась с конвейером в регистре единицы.
 
     Ключ обязательно с сетью: ext_key уникален только внутри сети, и «Coca
     Cola, Small» есть у половины каталога. Пока ключом был один ext_key,
@@ -204,13 +211,14 @@ def assign_groups(items) -> dict[tuple[str, str], tuple[str, str, int, str]]:
 
     # Блюдо без добавок — участник своей же группы опций: «Big Breakfast»
     # стоит рядом с «Big Breakfast w/ Hotcakes», а не отдельной карточкой.
-    plain_of = {(chain, _group_key(base)): base for (chain, _), base in bases.items()}
     for item in items:
         bucket = (item.chain, _group_key(item.name))
-        if bucket in plain_of and any(kind == OPTION for _, _, kind in buckets[bucket]):
+        if bucket in bases and any(kind == OPTION for _, _, kind in buckets[bucket]):
             buckets[bucket].append((item.ext_key, PLAIN, OPTION))
+            # Название самого блюда точнее того, что осталось после «w/».
+            bases[bucket] = item.name
 
-    assigned: dict[tuple[str, str], tuple[str, str, int, str]] = {}
+    assigned: dict[tuple[str, str], tuple[str, str, int, str, str]] = {}
     for (chain, group_key), members in buckets.items():
         if len(members) < 2:
             continue
@@ -219,5 +227,6 @@ def assign_groups(items) -> dict[tuple[str, str], tuple[str, str, int, str]]:
         kind = SIZE if any(k == SIZE for _, _, k in members) else OPTION
         ordered = sorted(members, key=lambda member: _rank(member[1]))
         for position, (ext_key, label, _) in enumerate(ordered):
-            assigned[(chain, ext_key)] = (group_key, label, position, kind)
+            assigned[(chain, ext_key)] = (group_key, label, position, kind,
+                                          bases[(chain, group_key)])
     return assigned

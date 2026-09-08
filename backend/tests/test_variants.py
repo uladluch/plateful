@@ -94,7 +94,7 @@ class CountTests(unittest.TestCase):
 
     def test_reads_a_leading_count(self):
         self.assertEqual(count_label("10 Chicken McNuggets"), ("Chicken McNuggets", "10"))
-        self.assertEqual(count_label("3 Piece McCrispy Strips"), ("McCrispy Strips", "3 piece"))
+        self.assertEqual(count_label("3 Piece McCrispy Strips"), ("McCrispy Strips", "3 Piece"))
 
     def test_keeps_the_unit(self):
         # «12 oz» — размер стейка; голое «12» рядом с «16» прочтётся так же,
@@ -155,6 +155,31 @@ class LearnedSizeTests(unittest.TestCase):
     def test_a_rare_tail_is_not_a_size(self):
         items = [Item("A", "Soup, Chunky"), Item("A", "Stew, Chunky")]
         self.assertEqual(learn_size_words(items), {})
+
+
+class BaseTests(unittest.TestCase):
+    """База едет в паке: правило отрезания знает только тот, кто отрезал."""
+
+    def test_base_is_the_name_without_the_variant(self):
+        items = [Item("A", "4 Chicken McNuggets"), Item("A", "10 Chicken McNuggets"),
+                 Item("A", "Coca Cola, Small"), Item("A", "Coca Cola, Large"),
+                 Item("A", "Big Breakfast"), Item("A", "Big Breakfast w/ Hotcakes")]
+        bases = {g[0]: g[4] for g in assign_groups(items).values()}
+        self.assertEqual(bases, {"chicken-mcnugget": "Chicken McNuggets",
+                                 "coca-cola": "Coca Cola",
+                                 "big-breakfast": "Big Breakfast"})
+
+    def test_label_is_cut_from_the_name_verbatim(self):
+        # Иначе клиент не сможет собрать имя обратно из базы и подписи.
+        pairs = [("3 Piece McCrispy Strips", "5 Piece McCrispy Strips"),
+                 ("12 oz Top Sirloin", "16 oz Top Sirloin"),
+                 ("Latte, Venti", "Latte, Grande")]
+        for first, second in pairs:
+            groups = assign_groups([Item("A", first), Item("A", second)])
+            for name in (first, second):
+                _, label, _, _, base = groups[("A", slugify(name))]
+                self.assertIn(label, name)
+                self.assertIn(base, name)
 
 
 class KindTests(unittest.TestCase):

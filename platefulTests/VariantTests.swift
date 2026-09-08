@@ -40,8 +40,14 @@ struct VariantTests {
                     "carbs": 40, "fat": 25,
                 ]
                 if let group = row.group, let size = row.size {
+                    // База — как её считает конвейер: имя без подписи.
+                    let base = row.name
+                        .replacingOccurrences(of: ", \(size)", with: "")
+                        .replacingOccurrences(of: " w/ \(size)", with: "")
+                        .replacingOccurrences(of: "\(size) ", with: "")
                     item["variant"] = ["group": group, "label": size,
-                                       "order": row.order ?? 0, "kind": row.kind]
+                                       "order": row.order ?? 0, "kind": row.kind,
+                                       "base": size == "Plain" ? row.name : base]
                 }
                 if row.photo {
                     item["photo"] = ["url": "https://example.com/a.jpg",
@@ -143,7 +149,7 @@ struct VariantTests {
     /// буква «Egg» ничего не значит.
     @Test("подписи исполнений не сокращаются")
     func optionLabelsStayWhole() {
-        let option = MenuItem.Variant(group: "g", label: "Large", order: 0, kind: .option)
+        let option = MenuItem.Variant(group: "g", label: "Large", order: 0, kind: .option, base: nil)
         #expect(option.shortLabel == "Large")
     }
 
@@ -264,23 +270,23 @@ struct VariantTests {
         let short = ["Extra Small": "XS", "Small": "S", "Medium": "M",
                      "Large": "L", "Extra Large": "XL", "Regular": "Reg"]
         for (label, expected) in short {
-            #expect(MenuItem.Variant(group: "g", label: label, order: 0, kind: .size).shortLabel == expected)
+            #expect(MenuItem.Variant(group: "g", label: label, order: 0, kind: .size, base: nil).shortLabel == expected)
         }
     }
 
     /// Источник пишет и «Large», и «large».
     @Test("регистр в подписи не мешает сокращению")
     func abbreviationIgnoresCase() {
-        #expect(MenuItem.Variant(group: "g", label: "large", order: 0, kind: .size).shortLabel == "L")
+        #expect(MenuItem.Variant(group: "g", label: "large", order: 0, kind: .size, base: nil).shortLabel == "L")
     }
 
     /// Единица повторяется в каждом сегменте, места не стоит, а полное
     /// «12 oz» остаётся в строке «Serving» под переключателем.
     @Test("у объёма остаётся число без единицы")
     func dropsVolumeUnit() {
-        #expect(MenuItem.Variant(group: "g", label: "12 oz", order: 0, kind: .size).shortLabel == "12")
-        #expect(MenuItem.Variant(group: "g", label: "16 fl oz", order: 0, kind: .size).shortLabel == "16")
-        #expect(MenuItem.Variant(group: "g", label: "1.5 fl oz", order: 0, kind: .size).shortLabel == "1.5")
+        #expect(MenuItem.Variant(group: "g", label: "12 oz", order: 0, kind: .size, base: nil).shortLabel == "12")
+        #expect(MenuItem.Variant(group: "g", label: "16 fl oz", order: 0, kind: .size, base: nil).shortLabel == "16")
+        #expect(MenuItem.Variant(group: "g", label: "1.5 fl oz", order: 0, kind: .size, base: nil).shortLabel == "1.5")
     }
 
     /// «Grande» — имя, а не мера: «G» рядом с «Venti» ничего не значит.
@@ -288,7 +294,7 @@ struct VariantTests {
     func keepsNamedSizes() {
         for label in ["Kids", "Snack", "Mini", "Jr", "Short", "Tall",
                       "Grande", "Venti", "Bowl", "Cup", "2 Slices"] {
-            #expect(MenuItem.Variant(group: "g", label: label, order: 0, kind: .size).shortLabel == label)
+            #expect(MenuItem.Variant(group: "g", label: label, order: 0, kind: .size, base: nil).shortLabel == label)
         }
     }
 
