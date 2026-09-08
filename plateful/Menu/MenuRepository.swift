@@ -129,6 +129,12 @@ final class MenuRepository {
         catalog?.sections(for: chain) ?? []
     }
 
+    /// «High Protein», «Less Sugar», «Less Calories» — витрина поверх
+    /// обычных категорий.
+    func highlightShelves(for chain: String) -> [MenuSection] {
+        catalog?.highlightShelves(for: chain) ?? []
+    }
+
     /// Все варианты одного блюда. Пусто, если он один.
     func variants(of item: MenuItem) -> [MenuItem] {
         catalog?.variants(of: item) ?? []

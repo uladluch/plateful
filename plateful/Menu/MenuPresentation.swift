@@ -55,6 +55,48 @@ nonisolated extension MenuCatalog {
         sections.map { MenuSection(title: $0.title,
                                    items: collapsingVariants($0.items)) }
     }
+
+    /// Три подборки поверх обычных категорий: то же меню, другой разрез.
+    ///
+    /// Не фильтр — витрина. Показывают лучшее по одной цифре сразу, ещё до
+    /// того, как человек станет листать категории или ставить свои цели.
+    /// Раздел со снятыми с меню позициями сюда не попадает: подборка о
+    /// том, что можно заказать сейчас.
+    func highlightShelves(for chain: String, limit: Int = 12) -> [MenuSection] {
+        let items = collapsingVariants(items(in: chain).filter { !$0.isOffMenu })
+        guard !items.isEmpty else { return [] }
+
+        func shelf(_ title: String, _ sorted: [MenuItem]) -> MenuSection? {
+            sorted.isEmpty ? nil : MenuSection(title: title, items: Array(sorted.prefix(limit)))
+        }
+
+        let highProtein = items.sorted {
+            $0.protein != $1.protein ? $0.protein > $1.protein : $0.name < $1.name
+        }
+
+        // Без сахара на этикетке позиция сюда не попадает: «меньше сахара»
+        // не должно значить «сахар не измерили».
+        let lessSugar = items
+            .filter { $0.sugar != nil }
+            .sorted {
+                $0.sugar! != $1.sugar! ? $0.sugar! < $1.sugar! : $0.name < $1.name
+            }
+
+        // Газировка почти всегда дешевле по калориям, чем еда, и заняла бы
+        // подборку целиком — а «меньше калорий» здесь про то, что съесть,
+        // а не про то, что выпить. Она не исчезает, а уходит в конец ряда.
+        let lessCalories = items.sorted {
+            let left = ($0.isSoda ? 1 : 0, $0.kcal, $0.name)
+            let right = ($1.isSoda ? 1 : 0, $1.kcal, $1.name)
+            return left < right
+        }
+
+        return [
+            shelf("High Protein", highProtein),
+            shelf("Less Sugar", lessSugar),
+            shelf("Less Calories", lessCalories),
+        ].compactMap { $0 }
+    }
 }
 
 nonisolated extension MenuSection {
@@ -187,6 +229,30 @@ nonisolated extension MenuItem {
                 width: .abbreviated,
                 usage: .asProvided,
                 numberFormatStyle: .number.precision(.fractionLength(0))))
+    }
+
+    /// Газированный безалкогольный напиток — по названию, эвристика.
+    ///
+    /// В паке нет отдельного признака: раздел «Beverages» шире и включает
+    /// кофе, сок, воду. Список — бренды и общие слова, которых достаточно
+    /// в меню восьми ключевых сетей; сверяется по словам целиком, а не
+    /// подстрокой, иначе «chocolate» поймает «cola».
+    private static let sodaWords: Set<String> = [
+        "coke", "cola", "pepsi", "sprite", "fanta", "soda", "surge",
+        "squirt", "crush", "fresca", "barqs", "cheerwine", "sunkist",
+    ]
+    private static let sodaPhrases: [String] = [
+        "mountain dew", "dr pepper", "root beer", "sierra mist",
+        "mist twst", "7 up", "big red",
+    ]
+
+    var isSoda: Bool {
+        let normalized = String(decoding: TextIndex.normalized(name), as: UTF8.self)
+        if normalized.split(separator: " ").contains(where: { Self.sodaWords.contains(String($0)) }) {
+            return true
+        }
+        let padded = " " + normalized + " "
+        return Self.sodaPhrases.contains { padded.contains(" \($0) ") }
     }
 
     /// Пометки в порядке объявления: набор неупорядочен, а список на экране

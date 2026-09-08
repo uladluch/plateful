@@ -135,3 +135,81 @@ struct MenuPresentationTests {
         #expect(repository.sections(for: "Нет такой").isEmpty)
     }
 }
+
+@Suite("Витрина по цифрам")
+struct HighlightShelfTests {
+
+    private static func catalog(_ items: [[String: Any]]) -> MenuCatalog {
+        let json: [String: Any] = [
+            "format": 1, "version": 1,
+            "source": "menustat-2018", "observed": "2018-12-31", "stale": true,
+            "chains": [["name": "McDonald's", "itemCount": items.count]],
+            "items": items,
+        ]
+        let data = try! JSONSerialization.data(withJSONObject: json)
+        return MenuCatalog(pack: try! MenuPack.decode(from: data))
+    }
+
+    private static func item(_ name: String, kcal: Double, protein: Double = 1,
+                              sugar: Double? = nil) -> [String: Any] {
+        var row: [String: Any] = [
+            "chain": "McDonald's", "key": name.lowercased().replacingOccurrences(of: " ", with: "-"),
+            "name": name, "kcal": kcal, "protein": protein, "carbs": 1, "fat": 1,
+        ]
+        if let sugar { row["sugar"] = sugar }
+        return row
+    }
+
+    /// Бренды и общие слова — по словам целиком, не подстрокой.
+    @Test("газировка узнаётся по имени, не по случайной подстроке")
+    func recognizesSodaByWholeWord() {
+        let catalog = Self.catalog([Self.item("Coca-Cola", kcal: 140), Self.item("Chocolate Shake", kcal: 800)])
+        #expect(catalog.items[0].isSoda)
+        #expect(!catalog.items[1].isSoda)
+    }
+
+    @Test("больше всего белка — первым, по убыванию")
+    func highProteinDescends() {
+        let catalog = Self.catalog([
+            Self.item("Salad", kcal: 200, protein: 5),
+            Self.item("Grilled Chicken", kcal: 350, protein: 40),
+        ])
+        let shelf = catalog.highlightShelves(for: "McDonald's").first { $0.title == "High Protein" }
+        #expect(shelf?.items.map(\.name) == ["Grilled Chicken", "Salad"])
+    }
+
+    /// Позиция без сахара на этикетке не притворяется нулём — она просто
+    /// не участвует в подборке.
+    @Test("меньше сахара пропускает позиции без данных о сахаре")
+    func lessSugarSkipsUnknown() {
+        let catalog = Self.catalog([
+            Self.item("Fries", kcal: 300),
+            Self.item("Apple Slices", kcal: 40, sugar: 8),
+            Self.item("Cookie", kcal: 250, sugar: 20),
+        ])
+        let shelf = catalog.highlightShelves(for: "McDonald's").first { $0.title == "Less Sugar" }
+        #expect(shelf?.items.map(\.name) == ["Apple Slices", "Cookie"])
+    }
+
+    /// Газировка почти всегда самая низкокалорийная позиция в меню — и
+    /// заняла бы подборку целиком, если её не отодвинуть в конец.
+    @Test("газировка в подборке «меньше калорий» уходит в конец")
+    func lessCaloriesPushesSodaToTheEnd() {
+        let catalog = Self.catalog([
+            Self.item("Diet Coke", kcal: 0),
+            Self.item("Side Salad", kcal: 15),
+            Self.item("Big Mac", kcal: 540),
+        ])
+        let shelf = catalog.highlightShelves(for: "McDonald's").first { $0.title == "Less Calories" }
+        #expect(shelf?.items.map(\.name) == ["Side Salad", "Big Mac", "Diet Coke"])
+    }
+
+    @Test("снятые с меню позиции в витрину не попадают")
+    func offMenuExcluded() throws {
+        var offMenuRow = Self.item("Old Burger", kcal: 400)
+        offMenuRow["offMenu"] = true
+        let catalog = Self.catalog([offMenuRow, Self.item("Big Mac", kcal: 540)])
+        let shelf = try #require(catalog.highlightShelves(for: "McDonald's").first { $0.title == "Less Calories" })
+        #expect(!shelf.items.contains { $0.name == "Old Burger" })
+    }
+}

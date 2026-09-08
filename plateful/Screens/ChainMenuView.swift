@@ -17,6 +17,20 @@ struct ChainMenuView: View {
             header
 
             if query.isEmpty {
+                // Витрина живёт над обычными категориями и не зависит от
+                // фильтра по целям — это готовые подборки, а не то, что
+                // человек сам сузил. Скрывается, как только он это сделал:
+                // иначе на экране одновременно два разных «лучшее по цифре».
+                if filter == .none {
+                    ForEach(menu.highlightShelves(for: chain.name)) { section in
+                        Section {
+                            itemShelf(section.items)
+                        } header: {
+                            sectionHeader(section.title)
+                        }
+                    }
+                }
+
                 // Свёртка размеров — последней: фильтр по целям должен
                 // видеть все размеры, иначе группа пропадёт из-за среднего.
                 let sections = menu.collapsingVariants(
