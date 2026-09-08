@@ -12,6 +12,8 @@
 
 from __future__ import annotations
 
+import shutil
+import subprocess
 import time
 import urllib.error
 import urllib.request
@@ -51,8 +53,11 @@ class Fetcher:
         self.delay = delay
         self._last = 0.0
 
-    def get(self, url: str, timeout: int = 30) -> str | None:
-        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    def get(self, url: str, timeout: int = 60,
+            headers: dict[str, str] | None = None) -> str | None:
+        # Часть сетей смотрит на полный набор браузерных заголовков, а не
+        # только на User-Agent, поэтому адаптер может передать свои.
+        request = urllib.request.Request(url, headers=headers or {"User-Agent": USER_AGENT})
 
         for attempt in range(MAX_RETRIES):
             elapsed = time.monotonic() - self._last
@@ -73,10 +78,33 @@ class Fetcher:
                     continue
                 print(f"  ! {url}: {error}")
                 return None
-            except (urllib.error.URLError, TimeoutError) as error:
+            except (urllib.error.URLError, TimeoutError, OSError) as error:
+                # Таймаут у сетей за Akamai — обычное дело на первом запросе,
+                # поэтому пробуем ещё раз, а не сдаёмся сразу.
+                if attempt < MAX_RETRIES - 1:
+                    print(f"  · {type(error).__name__}, повтор")
+                    time.sleep(self.delay * 2)
+                    continue
                 print(f"  ! {url}: {error}")
                 return None
         return None
+
+
+def curl_get(url: str, headers: dict[str, str], timeout: int = 45) -> str | None:
+    """Забирает страницу через curl.
+
+    Часть сетей за Akamai не отвечает Python-у вовсе: там смотрят на отпечаток
+    TLS-рукопожатия, а он у стандартной библиотеки другой, чем у браузера.
+    Тот же адрес curl отдаёт нормально, и это дешевле, чем поднимать браузер.
+    """
+    if not shutil.which("curl"):
+        return None
+    command = ["curl", "-sL", "--compressed", "-m", str(timeout)]
+    for key, value in headers.items():
+        command += ["-H", f"{key}: {value}"]
+    command.append(url)
+    result = subprocess.run(command, capture_output=True, text=True)
+    return result.stdout if result.returncode == 0 and result.stdout else None
 
 
 def to_number(value) -> float | None:

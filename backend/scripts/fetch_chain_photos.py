@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from PIL import Image
 
-from plateful_data.adapters import chick_fil_a
+from plateful_data.adapters import chick_fil_a, mcdonalds
 from plateful_data.adapters.base import USER_AGENT, Fetcher
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -41,7 +41,7 @@ BUCKET_URL = "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/
 SIDE = 1000
 MATCH_THRESHOLD = 0.82
 
-ADAPTERS = {"chick-fil-a": chick_fil_a}
+ADAPTERS = {"chick-fil-a": chick_fil_a, "mcdonalds": mcdonalds}
 
 _OG_IMAGE = re.compile(r'property="og:image"[^>]*content="([^"]+)"')
 _SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}
@@ -100,29 +100,27 @@ def main() -> int:
                if i["chain"] == adapter.CHAIN}
 
     fetcher = Fetcher()
-    urls = adapter.item_urls(fetcher)
+    pairs = adapter.photo_pairs(fetcher)
     if args.limit:
-        urls = urls[:args.limit]
-    print(f"{adapter.CHAIN}: страниц {len(urls)}, позиций в каталоге {len(catalog)}\n")
+        pairs = pairs[:args.limit]
+    print(f"{adapter.CHAIN}: снимков на сайте {len(pairs)}, "
+          f"позиций в каталоге {len(catalog)}\n")
 
     statements, taken, unmatched = [], 0, []
     with tempfile.TemporaryDirectory() as tmp:
-        for url in urls:
-            page = fetcher.get(url)
-            if not page:
-                continue
-            name = adapter._item_name(page)
-            image_match = _OG_IMAGE.search(page)
-            if not name or not image_match:
-                continue
-
+        seen: set[str] = set()
+        for name, image_url, source_page in pairs:
             key = match(name, catalog)
             if key is None:
                 unmatched.append(name)
                 continue
+            # У одного блюда бывает несколько ракурсов — берём первый.
+            if key in seen:
+                continue
+            seen.add(key)
 
             try:
-                request = urllib.request.Request(image_match.group(1),
+                request = urllib.request.Request(image_url,
                                                  headers={"User-Agent": USER_AGENT})
                 with urllib.request.urlopen(request, timeout=60) as response:
                     image = Image.open(io.BytesIO(response.read()))
@@ -172,7 +170,7 @@ def main() -> int:
                 " title, source_page)\n"
                 f"select c.id, {sql_text(key)}, {sql_text(f'{BUCKET_URL}/{filename}')},"
                 f" {sql_text(args.rights)}, {sql_text(adapter.CHAIN)},"
-                f" {sql_text(name)}, {sql_text(url)}\n"
+                f" {sql_text(name)}, {sql_text(source_page)}\n"
                 f"from chains c where c.name = {sql_text(adapter.CHAIN)}\n"
                 "on conflict (chain_id, ext_key) do update set url = excluded.url,"
                 " license = excluded.license, creator = excluded.creator,"

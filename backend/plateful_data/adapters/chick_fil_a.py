@@ -102,3 +102,24 @@ def fetch(fetcher: Fetcher | None = None, limit: int | None = None) -> list[Live
             fat=values.get("fat"),
             source=SOURCE, source_url=url))
     return items
+
+
+_OG_IMAGE = re.compile(r'property="og:image"[^>]*content="([^"]+)"')
+
+
+def photo_pairs(fetcher) -> list[tuple[str, str, str]]:
+    """(название, ссылка на снимок, страница-источник).
+
+    У Chick-fil-A снимок лежит в og:image страницы позиции — это тот же
+    файл, который сеть показывает в своём меню.
+    """
+    pairs = []
+    for url in item_urls(fetcher):
+        page = fetcher.get(url)
+        if not page:
+            continue
+        name = _item_name(page)
+        image = _OG_IMAGE.search(page)
+        if name and image:
+            pairs.append((name, image.group(1), url))
+    return pairs
