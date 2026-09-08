@@ -26,12 +26,7 @@ struct ChainMenuView: View {
                 } else {
                     ForEach(sections) { section in
                         Section {
-                            ForEach(section.items) { item in
-                                NavigationLink(value: item) {
-                                    MenuItemRow(item: item, showsChain: false,
-                                                variants: menu.variants(of: item))
-                                }
-                            }
+                            itemShelf(section.items)
                         } header: {
                             Text(section.title)
                         } footer: {
@@ -81,6 +76,25 @@ struct ChainMenuView: View {
         .padding(.vertical, Tokens.Spacing.m)
         .listRowInsets(EdgeInsets())
         .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+
+    /// Позиции раздела как лента карточек, вбок: их пролистывают пальцем,
+    /// как в App Store и Apple TV, а не вниз по строкам.
+    private func itemShelf(_ items: [MenuItem]) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(alignment: .top, spacing: Tokens.Spacing.m) {
+                ForEach(items) { item in
+                    NavigationLink(value: item) {
+                        ItemCard(item: item, variants: menu.variants(of: item))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, Tokens.Spacing.m)
+            .padding(.vertical, Tokens.Spacing.xs)
+        }
+        .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
 
