@@ -242,21 +242,32 @@ def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
             raise SystemExit(f"гид не скачался: {url}")
     print(f"  {path.stat().st_size / 1024:.0f} КБ")
 
-    with pdfplumber.open(path) as pdf:
-        # Колонтитулы снимаем до разбора: они неотличимы от заголовка
-        # раздела по виду и становились то категорией, то именем блюда.
-        text = pdf_guide.without_furniture(
-            [(page.extract_text() or "") for page in pdf.pages])
-
     try:
-        items = pdf_guide.read(text, layout=layout)
+        with pdfplumber.open(path) as pdf:
+            if layout.positioned:
+                # Вёрстка рвёт строку блюда — читаем по координатам.
+                pages = [[pdf_guide.Line(line["top"], line["x0"], line["text"])
+                          for line in page.extract_text_lines()]
+                         for page in pdf.pages]
+                items = pdf_guide.read_pages(pages, layout=layout)
+            else:
+                # Колонтитулы снимаем до разбора: они неотличимы от
+                # заголовка раздела по виду и становились то категорией,
+                # то именем блюда.
+                text = pdf_guide.without_furniture(
+                    [(page.extract_text() or "") for page in pdf.pages])
+                items = pdf_guide.read(text, layout=layout)
     except pdf_guide.WrongGuide as wrong:
         raise SystemExit(f"гид не подходит: {wrong}")
 
     host = urlparse(url).netloc.removeprefix("www.").removeprefix("media.")
     return [Crawled(chain=chain, ext_key=slugify(item.name), name=item.name,
                     source=host, source_url=url,
-                    category=item.category,
+                    # Категорией берём внешний раздел гида: он и есть
+                    # раздел меню («DRINKS», «SANDWICHES»), а внутренний
+                    # заголовок — это подгруппа вроде «Flavored Iced Green
+                    # Tea», для меню слишком мелкая.
+                    category=(item.section or item.category or "").title() or None,
                     serving=(f"{item.values['serving']:g} g"
                              if item.values.get("serving") else None),
                     **{field: item.values.get(field) for field in

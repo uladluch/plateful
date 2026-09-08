@@ -84,6 +84,9 @@ class Layout:
     """
     columns: tuple[str | None, ...]
     count: int
+    #: Строку блюда разрывает вёрстка: имя в левой колонке на двух строках,
+    #: числа правее и между ними. Читать такой гид надо по координатам.
+    positioned: bool = False
     #: Порция стоит текстом в хвосте названия, а не отдельной колонкой.
     #: У Subway это число граммов среди чисел, у Panera — «1 Bagel» прямо
     #: в имени, и без отделения половинка салата и целый салат становятся
@@ -119,7 +122,7 @@ SUBWAY = Layout(
 PANERA = Layout(
     columns=("kcal", None, "fat", "sat_fat", "trans_fat", "cholesterol",
              "sodium", "carbs", "fiber", "sugar", "protein", None),
-    count=12, serving_in_name=True)
+    count=12, serving_in_name=True, positioned=True)
 
 LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA}
 
@@ -335,9 +338,13 @@ class Line:
     text: str
 
 
-#: Граница между колонкой названий и колонкой чисел, в долях ширины
-#: страницы. Слева имя, справа таблица.
-VALUES_COLUMN = 0.45
+#: Насколько правее левого поля должна начинаться строка, чтобы считаться
+#: строкой одних чисел. Названия всегда прижаты к полю; строка, у которой
+#: имени нет, начинается заметно правее — у Panera это 22 против 257
+#: пунктов. Доля от ширины страницы здесь не годится: она давала границу
+#: в 332 пункта, строки чисел оказывались левее неё и разбирались как
+#: целые, а именем становилась порция — «1/2 Bowl» вместо блюда.
+VALUES_INDENT = 60.0
 
 #: На сколько пунктов имя может отстоять от своей строки чисел. Больше —
 #: это заголовок раздела, а не имя: по виду они неразличимы (оба короткие,
@@ -363,19 +370,24 @@ def parse_positioned(pages: list[list[Line]], layout: Layout) -> list[GuideItem]
     двумя блюдами не бывает: расстояние до своей строки чисел втрое меньше.
     """
     items: list[GuideItem] = []
+    # Раздел живёт через страницы: у Panera «SANDWICHES» открывает одну, а
+    # блюда под ним идут ещё на двух. Сбрасывать его на каждой странице
+    # значило оставить без раздела всех, кроме первых.
+    category: str | None = None
+    section: str | None = None
 
     for lines in pages:
         if not lines:
             continue
-        right = max(line.x0 for line in lines) or 1.0
-        boundary = right * VALUES_COLUMN
+        boundary = min(line.x0 for line in lines) + VALUES_INDENT
 
         values_rows: list[tuple[Line, list[str]]] = []
         name_lines: list[Line] = []
         whole_rows: list[tuple[Line, str, list[str]]] = []
-        category: str | None = None
-        section: str | None = None
-        headings: list[tuple[float, str | None, str | None]] = []
+        # То, что действовало на конец прошлой страницы, действует и здесь,
+        # пока не встретится новый заголовок.
+        headings: list[tuple[float, str | None, str | None]] = [
+            (float("-inf"), section, category)]
 
         for line in sorted(lines, key=lambda l: l.top):
             split = _split(line.text, layout.count)
@@ -398,17 +410,25 @@ def parse_positioned(pages: list[list[Line]], layout: Layout) -> list[GuideItem]
             return min((abs(v[0].top - line.top) for v in values_rows),
                        default=float("inf"))
 
+        # Заголовок капсом — заголовок всегда, как бы близко к числам он ни
+        # стоял: имена блюд капсом не пишут. На плотных страницах Panera
+        # раздел стоял в четырнадцати пунктах от первой же строки чисел, и
+        # проверка близости уводила его в имя — 518 позиций остались без
+        # раздела. Мелкий заголовок разбираем по расстоянию: тут он и правда
+        # неотличим от имени иначе.
+        headings_at = set()
         for line in sorted(name_lines, key=lambda l: l.top):
-            if distance(line) <= NAME_PROXIMITY:
-                continue
             if outer := _outer(line.text):
-                section = outer
+                section, category = outer, None
                 headings.append((line.top, section, category))
-            elif heading := _heading(line.text):
+                headings_at.add(id(line))
+            elif distance(line) > NAME_PROXIMITY and (heading := _heading(line.text)):
                 category = heading
                 headings.append((line.top, section, category))
+                headings_at.add(id(line))
         name_lines = [line for line in name_lines
-                      if distance(line) <= NAME_PROXIMITY]
+                      if id(line) not in headings_at
+                      and distance(line) <= NAME_PROXIMITY]
 
         def emit(row: Line, name: str, cells: list[str]) -> None:
             name = re.sub(r"\s*[-–—]\s*$", "", name.strip()).strip()

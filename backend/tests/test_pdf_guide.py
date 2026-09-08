@@ -307,3 +307,17 @@ class Positioned(unittest.TestCase):
         self.assertEqual([i.name for i in items],
                          ["Asiago Cheese Bagel", "Blueberry Bagel"])
         self.assertEqual([i.values["kcal"] for i in items], [350, 290])
+
+    def test_строка_чисел_узнаётся_по_отступу_а_не_по_доле_ширины(self):
+        """У Panera имена стоят на 22 пунктах, числа на 257. Доля от
+        ширины страницы давала границу 332 — числа оказывались левее неё,
+        разбирались как целая строка, и именем блюда становилась порция."""
+        L = pdf_guide.Line
+        page = [L(150, 22, "MARKET BOWLS"),
+                L(330, 22, "Market Bowl - Sesame Ginger Chicken -"),
+                L(339, 257, "1/2 Bowl 470 200 22 3 0 35 1600 47 5 14 19 0"),
+                L(345, 22, "Half")]
+        [item] = pdf_guide.parse_positioned([page], pdf_guide.PANERA)
+
+        self.assertEqual(item.name, "Market Bowl - Sesame Ginger Chicken - Half")
+        self.assertEqual(item.serving, "1/2 Bowl")
