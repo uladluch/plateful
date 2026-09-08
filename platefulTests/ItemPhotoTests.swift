@@ -72,3 +72,45 @@ struct ItemPhotoTests {
         #expect(withPhoto.allSatisfy { !($0.photo?.license.isEmpty ?? true) })
     }
 }
+
+@Suite("Снятые с меню позиции")
+struct OffMenuTests {
+
+    private static func catalog(offMenu: Bool?) throws -> MenuCatalog {
+        var item: [String: Any] = [
+            "chain": "McDonald's", "key": "artisan-grilled-chicken-sandwich",
+            "name": "Artisan Grilled Chicken Sandwich",
+            "kcal": 380, "protein": 37, "carbs": 44, "fat": 6,
+        ]
+        if let offMenu { item["offMenu"] = offMenu }
+        let json: [String: Any] = [
+            "format": 1, "version": 8,
+            "source": "menustat-2018", "observed": "2018-12-31", "stale": true,
+            "chains": [["name": "McDonald's", "itemCount": 1]],
+            "items": [item],
+        ]
+        return MenuCatalog(
+            pack: try MenuPack.decode(from: JSONSerialization.data(withJSONObject: json)))
+    }
+
+    @Test("снятая позиция помечена")
+    func flagsOffMenu() throws {
+        #expect(try Self.catalog(offMenu: true).items.first?.isOffMenu == true)
+    }
+
+    /// Пометка приходит только когда она правдива: тащить «есть в меню»
+    /// для каждой из 25 тысяч позиций незачем.
+    @Test("отсутствие пометки означает, что блюдо в меню")
+    func defaultsToOnMenu() throws {
+        #expect(try Self.catalog(offMenu: nil).items.first?.isOffMenu == false)
+    }
+
+    /// Снятые позиции остаются в поиске: человек мог сохранить блюдо в заказ
+    /// или прийти по истории, и исчезновение выглядело бы как поломка.
+    @Test("снятая позиция остаётся доступной")
+    func staysSearchable() throws {
+        let catalog = try Self.catalog(offMenu: true)
+        #expect(!catalog.search("artisan grilled").isEmpty)
+        #expect(catalog.items(in: "McDonald's").count == 1)
+    }
+}
