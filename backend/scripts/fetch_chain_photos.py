@@ -51,13 +51,17 @@ _SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}
 
 # Мусор из имён файлов на сайтах: коды комбо, версии, уточнения подачи.
 _TILE_JUNK = re.compile(r"\b(evm|hb|hl|v\s?\d|no bag|potato bun|glass|cup|bag|"
-                        r"alt protein|shredded|with can|light)\b", re.I)
+                        r"alt|protein|shredded|with can|light|"
+                        # Ракурс и подача — свойства кадра, а не блюда.
+                        r"upright|front|side|angle|hero|closeup|top|open|stacked)\b", re.I)
 # Размеры и количества для сопоставления **снимков**.
 _PORTION_WORDS = re.compile(
     r"\b(small|medium|large|kids?|jr|extra small|child|snack size|"
     r"\d+\s*(oz|pc|piece|ct)?)\b", re.I)
 _PAGE_SUFFIX = re.compile(r"\s*nutrition and ingredients\s*$")
-_BRAND = re.compile(r"\b(chick fil a|chickfila|mcdonalds)\b")
+# Суббренды внутри сети блюдо не называют: «McCafe Strawberry Shake» и
+# «Strawberry Shake» — одно и то же.
+_BRAND = re.compile(r"\b(chick fil a|chickfila|mcdonalds|mccafe|mcvalue)\b")
 
 
 def normalized(name: str) -> str:
@@ -76,6 +80,15 @@ def comparable(name: str) -> str:
                            if not w.isdigit() and w not in _SIZE_WORDS))
 
 
+def photo_words(name: str, is_tile: bool = False) -> list[str]:
+    """Слова названия без размеров, количеств и служебного мусора."""
+    text = name.lower()
+    if is_tile:
+        text = _TILE_JUNK.sub(" ", text)
+    text = _PORTION_WORDS.sub(" ", re.sub(r"[^a-z0-9 ]+", " ", text))
+    return _BRAND.sub(" ", text).split()
+
+
 def photo_key(name: str, is_tile: bool = False) -> str:
     """Название без размеров, количеств и служебного мусора.
 
@@ -83,11 +96,46 @@ def photo_key(name: str, is_tile: bool = False) -> str:
     а 10 и 40 наггетсов на фото не отличить. Это осознанно мягче, чем
     правило в аудите цифр, где размер меняет калории и путать его нельзя.
     """
-    text = name.lower()
-    if is_tile:
-        text = _TILE_JUNK.sub(" ", text)
-    text = _PORTION_WORDS.sub(" ", re.sub(r"[^a-z0-9 ]+", " ", text))
-    return " ".join(sorted(_BRAND.sub(" ", text).split()))
+    return " ".join(sorted(photo_words(name, is_tile)))
+
+
+# Слова, которые делают блюдо другим блюдом. «Steak, Egg & Cheese Biscuit»
+# и «Egg Cheese Biscuit» похожи по строке на 0.9, но это разные сэндвичи,
+# и подменять один другим — та же ошибка, что чужая фотография.
+# «ham» и «beef» намеренно не в списке: они сидят внутри «hamburger»
+# и «beefsteak» и ловили бы половину меню.
+_DISCRIMINATORS = ("steak", "bacon", "sausage", "chicken", "fish", "turkey",
+                   "spicy", "deluxe", "double", "triple", "grilled", "crispy",
+                   "diet", "zero")
+
+
+def ingredients_agree(catalog_name: str, tile_name: str) -> bool:
+    """Совпадают ли различающие слова у позиции и у плитки.
+
+    Ищем подстрокой, а не по словам: в каталоге «McDouble» слитно, а из
+    имени файла разбор даёт «Mc Double». По словам это разные множества,
+    по буквам — одно и то же.
+    """
+    left = "".join(photo_words(catalog_name))
+    right = "".join(photo_words(tile_name, True))
+    return all((word in left) == (word in right) for word in _DISCRIMINATORS)
+
+
+def similarity(catalog_name: str, tile_name: str) -> float:
+    """Насколько название плитки похоже на название позиции.
+
+    Считаем двумя способами и берём лучший. Имя блюда в файле записано
+    CamelCase, и разбор даёт «Mc Double» там, где в каталоге «McDouble»:
+    по словам это разные строки, а без пробелов — одна и та же.
+    """
+    by_words = difflib.SequenceMatcher(
+        None, photo_key(catalog_name), photo_key(tile_name, True)).ratio()
+    # Порядок слов здесь сохраняем: «McDouble» и разобранное из файла
+    # «Mc Double» совпадают только слитно и только в исходном порядке.
+    by_letters = difflib.SequenceMatcher(
+        None, "".join(photo_words(catalog_name)),
+        "".join(photo_words(tile_name, True))).ratio()
+    return max(by_words, by_letters)
 
 
 def match_photos(pairs: list[tuple[str, str, str]],
@@ -95,10 +143,11 @@ def match_photos(pairs: list[tuple[str, str, str]],
     """Ключ позиции → снимок. Одна плитка может обслужить несколько позиций."""
     matches: dict[str, tuple[str, str, str]] = {}
     for key, item in catalog.items():
-        target = photo_key(item["name"])
         best, score = None, 0.0
         for pair in pairs:
-            ratio = difflib.SequenceMatcher(None, target, photo_key(pair[0], True)).ratio()
+            if not ingredients_agree(item["name"], pair[0]):
+                continue
+            ratio = similarity(item["name"], pair[0])
             if ratio > score:
                 best, score = pair, ratio
         if best and score >= PHOTO_THRESHOLD:
