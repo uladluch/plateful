@@ -223,9 +223,13 @@ struct ItemDetailView: View {
     /// не показываем вовсе — прочерк там читался бы как ноль.
     @ViewBuilder
     private var label: some View {
+        // Порядок — как на самой этикетке: жиры, холестерин, натрий,
+        // клетчатка, сахар. Он привычен и потому не требует чтения подряд:
+        // взгляд идёт туда, где строка стоит на упаковке.
         let rows: [(String, String)] = [
-            ("Sugars", shown.sugarText), ("Saturated fat", shown.satFatText),
-            ("Sodium", shown.sodiumText), ("Fiber", shown.fiberText),
+            ("Saturated fat", shown.satFatText), ("Trans fat", shown.transFatText),
+            ("Cholesterol", shown.cholesterolText), ("Sodium", shown.sodiumText),
+            ("Fiber", shown.fiberText), ("Sugars", shown.sugarText),
         ].compactMap { title, value in value.map { (title, $0) } }
 
         if !rows.isEmpty {

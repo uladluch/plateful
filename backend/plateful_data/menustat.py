@@ -4,6 +4,11 @@
 Оригинальный menustat.org мёртв, зеркало Dataverse — единственный живой доступ.
 
 Файл называется .tab, но на деле это CSV с кавычками. 71 172 строки, 50 колонок.
+
+Из этикетки берём всё, что раскрыто почти везде: холестерин (98.5%),
+трансжиры (94.9%), насыщенные жиры, натрий, сахар, клетчатку. Не берём
+Potassium — он есть у 1.7% позиций, и колонка из одних пропусков хуже,
+чем её отсутствие.
 """
 
 from __future__ import annotations
@@ -51,6 +56,8 @@ class Item:
     carbs: float
     fat: float
     sat_fat: float | None
+    trans_fat: float | None
+    cholesterol: float | None
     sodium: float | None
     sugar: float | None
     fiber: float | None
@@ -157,6 +164,8 @@ def parse(raw: str) -> list[Item]:
             carbs=carbs,
             fat=fat,
             sat_fat=_num(row.get("Saturated_Fat")),
+            trans_fat=_num(row.get("Trans_Fat")),
+            cholesterol=_num(row.get("Cholesterol")),
             sodium=_num(row.get("Sodium")),
             sugar=_num(row.get("Sugar")),
             fiber=_num(row.get("Dietary_Fiber")),

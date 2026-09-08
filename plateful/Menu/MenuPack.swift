@@ -86,6 +86,8 @@ nonisolated struct MenuPack: Decodable, Sendable {
         /// «ноль».
         let sugar: Double?
         let satFat: Double?
+        let transFat: Double?
+        let cholesterol: Double?
         let sodium: Double?
         let fiber: Double?
 

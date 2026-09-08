@@ -13,6 +13,7 @@ warning,Applebee's,Perfect Patron Margarita,atwater,"290 ккал, макрос�
 warning,Applebee's,Perfect Pomegranate Margarita,atwater,"360 ккал, макросы объясняют только 216 (40%) — алкоголь или потерянный макрос"
 warning,Applebee's,Raspberry Cosmo,atwater,"220 ккал, макросы объясняют только 112 (49%) — алкоголь или потерянный макрос"
 warning,Applebee's,"Sangrias, Blackberry Sangria",atwater,"270 ккал, макросы объясняют только 140 (48%) — алкоголь или потерянный макрос"
+warning,Applebee's,Strawberry Quencher Lemonade,label,"сахар=45 г больше, чем углеводы целиком (43 г)"
 warning,Applebee's,Summer Squeeze,atwater,"340 ккал, макросы объясняют только 204 (40%) — алкоголь или потерянный макрос"
 warning,Applebee's,Summer Squeeze Mango,atwater,"370 ккал, макросы объясняют только 240 (35%) — алкоголь или потерянный макрос"
 warning,Applebee's,Summer Squeeze Strawberry,atwater,"400 ккал, макросы объясняют только 272 (32%) — алкоголь или потерянный макрос"
@@ -26,6 +27,7 @@ warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Desert Go
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ EXXXXtra Hot 5 Pepper Buffalo Sauce,portion,2190 ккал — вероятно целая порция на компанию
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Garlic Parmesan Sauce,portion,2380 ккал — вероятно целая порция на компанию
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Hot & Spicy Buffalo Sauce,portion,2180 ккал — вероятно целая порция на компанию
+warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Peppered BBQ Sauce,label,"сахар=61 г больше, чем углеводы целиком (22 г)"
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Peppered BBQ Sauce,portion,2290 ккал — вероятно целая порция на компанию
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Peppered BBQ Sauce,atwater,"2290 ккал, макросы объясняют только 1504 (34%) — алкоголь или потерянный макрос"
 warning,BJ's Restaurant & Brewhouse,Best Beginnings Appetizer Combo w/ Root Beer BBQ Sauce,portion,2300 ккал — вероятно целая порция на компанию
@@ -36,6 +38,8 @@ warning,BJ's Restaurant & Brewhouse,Latte,atwater,"100 ккал, макросы 
 error,Bob Evans,"1 Side & Bread, High Calorie",atwater,макросы дают 680 ккал против заявленных 370 (+84%)
 warning,Bob Evans,12 Buttermilk Biscuits w/ Butter,portion,3120 ккал — вероятно целая порция на компанию
 warning,Bob Evans,12 Dinner Rolls w/ Butter,portion,2350 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"2% White Milk, Kids",label,"сахар=22 г больше, чем углеводы целиком (20 г)"
+warning,Bob Evans,"Border Scramble Omelet, Low Calorie",label,"насыщенные жиры=58 г больше, чем жир целиком (53 г)"
 warning,Bob Evans,"Chocolate Peanut Butter Pie, Whole",portion,4010 ккал — вероятно целая порция на компанию
 warning,Bob Evans,"Coconut Cream Pie, Whole",portion,3470 ккал — вероятно целая порция на компанию
 warning,Bob Evans,"Double Crust Apple Pie, Whole",portion,2990 ккал — вероятно целая порция на компанию
@@ -43,7 +47,9 @@ error,Bob Evans,"Fresh Steamed Broccoli, Family",atwater,макросы дают
 error,Bob Evans,"Freshly Brewed Iced Tea, Unsweetened, Gallon",atwater,макросы дают 108 ккал против заявленных 60 (+80%)
 warning,Bob Evans,"Pumpkin Pie Supreme, Whole",portion,3710 ккал — вероятно целая порция на компанию
 warning,Bob Evans,"Pumpkin Pie, Whole",portion,3080 ккал — вероятно целая порция на компанию
+warning,Bob Evans,"Sweet Italian, Dressing Boat",label,"сахар=90 г больше, чем углеводы целиком (10 г)"
 error,Bob Evans,"Tomato Juice, Large",atwater,макросы дают 90 ккал против заявленных 70 (+28%)
+warning,Bojangles,"Tropicana Pink Lemonade, Large",label,"сахар=180 г больше, чем углеводы целиком (108 г)"
 error,Boston Market,Bacon Brussel Sprouts,atwater,макросы дают 387 ккал против заявленных 240 (+61%)
 error,Boston Market,Beef Au Jus,atwater,макросы дают 219 ккал против заявленных 100 (+119%)
 error,Boston Market,Rotisserie Chicken Pot Pie,atwater,макросы дают 1286 ккал против заявленных 750 (+71%)
@@ -88,8 +94,11 @@ error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 3 oz",atwa
 error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
 error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, 9 oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
 error,California Pizza Kitchen,"J Lohr Seven Oaks Cabernet Sauvignon, Bottle",atwater,"620 ккал, макросы объясняют только 80 (87%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Jacobs Creek Moscato, 6 oz",label,"сахар=14 г больше, чем углеводы целиком (9 г)"
 error,California Pizza Kitchen,"Jacobs Creek Moscato, 6 oz",atwater,"150 ккал, макросы объясняют только 36 (76%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Jacobs Creek Moscato, 9 oz",label,"сахар=21 г больше, чем углеводы целиком (14 г)"
 warning,California Pizza Kitchen,"Jacobs Creek Moscato, 9 oz",atwater,"220 ккал, макросы объясняют только 56 (75%) — алкоголь или потерянный макрос"
+warning,California Pizza Kitchen,"Jacobs Creek Moscato, Bottle",label,"сахар=60 г больше, чем углеводы целиком (40 г)"
 warning,California Pizza Kitchen,"Jacobs Creek Moscato, Bottle",atwater,"620 ккал, макросы объясняют только 160 (74%) — алкоголь или потерянный макрос"
 error,California Pizza Kitchen,"Josh Cellars Chardonnay, 6 oz",atwater,"140 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
 error,California Pizza Kitchen,"Josh Cellars Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 24 (89%) — алкоголь или потерянный макрос"
@@ -198,6 +207,7 @@ error,Carrabba's Italian Grill,"White Wine, Glass, 9 oz",atwater,"230 ккал, 
 error,Casey's General Store,Dr Pepper,atwater,макросы дают 904 ккал против заявленных 100 (+804%)
 warning,Chick-Fil-A,6 Grilled Nuggets Kids Meal,atwater,"110 ккал, макросы объясняют только 74 (32%) — алкоголь или потерянный макрос"
 warning,Chick-Fil-A,Grilled Market Salad,atwater,"210 ккал, макросы объясняют только 142 (32%) — алкоголь или потерянный макрос"
+warning,Chili's,4 All Natural Corn Tortillas,label,"трансжиры=2 г больше, чем жир целиком (0 г)"
 warning,Chili's,"Angry Orchard, 10 fl oz",atwater,"160 ккал, макросы объясняют только 80 (50%) — алкоголь или потерянный макрос"
 warning,Chili's,"Angry Orchard, 12 fl oz",atwater,"190 ккал, макросы объясняют только 96 (49%) — алкоголь или потерянный макрос"
 warning,Chili's,"Angry Orchard, 16 fl oz",atwater,"250 ккал, макросы объясняют только 128 (49%) — алкоголь или потерянный макрос"
@@ -304,7 +314,9 @@ warning,Chili's,Tropical Sunrise Margarita,atwater,"250 ккал, макросы
 warning,Chili's,Ultimate Fresh Margarita,atwater,"300 ккал, макросы объясняют только 180 (40%) — алкоголь или потерянный макрос"
 error,Chili's,"White Wine, 6 fl oz",atwater,"140 ккал, макросы объясняют только 20 (86%) — алкоголь или потерянный макрос"
 error,Chili's,"White Wine, 9 fl oz",atwater,"220 ккал, макросы объясняют только 28 (87%) — алкоголь или потерянный макрос"
+warning,Chipotle,Blueberries,label,"сахар=3 г больше, чем углеводы целиком (0 г)"
 error,Chipotle,"Steak, for Kids Build Your Own",atwater,макросы дают 109 ккал против заявленных 70 (+56%)
+warning,Church's Chicken,"Diet Dr Pepper, Large",label,"сахар=96 г больше, чем углеводы целиком (0 г)"
 warning,Ci Ci's Pizza,Cheese Pizza on Traditional Crust,atwater,"190 ккал, макросы объясняют только 104 (45%) — алкоголь или потерянный макрос"
 warning,Ci Ci's Pizza,Garlic Cheesy Bread,atwater,"140 ккал, макросы объясняют только 62 (56%) — алкоголь или потерянный макрос"
 error,Dairy Queen,"Chocolate Xtreme Blizzard Cake, 10 in",range,kcal=6940.0 выше потолка 5000
@@ -332,14 +344,23 @@ warning,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 10 in",portion,685
 error,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 8 in",range,carbs=589.0 выше потолка 500
 warning,Dairy Queen,"Reeses Peanut Butter Cups Blizzard Cake, 8 in",portion,4450 ккал — вероятно целая порция на компанию
 warning,Del Taco,12 Chocolate Chip Cookies,portion,2400 ккал — вероятно целая порция на компанию
+warning,Denny's,2 Honey Jalapeno Bacon Strips,label,"сахар=2 г больше, чем углеводы целиком (0 г)"
 warning,Denny's,"French Dressing, 1.5 oz",atwater,"130 ккал, макросы объясняют только 80 (38%) — алкоголь или потерянный макрос"
 warning,Denny's,"French Dressing, 3 oz",atwater,"260 ккал, макросы объясняют только 169 (35%) — алкоголь или потерянный макрос"
 error,Denny's,"Vegetable Beef Soup, Cup",atwater,макросы дают 251 ккал против заявленных 200 (+26%)
+warning,Dickey's Barbeque Pit,Beef Brisket & Pulled Pork,label,"насыщенные жиры=76 г больше, чем жир целиком (52 г)"
 error,Dickey's Barbeque Pit,Brisket Mac,atwater,макросы дают 999 ккал против заявленных 675 (+48%)
+warning,Dickey's Barbeque Pit,Chicken Breast & Pulled Pork,label,"насыщенные жиры=69 г больше, чем жир целиком (33 г)"
 warning,Dickey's Barbeque Pit,Family Pack Max,portion,4635 ккал — вероятно целая порция на компанию
 warning,Dickey's Barbeque Pit,Family Pack Min,portion,2680 ккал — вероятно целая порция на компанию
+warning,Dickey's Barbeque Pit,Jalapeno Cheddar Kielbasa & Pulled Pork,label,"насыщенные жиры=77 г больше, чем жир целиком (56 г)"
 warning,Dickey's Barbeque Pit,Picnic Pack Max,portion,2577 ккал — вероятно целая порция на компанию
+warning,Dickey's Barbeque Pit,Polish Kielbasa & Pulled Pork,label,"насыщенные жиры=77 г больше, чем жир целиком (57 г)"
+warning,Dickey's Barbeque Pit,Pork Sandwich,label,"насыщенные жиры=86 г больше, чем жир целиком (33 г)"
 error,Dickey's Barbeque Pit,Pork Sandwich,atwater,макросы дают 616 ккал против заявленных 483 (+27%)
+warning,Dickey's Barbeque Pit,Pulled Pork,label,"насыщенные жиры=132 г больше, чем жир целиком (54 г)"
+warning,Dickey's Barbeque Pit,Pulled Pork Slider,label,"насыщенные жиры=33 г больше, чем жир целиком (13 г)"
+warning,Dickey's Barbeque Pit,Turkey & Pulled Pork,label,"насыщенные жиры=68 г больше, чем жир целиком (34 г)"
 error,Dickey's Barbeque Pit,XL Pack Max,range,kcal=6693.0 выше потолка 5000
 error,Dickey's Barbeque Pit,XL Pack Max,range,protein=266.0 выше потолка 250
 error,Dickey's Barbeque Pit,XL Pack Max,range,fat=509.1 выше потолка 400
@@ -349,6 +370,9 @@ warning,Dickey's Barbeque Pit,XL Pack Min,portion,3579 ккал — вероят
 error,Dunkin' Donuts,"Hot Coffee w/ Skim Milk & Sugar, Small",atwater,макросы дают 88 ккал против заявленных 70 (+26%)
 error,Einstein Bros,Mini Hazelnut Pastry,atwater,макросы дают 612 ккал против заявленных 140 (+337%)
 warning,El Pollo Loco,"Vitamin Water XXX, Small",atwater,"80 ккал, макросы объясняют только 44 (45%) — алкоголь или потерянный макрос"
+warning,Famous Dave's,1 lb BBQ Pulled Chicken,label,"сахар=56 г больше, чем углеводы целиком (46 г)"
+warning,Famous Dave's,1 lb Hot Link Sausage,label,"сахар=15 г больше, чем углеводы целиком (12 г)"
+warning,Famous Dave's,"1 lb Southside Rib Tips, To Go",label,"сахар=32 г больше, чем углеводы целиком (29 г)"
 error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,kcal=7520.0 выше потолка 5000
 error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,protein=432.0 выше потолка 250
 error,Famous Dave's,"All American BBQ Feast w/ Georgia Chopped Pork, Full Order",range,carbs=618.0 выше потолка 500
@@ -358,30 +382,39 @@ error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",r
 error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",range,protein=437.0 выше потолка 250
 error,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",range,carbs=621.0 выше потолка 500
 warning,Famous Dave's,"All American BBQ Feast w/ Texas Beef Brisket, Full Order",portion,7480 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,BBQ Chips,label,"клетчатка=86 г больше, чем углеводы целиком (4 г)"
 warning,Famous Dave's,BBQ Chips,atwater,"410 ккал, макросы объясняют только 257 (37%) — алкоголь или потерянный макрос"
 error,Famous Dave's,BBQ Stuffed Baked Potato w/ Georgia Chopped Pork,atwater,макросы дают 1024 ккал против заявленных 810 (+26%)
 error,Famous Dave's,BBQ Stuffed Baked Potato w/ Texas Beef Brisket,atwater,макросы дают 1013 ккал против заявленных 790 (+28%)
+warning,Famous Dave's,"Bacon Baked Potato Soup, Bowl",label,"сахар=4 г больше, чем углеводы целиком (2 г)"
+warning,Famous Dave's,"Bacon Baked Potato Soup, Bowl",label,"клетчатка=7 г больше, чем углеводы целиком (2 г)"
 warning,Famous Dave's,"Boneless Double Winger, To Go",portion,2050 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Boneless Party Platter, To Go",portion,4830 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Boneless Wings w/ Buffalo Sauce, Double Winger",portion,2050 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Boneless Wings w/ Devils Spit, Double Winger",portion,2040 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Boneless Wings w/ Rich & Sassy, Double Winger",portion,2050 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,Caesar,label,"трансжиры=30 г больше, чем жир целиком (24 г)"
+warning,Famous Dave's,"Dijon Honey Mustard, Dressings",label,"трансжиры=30 г больше, чем жир целиком (22 г)"
 warning,Famous Dave's,"Feast For Two w/ Georgia Chopped Pork, 1/2 Order",portion,2100 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Feast For Two w/ Georgia Chopped Pork, Full Order",portion,4200 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Feast For Two w/ Texas Beef Brisket, 1/2 Order",portion,2080 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Feast For Two w/ Texas Beef Brisket, Full Order",portion,4170 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,Feast for One w/ Georgia Pork,portion,2330 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,Feast for One w/ Texas Beef Brisket,portion,2260 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Georgia Pork, To Go",label,"сахар=11 г больше, чем углеводы целиком (6 г)"
 error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,kcal=9240.0 выше потолка 5000
 error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,protein=679.0 выше потолка 250
 error,Famous Dave's,"Rib Tips Til Payday, Dinner",range,fat=556.0 выше потолка 400
 warning,Famous Dave's,"Rib Tips Til Payday, Dinner",portion,9240 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Sampler, High",portion,3210 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Sampler, Low",portion,2560 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Southside Rib Tip Platter, Dinner",label,"сахар=32 г больше, чем углеводы целиком (29 г)"
+warning,Famous Dave's,"Southside Rib Tips, Appetizers",label,"сахар=32 г больше, чем углеводы целиком (29 г)"
 warning,Famous Dave's,"Traditional Double Winger, To Go",portion,2070 ккал — вероятно целая порция на компанию
 error,Famous Dave's,"Traditional Party Platter, To Go",range,protein=361.0 выше потолка 250
 warning,Famous Dave's,"Traditional Party Platter, To Go",portion,4890 ккал — вероятно целая порция на компанию
 warning,Famous Dave's,"Traditional Wings w/ Devils Spit, Double Winger",portion,2060 ккал — вероятно целая порция на компанию
+warning,Famous Dave's,"Traditional Wings w/ Rich & Sassy, Double Winger",label,"сахар=32 г больше, чем углеводы целиком (24 г)"
 warning,Famous Dave's,"Traditional Wings w/ Rich & Sassy, Double Winger",portion,2070 ккал — вероятно целая порция на компанию
 warning,Firehouse Subs,"Coca-Cola, 44 fl oz",atwater,"540 ккал, макросы объясняют только 184 (66%) — алкоголь или потерянный макрос"
 error,Friendly's,Bacon Trio Cheeseburger w/ 2 Patties,range,carbs=1524.0 выше потолка 500
@@ -406,25 +439,37 @@ warning,Friendly's,Waffle Fries,atwater,"351 ккал, макросы объяс
 error,Frisch's Big Boy,Baked Apples,atwater,макросы дают 180 ккал против заявленных 90 (+100%)
 error,Frisch's Big Boy,"Chili Spaghetti, Kids",atwater,"390 ккал, макросы объясняют только 38 (90%) — алкоголь или потерянный макрос"
 warning,Frisch's Big Boy,"Fish, Kids",atwater,"140 ккал, макросы объясняют только 61 (56%) — алкоголь или потерянный макрос"
+warning,Frisch's Big Boy,"French Dressing, Fat Free",label,"сахар=7 г больше, чем углеводы целиком (0 г)"
 error,Frisch's Big Boy,Frischs Mayonnaise Lady Rose,atwater,макросы дают 162 ккал против заявленных 100 (+62%)
 error,Frisch's Big Boy,"L & T, Lemonade and Iced Tea",atwater,макросы дают 500 ккал против заявленных 125 (+300%)
 warning,Frisch's Big Boy,"Mini Hand Breaded Chicken Strips, Kids",atwater,"330 ккал, макросы объясняют только 223 (32%) — алкоголь или потерянный макрос"
+warning,Frisch's Big Boy,"Mountain Dew, 12 fl oz",label,"сахар=29 г больше, чем углеводы целиком (26 г)"
 error,Frisch's Big Boy,"One Egg, Scrambled",atwater,макросы дают 392 ккал против заявленных 140 (+180%)
+warning,Frisch's Big Boy,"Sierra Mist, 12 fl oz",label,"сахар=370 г больше, чем углеводы целиком (37 г)"
 error,Frisch's Big Boy,"Strawberry Topping, for Sundaes",atwater,макросы дают 796 ккал против заявленных 70 (+1037%)
+warning,Frisch's Big Boy,"Tropicana Fruit Punch, 16 fl oz",label,"сахар=60 г больше, чем углеводы целиком (54 г)"
+warning,Frisch's Big Boy,"Tropicana Fruit Punch, 20 fl oz",label,"сахар=90 г больше, чем углеводы целиком (81 г)"
+warning,Frisch's Big Boy,"Tropicana Fruit Punch, 32 fl oz",label,"сахар=120 г больше, чем углеводы целиком (108 г)"
 error,Frisch's Big Boy,White Cheddar Cheese,atwater,макросы дают 72 ккал против заявленных 55 (+32%)
 error,Golden Corral,Apple Pecan Topped Waffle,atwater,макросы дают 211 ккал против заявленных 160 (+32%)
 error,Golden Corral,Apple-Topped Waffle,atwater,макросы дают 202 ккал против заявленных 150 (+35%)
 error,Golden Corral,Berry Cheese Blintz,atwater,макросы дают 337 ккал против заявленных 250 (+35%)
+warning,Golden Corral,Carmel Pecan Sticky Rolls,label,"сахар=27 г больше, чем углеводы целиком (0 г)"
 warning,Golden Corral,Carmel Pecan Sticky Rolls,atwater,"310 ккал, макросы объясняют только 97 (69%) — алкоголь или потерянный макрос"
+warning,Golden Corral,Fruit Shaped Candy,label,"трансжиры=2 г больше, чем жир целиком (0 г)"
 error,Golden Corral,Grilled Chicken Breast,atwater,макросы дают 222 ккал против заявленных 70 (+216%)
+warning,Golden Corral,Home Fries,label,"трансжиры=3 г больше, чем жир целиком (0 г)"
 error,Golden Corral,Milk,atwater,макросы дают 685 ккал против заявленных 140 (+389%)
 error,Golden Corral,Mmm Mmm Meatloaf,atwater,макросы дают 191 ккал против заявленных 140 (+36%)
 error,Golden Corral,Peach-Topped Waffles,atwater,макросы дают 198 ккал против заявленных 150 (+32%)
+warning,Golden Corral,Pulled BBQ Chicken,label,"трансжиры=2 г больше, чем жир целиком (0 г)"
 error,Golden Corral,Salisbury Steak,atwater,макросы дают 132 ккал против заявленных 70 (+89%)
 error,Golden Corral,Shepherds Pie,atwater,макросы дают 451 ккал против заявленных 310 (+45%)
+warning,Golden Corral,Slivered Almonds,label,"клетчатка=2 г больше, чем углеводы целиком (0 г)"
 error,Golden Corral,"Spinach, 1/2 Cup",atwater,макросы дают 63 ккал против заявленных 50 (+26%)
 error,Golden Corral,Strawberry Cheesecake,atwater,макросы дают 383 ккал против заявленных 210 (+82%)
 error,Golden Corral,Strawberry Cheesecake French Toast,atwater,макросы дают 295 ккал против заявленных 210 (+40%)
+warning,Golden Corral,Strawberry Jelly,label,"сахар=6 г больше, чем углеводы целиком (0 г)"
 error,Golden Corral,Stuffed Peppers,atwater,макросы дают 283 ккал против заявленных 160 (+77%)
 warning,Golden Corral,Turkey Sausage,atwater,"90 ккал, макросы объясняют только 54 (39%) — алкоголь или потерянный макрос"
 error,Golden Corral,Turtle Cheesecake,atwater,макросы дают 399 ккал против заявленных 240 (+66%)
@@ -450,11 +495,14 @@ error,IHOP,Sirloin Steak Tips,atwater,макросы дают 1401 ккал пр
 error,IHOP,Sirloin Tips & Eggs,atwater,макросы дают 1651 ккал против заявленных 1030 (+60%)
 warning,Jack in the Box,Chick N Tater Melt Munchie Meal,portion,2010 ккал — вероятно целая порция на компанию
 error,Jamba Juice,Krave Beef Jerky,atwater,макросы дают 215 ккал против заявленных 90 (+139%)
+warning,Jamba Juice,Lean Balance Boost,label,"клетчатка=3 г больше, чем углеводы целиком (0 г)"
+warning,Jamba Juice,"Orange Supreme, 21 fl oz",label,"сахар=55 г больше, чем углеводы целиком (51 г)"
 error,Jamba Juice,"Watermelon Breeze Smoothie, 22 fl oz",atwater,макросы дают 547 ккал против заявленных 400 (+37%)
 warning,Jason's Deli,"Ham Muffaletta, Whole",portion,2060 ккал — вероятно целая порция на компанию
 warning,Jason's Deli,"Jasons Deli Pomegranate Blueberry Sports Drink, 24 oz",atwater,"200 ккал, макросы объясняют только 120 (40%) — алкоголь или потерянный макрос"
 warning,Jason's Deli,"Jasons Deli Pomegranate Blueberry Sports Drink, 32 oz",atwater,"260 ккал, макросы объясняют только 160 (38%) — алкоголь или потерянный макрос"
 error,Jason's Deli,Raspberry Sweet Leaf Tea,atwater,макросы дают 232 ккал против заявленных 160 (+45%)
+warning,Jason's Deli,"Smoked Provolone, for Whole Sandwich",label,"сахар=2 г больше, чем углеводы целиком (0 г)"
 error,Jason's Deli,Sugar Cookie,atwater,макросы дают 319 ккал против заявленных 240 (+33%)
 error,Jason's Deli,White Chocolate Raspberry Bite,atwater,макросы дают 185 ккал против заявленных 130 (+42%)
 error,Jersey Mike's Subs,#26 Bacon Ranch Chicken Cheese Steak on White Regular,atwater,макросы дают 898 ккал против заявленных 415 (+116%)
@@ -463,7 +511,10 @@ warning,Jersey Mike's Subs,#43 Chipotle Cheese Steak on Wheat Giant,portion,2010
 warning,Jersey Mike's Subs,#43 Chipotle Cheese Steak on White Giant,portion,2010 ккал — вероятно целая порция на компанию
 error,Jersey Mike's Subs,Buffalo Steak Cheesesteak on Wheat Giant,atwater,макросы дают 1940 ккал против заявленных 1060 (+83%)
 error,Jersey Mike's Subs,"Extra Cheese & Meat, for #2 Jersey Shore Favorite, Regular & Tub",atwater,макросы дают 166 ккал против заявленных 95 (+75%)
+warning,Jersey Mike's Subs,"Extra Cheese & Meat, for Steak Bacon Ranch Cheesesteak, Giant",label,"сахар=8 г больше, чем углеводы целиком (5 г)"
 error,Jersey Mike's Subs,"Extra Meat & Cheese, for #6 Roast Beef & Provolone, Giant",atwater,макросы дают 409 ккал против заявленных 225 (+82%)
+warning,Jersey Mike's Subs,"Extra Meat, for #7 Turkey Breast & Provolone, Regular & Tub",label,"насыщенные жиры=20 г больше, чем жир целиком (0 г)"
+warning,Jersey Mike's Subs,"Extra Meat, for Steak Bacon Ranch Cheesesteak, Giant",label,"сахар=7 г больше, чем углеводы целиком (4 г)"
 warning,Joe's Crab Shack,10 Coconut Shrimp,portion,2170 ккал — вероятно целая порция на компанию
 error,Joe's Crab Shack,Arctic Bay Steampot for 2,range,protein=304.0 выше потолка 250
 warning,Joe's Crab Shack,Arctic Bay Steampot for 2,portion,2210 ккал — вероятно целая порция на компанию
@@ -533,6 +584,8 @@ error,Krystal,48 Krystals,range,kcal=6150.0 выше потолка 5000
 error,Krystal,48 Krystals,range,protein=301.0 выше потолка 250
 error,Krystal,48 Krystals,range,carbs=743.0 выше потолка 500
 warning,Krystal,48 Krystals,portion,6150 ккал — вероятно целая порция на компанию
+warning,LongHorn Steakhouse,12 oz Prime Rib,label,"клетчатка=2 г больше, чем углеводы целиком (0 г)"
+warning,LongHorn Steakhouse,16 oz Prime Rib,label,"клетчатка=2 г больше, чем углеводы целиком (0 г)"
 warning,LongHorn Steakhouse,Buck Bourbon & Coke,atwater,"130 ккал, макросы объясняют только 40 (69%) — алкоголь или потерянный макрос"
 warning,LongHorn Steakhouse,Captains Mule,atwater,"220 ккал, макросы объясняют только 140 (36%) — алкоголь или потерянный макрос"
 warning,LongHorn Steakhouse,"Chili Cheese Fries, Larger Portion",portion,2050 ккал — вероятно целая порция на компанию
@@ -561,17 +614,39 @@ error,Marco's Pizza,"Chicken Caesar Salad, Large",atwater,макросы даю�
 error,Marco's Pizza,"Chicken Caesar Salad, Small",atwater,макросы дают 152 ккал против заявленных 120 (+27%)
 error,Marco's Pizza,"Garden Salad, Large",atwater,макросы дают 163 ккал против заявленных 130 (+25%)
 error,Marco's Pizza,"Garden Salad, Small",atwater,макросы дают 189 ккал против заявленных 150 (+26%)
+warning,McAlister's Deli,1% Milk,label,"насыщенные жиры=2 г больше, чем жир целиком (0 г)"
+warning,McAlister's Deli,Cheetos Crunchy Mellow Cheese Snacks,label,"насыщенные жиры=4 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,Cheetos Crunchy Mellow Cheese Snacks,atwater,"310 ккал, макросы объясняют только 116 (63%) — алкоголь или потерянный макрос"
 error,McAlister's Deli,Chocolate Chip Cookie,atwater,макросы дают 467 ккал против заявленных 370 (+26%)
+warning,McAlister's Deli,Doritos Nacho Cheese Tortilla Chips,label,"насыщенные жиры=2 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,Doritos Nacho Cheese Tortilla Chips,atwater,"240 ккал, макросы объясняют только 124 (48%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,Lays BBQ Potato Chips,label,"насыщенные жиры=2 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,Lays BBQ Potato Chips,atwater,"230 ккал, макросы объясняют только 104 (55%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,New York Cheesecake & Strawberry Puree,label,"насыщенные жиры=37 г больше, чем жир целиком (0 г)"
+warning,McAlister's Deli,New York Cheesecake & Strawberry Puree,label,"трансжиры=2 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,New York Cheesecake & Strawberry Puree,atwater,"950 ккал, макросы объясняют только 388 (59%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,New York Cheesecake & Wildberry Puree,label,"насыщенные жиры=37 г больше, чем жир целиком (0 г)"
+warning,McAlister's Deli,New York Cheesecake & Wildberry Puree,label,"трансжиры=2 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,New York Cheesecake & Wildberry Puree,atwater,"960 ккал, макросы объясняют только 388 (60%) — алкоголь или потерянный макрос"
+warning,McAlister's Deli,Sun Chips Harvest Cheddar Snacks,label,"насыщенные жиры=2 г больше, чем жир целиком (0 г)"
 warning,McAlister's Deli,Sun Chips Harvest Cheddar Snacks,atwater,"210 ккал, макросы объясняют только 124 (41%) — алкоголь или потерянный макрос"
 warning,McAlister's Deli,Sunchips Original Snacks,atwater,"210 ккал, макросы объясняют только 124 (41%) — алкоголь или потерянный макрос"
 warning,McDonald's,"Extra Value Meal w/ 40 Pc Nuggets, Medium Coke & Medium Fries",portion,2500 ккал — вероятно целая порция на компанию
+warning,McDonald's,Hot Fudge Sundae,label,"сахар=47 г больше, чем углеводы целиком (43 г)"
+warning,McDonald's,"McCafe Chocolate Shake, Large",label,"сахар=122 г больше, чем углеводы целиком (110 г)"
+warning,McDonald's,"McCafe Chocolate Shake, Medium",label,"сахар=90 г больше, чем углеводы целиком (81 г)"
+warning,McDonald's,"McCafe Chocolate Shake, Small",label,"сахар=74 г больше, чем углеводы целиком (68 г)"
+warning,McDonald's,"McCafe Strawberry Shake, Large",label,"сахар=115 г больше, чем углеводы целиком (97 г)"
+warning,McDonald's,"McCafe Strawberry Shake, Medium",label,"сахар=84 г больше, чем углеводы целиком (71 г)"
+warning,McDonald's,"McCafe Strawberry Shake, Small",label,"сахар=71 г больше, чем углеводы целиком (61 г)"
+warning,McDonald's,"McFlurry w/ M&Ms Candies, Regular Size",label,"сахар=86 г больше, чем углеводы целиком (77 г)"
+warning,McDonald's,"McFlurry w/ M&Ms Candies, Snack Size",label,"сахар=58 г больше, чем углеводы целиком (51 г)"
+warning,McDonald's,"McFlurry w/ Oreo Cookies, Regular Size",label,"сахар=64 г больше, чем углеводы целиком (60 г)"
+warning,McDonald's,"McFlurry w/ Oreo Cookies, Snack Size",label,"сахар=42 г больше, чем углеводы целиком (40 г)"
+warning,McDonald's,Strawberry Sundae,label,"сахар=45 г больше, чем углеводы целиком (40 г)"
 error,Moe's Southwest Grill,"Adobo Chicken, Double, for Kids",atwater,макросы дают 152 ккал против заявленных 112 (+36%)
 error,Moe's Southwest Grill,"Adobo Chicken, Regular, for Kids",atwater,макросы дают 76 ккал против заявленных 56 (+36%)
+warning,Moe's Southwest Grill,Brownie,label,"насыщенные жиры=30 г больше, чем жир целиком (10 г)"
 error,Moe's Southwest Grill,"Fish, Double, for Kids",atwater,макросы дают 150 ккал против заявленных 76 (+97%)
 error,Moe's Southwest Grill,"Fish, Double, for Tacos",atwater,макросы дают 150 ккал против заявленных 110 (+36%)
 error,Moe's Southwest Grill,"Fish, Regular, Tacos",atwater,макросы дают 75 ккал против заявленных 55 (+36%)
@@ -670,7 +745,9 @@ error,Papa John's,50 Wings w/ Honey Chipotle Sauce,range,protein=417.0 выше 
 warning,Papa John's,50 Wings w/ Honey Chipotle Sauce,portion,5640 ккал — вероятно целая порция на компанию
 warning,Papa John's,60 Chicken Poppers,portion,3180 ккал — вероятно целая порция на компанию
 error,Papa John's,"Hawaiian Punch, 2 Liter",range,protein=279.0 выше потолка 250
+warning,Papa John's,"Hawaiian Punch, 2 Liter",label,"клетчатка=279 г больше, чем углеводы целиком (0 г)"
 warning,Papa John's,"Hawaiian on Original Crust, Extra Large, 1 Slice",atwater,"310 ккал, макросы объясняют только 209 (33%) — алкоголь или потерянный макрос"
+warning,Papa John's,Pepperoncinis,label,"сахар=4 г больше, чем углеводы целиком (0 г)"
 warning,Papa John's,"Pepperoni, for Pan Crust",atwater,"50 ккал, макросы объясняют только 31 (38%) — алкоголь или потерянный макрос"
 error,Papa John's,"White Pizza on Thin Crust, 1 Slice",atwater,макросы дают 299 ккал против заявленных 210 (+42%)
 error,Papa Murphy's,Bleu Cheese Dressing,atwater,макросы дают 548 ккал против заявленных 150 (+265%)
@@ -771,6 +848,7 @@ warning,Perkins,Yuengling,atwater,"130 ккал, макросы объясняю
 warning,Popeyes,"Cajun Fries, Regular",atwater,"268 ккал, макросы объясняют только 154 (43%) — алкоголь или потерянный макрос"
 error,Popeyes,Hot Cinnamon Apple Pie,atwater,макросы дают 296 ккал против заявленных 236 (+25%)
 error,Popeyes,Pepsi,atwater,макросы дают 280 ккал против заявленных 200 (+40%)
+warning,Popeyes,Sweet Tea,label,"сахар=45 г больше, чем углеводы целиком (16 г)"
 warning,Popeyes,Sweet Tea,atwater,"180 ккал, макросы объясняют только 64 (64%) — алкоголь или потерянный макрос"
 error,Qdoba,Lite Sour Cream,atwater,макросы дают 65 ккал против заявленных 50 (+30%)
 error,Quiznos,"Base, for Honey Mustard on Flatbread",atwater,макросы дают 255 ккал против заявленных 80 (+219%)
@@ -822,6 +900,7 @@ warning,Red Robin,"Barefoot Refresh Moscato Spritzer, 9 oz",atwater,"170 кка�
 warning,Red Robin,Belgium Fat Tire,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
 warning,Red Robin,Blue Moon Belgian White,atwater,"170 ккал, макросы объясняют только 64 (62%) — алкоголь или потерянный макрос"
 warning,Red Robin,Blue Moon Can Crafted Cocktail,atwater,"220 ккал, макросы объясняют только 140 (36%) — алкоголь или потерянный макрос"
+warning,Red Robin,Boulevard Wheat,label,"клетчатка=21 г больше, чем углеводы целиком (10 г)"
 warning,Red Robin,Boulevard Wheat,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
 error,Red Robin,Bud Light,atwater,"100 ккал, макросы объясняют только 24 (76%) — алкоголь или потерянный макрос"
 warning,Red Robin,Budweiser,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
@@ -899,6 +978,7 @@ warning,Red Robin,Skinny Spiked Freckled Lemonade,atwater,"130 ккал, мак�
 warning,Red Robin,Skinny Stoli Raspberry Lemonade,atwater,"70 ккал, макросы объясняют только 20 (71%) — алкоголь или потерянный макрос"
 warning,Red Robin,Spiked Freckled Lemonade,atwater,"270 ккал, макросы объясняют только 176 (35%) — алкоголь или потерянный макрос"
 warning,Red Robin,Stella Artois,atwater,"150 ккал, макросы объясняют только 52 (65%) — алкоголь или потерянный макрос"
+warning,Red Robin,Sub a Salmon Fillet,label,"клетчатка=4 г больше, чем углеводы целиком (2 г)"
 error,Red Robin,"The Naked Grape Chardonnay, 6 oz",atwater,"150 ккал, макросы объясняют только 20 (87%) — алкоголь или потерянный макрос"
 error,Red Robin,"The Naked Grape Chardonnay, 9 oz",atwater,"220 ккал, макросы объясняют только 32 (85%) — алкоголь или потерянный макрос"
 error,Red Robin,"The Naked Grape Harvest Blend, 6 oz",atwater,"160 ккал, макросы объясняют только 28 (82%) — алкоголь или потерянный макрос"
@@ -935,6 +1015,7 @@ error,Sbarro,"Breakfast Platter w/ Eggs, Meat, Potatoes & Bacon",atwater,мак�
 warning,Sbarro,"Buffalo Chicken Stromboli, Family Style",portion,3450 ккал — вероятно целая порция на компанию
 warning,Sbarro,"Classic Hawaiian Stromboli, Family Style",portion,2810 ккал — вероятно целая порция на компанию
 warning,Sbarro,"Double Duo Pep Stromboli, Family Style",portion,3790 ккал — вероятно целая порция на компанию
+warning,Sbarro,"G2, Grape",label,"сахар=12 г больше, чем углеводы целиком (4 г)"
 warning,Sbarro,"G2, Grape",atwater,"60 ккал, макросы объясняют только 16 (73%) — алкоголь или потерянный макрос"
 warning,Sbarro,Hot & Spicy Stromboli,atwater,"780 ккал, макросы объясняют только 492 (37%) — алкоголь или потерянный макрос"
 warning,Sbarro,"Hot & Spicy Stromboli, Family Style",portion,3120 ккал — вероятно целая порция на компанию
@@ -975,10 +1056,21 @@ warning,Sbarro,"Supremo Stromboli, Family Style",portion,3250 ккал — ве�
 warning,Sonic,24 Asian Sweet Chili Boneless Wings,portion,2130 ккал — вероятно целая порция на компанию
 warning,Sonic,24 Buffalo Boneless Wings,portion,2060 ккал — вероятно целая порция на компанию
 warning,Sonic,24 Honey BBQ Boneless Wings,portion,2090 ккал — вероятно целая порция на компанию
+warning,Sonic,"Banana Cream Pie Shake, Medium",label,"насыщенные жиры=125 г больше, чем жир целиком (43 г)"
+warning,Sonic,Cream Cheese Frosting,label,"сахар=23 г больше, чем углеводы целиком (21 г)"
+warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Large",label,"насыщенные жиры=315 г больше, чем жир целиком (130 г)"
 warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Large",portion,2120 ккал — вероятно целая порция на компанию
+warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Medium",label,"насыщенные жиры=225 г больше, чем жир целиком (87 г)"
+warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Mini",label,"насыщенные жиры=137 г больше, чем жир целиком (47 г)"
+warning,Sonic,"Peanut Butter & Cookie Dough Dream Master Blast, Small",label,"насыщенные жиры=143 г больше, чем жир целиком (57 г)"
+warning,Sonic,"Turtle Pecan Master Blast, Large",label,"насыщенные жиры=308 г больше, чем жир целиком (99 г)"
+warning,Sonic,"Turtle Pecan Master Blast, Medium",label,"насыщенные жиры=221 г больше, чем жир целиком (72 г)"
+warning,Sonic,"Turtle Pecan Master Blast, Mini",label,"насыщенные жиры=135 г больше, чем жир целиком (42 г)"
+warning,Sonic,"Turtle Pecan Master Blast, Small",label,"насыщенные жиры=214 г больше, чем жир целиком (56 г)"
 error,Starbucks,"Dark Mocha Light Frappuccino Blended Beverage w/ Whole Milk & Whipped Cream, Tall",atwater,макросы дают 148 ккал против заявленных 110 (+35%)
 warning,Steak 'N Shake,Budweiser,atwater,"150 ккал, макросы объясняют только 48 (68%) — алкоголь или потерянный макрос"
 warning,Steak 'N Shake,Draft Brooklyn Lager,atwater,"170 ккал, макросы объясняют только 76 (55%) — алкоголь или потерянный макрос"
+warning,Steak 'N Shake,"Fresh Lemonade, Regular",label,"сахар=30 г больше, чем углеводы целиком (4 г)"
 error,Steak 'N Shake,"Fresh Lemonade, Regular",atwater,"120 ккал, макросы объясняют только 16 (87%) — алкоголь или потерянный макрос"
 error,Steak 'N Shake,Kendall Jackson Cabernet,atwater,"125 ккал, макросы объясняют только 12 (90%) — алкоголь или потерянный макрос"
 error,Steak 'N Shake,Kendall Jackson Chardonnay,atwater,"120 ккал, макросы объясняют только 20 (83%) — алкоголь или потерянный макрос"
@@ -989,6 +1081,9 @@ warning,TGI Friday's,Absolut & Cranberry Juice,atwater,"170 ккал, макро
 warning,TGI Friday's,Absolut & Orange Juice,atwater,"160 ккал, макросы объясняют только 56 (65%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Absolut & Soda Water,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Absolut & Tonic,atwater,"140 ккал, макросы объясняют только 44 (69%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Add On Lobster Tail,label,"насыщенные жиры=3 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,Add On Lobster Tail,label,"трансжиры=600 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,Add On Lobster Tail,label,"сахар=80 г больше, чем углеводы целиком (2 г)"
 warning,TGI Friday's,Add On Lobster Tail,atwater,"120 ккал, макросы объясняют только 66 (45%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Apple Tini,atwater,"160 ккал, макросы объясняют только 84 (48%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Barbados Rum Punch,atwater,"230 ккал, макросы объясняют только 132 (43%) — алкоголь или потерянный макрос"
@@ -1060,7 +1155,12 @@ warning,TGI Friday's,Patron Cosmo Rita Shaker w/ Patron Reposado,atwater,"270 к
 warning,TGI Friday's,Peach Honey Smash,atwater,"210 ккал, макросы объясняют только 100 (52%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Peach Long Island Tea,atwater,"240 ккал, макросы объясняют только 108 (55%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Peach Sangria,atwater,"240 ккал, макросы объясняют только 152 (37%) — алкоголь или потерянный макрос"
+warning,TGI Friday's,Petite Sirloin & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,label,"трансжиры=1460 г больше, чем жир целиком (26 г)"
+warning,TGI Friday's,Petite Sirloin & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,label,"сахар=163 г больше, чем углеводы целиком (55 г)"
 error,TGI Friday's,Petite Sirloin & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,atwater,макросы дают 1406 ккал против заявленных 890 (+58%)
+warning,TGI Friday's,"Petite Sirloin, Local",label,"насыщенные жиры=3 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,"Petite Sirloin, Local",label,"трансжиры=860 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,"Petite Sirloin, Local",label,"сахар=80 г больше, чем углеводы целиком (23 г)"
 error,TGI Friday's,"Petite Sirloin, Local",atwater,макросы дают 932 ккал против заявленных 370 (+152%)
 warning,TGI Friday's,Pink Punk Martini,atwater,"160 ккал, макросы объясняют только 52 (68%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Purple Hooter,atwater,"140 ккал, макросы объясняют только 48 (66%) — алкоголь или потерянный макрос"
@@ -1068,8 +1168,13 @@ warning,TGI Friday's,Red Bull & Vodka,atwater,"140 ккал, макросы об
 error,TGI Friday's,Red Head,atwater,"140 ккал, макросы объясняют только 32 (77%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Red Snapper,atwater,"170 ккал, макросы объясняют только 112 (34%) — алкоголь или потерянный макрос"
 error,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,range,protein=308.0 выше потолка 250
+warning,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,label,"трансжиры=1470 г больше, чем жир целиком (26 г)"
+warning,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,label,"сахар=273 г больше, чем углеводы целиком (64 г)"
 error,TGI Friday's,Rib Eye & Lobster Tail w/ Mashed Potatoes & Lemon Butter Broccoli,atwater,макросы дают 1722 ккал против заявленных 1080 (+59%)
 error,TGI Friday's,"Rib Eye, Local",range,protein=280.0 выше потолка 250
+warning,TGI Friday's,"Rib Eye, Local",label,"насыщенные жиры=3 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,"Rib Eye, Local",label,"трансжиры=870 г больше, чем жир целиком (0 г)"
+warning,TGI Friday's,"Rib Eye, Local",label,"сахар=190 г больше, чем углеводы целиком (32 г)"
 error,TGI Friday's,"Rib Eye, Local",atwater,макросы дают 1248 ккал против заявленных 560 (+123%)
 warning,TGI Friday's,Ruby Red Greyhound,atwater,"130 ккал, макросы объясняют только 48 (63%) — алкоголь или потерянный макрос"
 warning,TGI Friday's,Ruby Red Spiked Lemonade,atwater,"160 ккал, макросы объясняют только 80 (50%) — алкоголь или потерянный макрос"
@@ -1164,12 +1269,14 @@ error,The Capital Grille,Stoli Doli,atwater,"170 ккал, макросы объ
 error,The Capital Grille,The Bohemian,atwater,"150 ккал, макросы объясняют только 32 (79%) — алкоголь или потерянный макрос"
 warning,The Capital Grille,The Elder Brother,atwater,"230 ккал, макросы объясняют только 68 (70%) — алкоголь или потерянный макрос"
 error,The Capital Grille,Veal Tomahawk Chop,atwater,макросы дают 1067 ккал против заявленных 660 (+62%)
+warning,The Capital Grille,Wedge Salad,label,"насыщенные жиры=74 г больше, чем жир целиком (54 г)"
 error,The Capital Grille,"White Wine, 1.5 L",atwater,"1250 ккал, макросы объясняют только 132 (89%) — алкоголь или потерянный макрос"
 warning,The Capital Grille,"White Wine, 3 L",portion,2510 ккал — вероятно целая порция на компанию
 error,The Capital Grille,"White Wine, 3 L",atwater,"2510 ккал, макросы объясняют только 264 (89%) — алкоголь или потерянный макрос"
 error,The Capital Grille,"White Wine, 6 oz",atwater,"150 ккал, макросы объясняют только 16 (89%) — алкоголь или потерянный макрос"
 error,Wawa,BBQ Ranch Salad,atwater,макросы дают 335 ккал против заявленных 180 (+86%)
 error,Wawa,Black Forest Ham & Cheese Pretzel Roll Sandwich,atwater,макросы дают 1139 ккал против заявленных 600 (+90%)
+warning,Wawa,"Buffalo Chicken Bites, Brakebush",label,"насыщенные жиры=36 г больше, чем жир целиком (17 г)"
 warning,Wawa,"Caramel Iced Coffee, 16 oz",atwater,"410 ккал, макросы объясняют только 266 (35%) — алкоголь или потерянный макрос"
 warning,Wawa,"Caramel Iced Coffee, 22 oz",atwater,"550 ккал, макросы объясняют только 360 (35%) — алкоголь или потерянный макрос"
 warning,Wawa,"Caramel Iced Coffee, 32 oz",atwater,"810 ккал, макросы объясняют только 519 (36%) — алкоголь или потерянный макрос"
@@ -1180,6 +1287,8 @@ error,Wawa,"Chicken Steak Breakfast Hoagie, Classic",atwater,макросы да
 error,Wawa,"Chocolate Chip Muffin, FL",atwater,макросы дают 692 ккал против заявленных 530 (+31%)
 error,Wawa,Hash Brown,atwater,макросы дают 140 ккал против заявленных 100 (+40%)
 error,Wawa,"Oven Roasted Turkey Breakfast Hoagie, Classic",atwater,макросы дают 243 ккал против заявленных 120 (+102%)
+warning,Wawa,Thai Style Chicken Mango Salad,label,"сахар=14 г больше, чем углеводы целиком (0 г)"
+warning,Wawa,Thai Style Chicken Mango Salad,label,"клетчатка=4 г больше, чем углеводы целиком (0 г)"
 warning,Wawa,Thai Style Chicken Mango Salad,atwater,"240 ккал, макросы объясняют только 157 (35%) — алкоголь или потерянный макрос"
 error,Wawa,Wheat Bread FL,atwater,макросы дают 130 ккал против заявленных 100 (+30%)
 error,Wawa,"Wheat Bread, FL, for Club Sandwiches",atwater,макросы дают 195 ккал против заявленных 150 (+30%)

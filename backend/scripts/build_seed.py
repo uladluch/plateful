@@ -70,7 +70,15 @@ def main() -> int:
     if broken:
         print(f"Исключено из пака: {len(items) - len(shipped):,} позиций с ошибками")
 
-    built = pack.build(shipped, version=args.version,
+    # Сломанные доли этикетки гасим, а позицию оставляем: сахар больше
+    # углеводов не отменяет калорий блюда. В отчёте они уже посчитаны
+    # предупреждениями kind=label.
+    cleaned = validate.strip_broken_label(shipped)
+    nulled = sum(len(validate.broken_label_fields(i)) for i in shipped)
+    if nulled:
+        print(f"Погашено полей этикетки: {nulled}")
+
+    built = pack.build(cleaned, version=args.version,
                        source=menustat.SOURCE, observed=menustat.OBSERVED_AT)
     meta = pack.write(built, json_path=BUNDLE_JSON,
                       deflate_path=DATA / f"seed-pack-v{args.version}.deflate")

@@ -47,7 +47,8 @@ struct MenuCatalogTests {
             key: name.lowercased().replacingOccurrences(of: " ", with: "-"),
             name: name, category: nil, serving: nil,
             kcal: kcal, protein: 1, carbs: 2, fat: 3,
-            sugar: nil, satFat: nil, sodium: nil, fiber: nil, image: nil, photo: nil,
+            sugar: nil, satFat: nil, transFat: nil, cholesterol: nil,
+            sodium: nil, fiber: nil, image: nil, photo: nil,
             section: nil, variant: nil, offMenu: nil,
             source: source, observed: observed, stale: stale)
     }

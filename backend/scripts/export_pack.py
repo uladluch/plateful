@@ -37,7 +37,8 @@ class Row:
     """Утиный двойник menustat.Item — pack.build читает только эти поля."""
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
                  "kcal", "protein", "carbs", "fat",
-                 "sugar", "sat_fat", "sodium", "fiber",
+                 "sugar", "sat_fat", "trans_fat", "cholesterol",
+                 "sodium", "fiber",
                  "source", "observed", "stale", "photo", "off_menu")
 
     def __init__(self, item: dict, key: str):
@@ -50,9 +51,11 @@ class Row:
         self.protein = float(item["protein"])
         self.carbs = float(item["carbs"])
         self.fat = float(item["fat"])
-        # Остальная этикетка: сахар, насыщенные жиры, натрий, клетчатка.
+        # Остальная этикетка: сахар, жиры, холестерин, натрий, клетчатка.
         # Есть не у всех позиций, поэтому None проходит насквозь.
         for field, key in (("sugar", "sugar"), ("sat_fat", "satFat"),
+                           ("trans_fat", "transFat"),
+                           ("cholesterol", "cholesterol"),
                            ("sodium", "sodium"), ("fiber", "fiber")):
             value = item.get(key)
             setattr(self, field, float(value) if value is not None else None)

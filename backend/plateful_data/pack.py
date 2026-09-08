@@ -8,7 +8,8 @@
                     chains: [{name, itemCount}],
                     items:  [{chain, key, name, category, section, serving,
                               kcal, protein, carbs, fat,
-                              sugar?, satFat?, sodium?, fiber?, image,
+                              sugar?, satFat?, transFat?, cholesterol?,
+                              sodium?, fiber?, image,
                               variant?: {group, label, order, kind, base},
                               source?, observed?, stale?}]}
 
@@ -96,6 +97,8 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
         # того же обязательного раскрытия, что и калории (21 CFR 101.11), —
         # но приходит не всегда, поэтому только там, где число есть.
         for field, key in (("sugar", "sugar"), ("sat_fat", "satFat"),
+                           ("trans_fat", "transFat"),
+                           ("cholesterol", "cholesterol"),
                            ("sodium", "sodium"), ("fiber", "fiber")):
             value = getattr(item, field, None)
             if value is not None:

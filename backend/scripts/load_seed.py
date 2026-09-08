@@ -43,7 +43,7 @@ CHUNK = 2500
 
 COLUMNS = ("chain_id", "ext_key", "name", "category", "serving_text",
            "kcal", "protein", "carbs", "fat",
-           "sugar", "sat_fat", "sodium", "fiber",
+           "sugar", "sat_fat", "trans_fat", "cholesterol", "sodium", "fiber",
            "source", "observed_at", "stale")
 
 
@@ -94,6 +94,8 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
                 sql_literal(i["fat"], cast("numeric")),
                 sql_literal(i.get("sugar"), cast("numeric")),
                 sql_literal(i.get("satFat"), cast("numeric")),
+                sql_literal(i.get("transFat"), cast("numeric")),
+                sql_literal(i.get("cholesterol"), cast("numeric")),
                 sql_literal(i.get("sodium"), cast("numeric")),
                 sql_literal(i.get("fiber"), cast("numeric")),
             )) + ")")
@@ -104,11 +106,13 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
             f"insert into items ({', '.join(COLUMNS)})\n"
             "select c.id, v.ext_key, v.name, v.category, v.serving_text,\n"
             "       v.kcal, v.protein, v.carbs, v.fat,\n"
-            "       v.sugar, v.sat_fat, v.sodium, v.fiber,\n"
+            "       v.sugar, v.sat_fat, v.trans_fat, v.cholesterol,"
+            " v.sodium, v.fiber,\n"
             f"       '{SOURCE}', date '{OBSERVED}', true\n"
             "from (values\n" + ",\n".join(rows) + "\n"
             ") as v(chain_slug, ext_key, name, category, serving_text,"
-            " kcal, protein, carbs, fat, sugar, sat_fat, sodium, fiber)\n"
+            " kcal, protein, carbs, fat, sugar, sat_fat, trans_fat,"
+            " cholesterol, sodium, fiber)\n"
             "join chains c on c.slug = v.chain_slug;\n", encoding="utf-8")
         written.append(path)
 
@@ -178,7 +182,8 @@ def main() -> int:
             with cur.copy(
                 """copy items (chain_id, ext_key, name, category, serving_text,
                                kcal, protein, carbs, fat,
-                               sugar, sat_fat, sodium, fiber,
+                               sugar, sat_fat, trans_fat, cholesterol,
+                               sodium, fiber,
                                source, observed_at, stale)
                    from stdin"""
             ) as copy:
@@ -188,6 +193,7 @@ def main() -> int:
                         i.get("category"), i.get("serving"),
                         i["kcal"], i["protein"], i["carbs"], i["fat"],
                         i.get("sugar"), i.get("satFat"),
+                        i.get("transFat"), i.get("cholesterol"),
                         i.get("sodium"), i.get("fiber"),
                         SOURCE, OBSERVED, True,
                     ))

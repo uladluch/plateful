@@ -7,7 +7,7 @@ LLM выдумала число. Все эти поломки дают одно 
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 # Коэффициенты Атуотера: ккал на грамм
 KCAL_PER_G_PROTEIN = 4.0
@@ -36,6 +36,31 @@ WARN_KCAL = 2000.0
 MAX_PROTEIN_G = 250.0
 MAX_CARB_G = 500.0
 MAX_FAT_G = 400.0
+
+# Доли этикетки: насыщенные и трансжиры входят в общий жир, сахар и
+# клетчатка — в углеводы. Доля больше целого значит сломанное число, а не
+# необычное блюдо: «Sierra Mist, 12 fl oz» с 37 г углеводов и 370 г сахара,
+# «Diet Dr Pepper» с нулём углеводов и 96 г сахара, трансжиры в 1470 г при
+# 26 г жира всего. В сиде таких 109.
+#
+# Допуск в грамм — на округление: источник округляет до целых, и две
+# независимо округлённые величины расходятся не больше чем на грамм. Дальше
+# разрыв сразу измеряется десятками, серединки нет.
+FRACTION_TOLERANCE_G = 1.0
+
+# (доля, целое, как назвать в отчёте)
+LABEL_FRACTIONS = (
+    ("sat_fat", "fat", "насыщенные жиры", "жир"),
+    ("trans_fat", "fat", "трансжиры", "жир"),
+    ("sugar", "carbs", "сахар", "углеводы"),
+    ("fiber", "carbs", "клетчатка", "углеводы"),
+)
+
+# Потолки остальной этикетки. Верхние границы щедрые: «50 Naked Wings»
+# у Hooters честно несут 2680 мг холестерина, а солонка размером с блюдо
+# на компанию доходит до 25 г натрия. Это защита от съехавшей колонки.
+MAX_CHOLESTEROL_MG = 5000.0
+MAX_SODIUM_MG = 30000.0
 
 # Пороги дифф-проверки: если кроул перевернул сеть сильнее — это поломка
 # адаптера, а не обновление меню. Релиз собирать нельзя.
@@ -71,6 +96,49 @@ def atwater_kcal(protein: float, carbs: float, fat: float) -> float:
     )
 
 
+def broken_label_fields(item) -> list[tuple[str, str]]:
+    """Поля этикетки, которым нельзя верить: (имя поля, объяснение).
+
+    Одно правило на двух потребителей: check_item делает из него
+    предупреждение в отчёте, build_seed — гасит поле перед сборкой пака.
+    Разъедься они, и в паке оказалось бы то, на что отчёт уже пожаловался.
+    """
+    broken: list[tuple[str, str]] = []
+
+    for field, whole_field, part_name, whole_name in LABEL_FRACTIONS:
+        part = getattr(item, field, None)
+        whole = getattr(item, whole_field, None)
+        if part is None or whole is None:
+            continue
+        if part < 0:
+            broken.append((field, f"{part_name}={part} отрицательные"))
+        elif part > whole + FRACTION_TOLERANCE_G:
+            broken.append((field, f"{part_name}={part:.0f} г больше, чем "
+                                  f"{whole_name} целиком ({whole:.0f} г)"))
+
+    for field, ceiling, name in (("cholesterol", MAX_CHOLESTEROL_MG, "холестерин"),
+                                 ("sodium", MAX_SODIUM_MG, "натрий")):
+        value = getattr(item, field, None)
+        if value is None:
+            continue
+        if value < 0:
+            broken.append((field, f"{name}={value} отрицательный"))
+        elif value > ceiling:
+            broken.append((field, f"{name}={value:.0f} мг выше потолка {ceiling:.0f}"))
+
+    return broken
+
+
+def strip_broken_label(items):
+    """Гасит недостоверные поля этикетки, оставляя позицию в каталоге."""
+    cleaned = []
+    for item in items:
+        broken = broken_label_fields(item)
+        cleaned.append(replace(item, **{field: None for field, _ in broken})
+                       if broken else item)
+    return cleaned
+
+
 def check_item(item) -> list[Problem]:
     """Проверки одной позиции. Возвращает список проблем, пустой — если всё чисто."""
     problems: list[Problem] = []
@@ -88,6 +156,13 @@ def check_item(item) -> list[Problem]:
             add("range", f"{field}={value} отрицательное")
         elif value > ceiling:
             add("range", f"{field}={value} выше потолка {ceiling:.0f}")
+
+    # Этикетка. Её проблемы не отменяют позицию: калории и макросы могут
+    # быть в полном порядке, и выкидывать из каталога стейк из-за его
+    # трансжиров незачем. Поэтому только предупреждение — а само сломанное
+    # число гасит build_seed по этому же правилу (broken_label_fields).
+    for field, detail in broken_label_fields(item):
+        add("label", detail, "warning")
 
     if item.kcal > WARN_KCAL:
         add("portion", f"{item.kcal:.0f} ккал — вероятно целая порция на компанию", "warning")

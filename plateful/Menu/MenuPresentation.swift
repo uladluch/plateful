@@ -151,17 +151,23 @@ nonisolated extension MenuItem {
     var satFatText: String? { satFat.map(Self.grams) }
     var fiberText: String? { fiber.map(Self.grams) }
 
-    /// Натрий — в миллиграммах: так он стоит на этикетке, и так его
-    /// сравнивают с дневной нормой.
-    var sodiumText: String? {
-        sodium.map {
-            Measurement(value: $0, unit: UnitMass.milligrams)
+    /// Трансжиры — с десятой долей: их и меряют долями грамма, и «0.5 г»
+    /// в округлении до целого превратилось бы в успокоительный ноль.
+    var transFatText: String? {
+        transFat.map {
+            Measurement(value: $0, unit: UnitMass.grams)
                 .formatted(.measurement(
                     width: .abbreviated,
                     usage: .asProvided,
-                    numberFormatStyle: .number.precision(.fractionLength(0))))
+                    numberFormatStyle: .number.precision(.fractionLength(0...1))))
         }
     }
+
+    /// Натрий и холестерин — в миллиграммах: так они стоят на этикетке,
+    /// и так их сравнивают с дневной нормой.
+    var sodiumText: String? { sodium.map(Self.milligrams) }
+    var cholesterolText: String? { cholesterol.map(Self.milligrams) }
+
     var carbsText: String { Self.grams(carbs) }
     var fatText: String { Self.grams(fat) }
 
@@ -169,6 +175,14 @@ nonisolated extension MenuItem {
     /// захардкоженного «g».
     static func grams(_ value: Double) -> String {
         Measurement(value: value, unit: UnitMass.grams)
+            .formatted(.measurement(
+                width: .abbreviated,
+                usage: .asProvided,
+                numberFormatStyle: .number.precision(.fractionLength(0))))
+    }
+
+    static func milligrams(_ value: Double) -> String {
+        Measurement(value: value, unit: UnitMass.milligrams)
             .formatted(.measurement(
                 width: .abbreviated,
                 usage: .asProvided,

@@ -374,12 +374,37 @@ struct LabelNutrientTests {
 
     @Test("этикетка доезжает из пака")
     func readsTheLabel() {
-        let item = Self.catalog(["sugar": 9, "satFat": 10,
-                                 "sodium": 950, "fiber": 3]).items[0]
+        let item = Self.catalog(["sugar": 9, "satFat": 10, "transFat": 1,
+                                 "cholesterol": 80, "sodium": 950, "fiber": 3]).items[0]
 
         #expect(item.sugarText == MenuItem.grams(9))
         #expect(item.satFatText == MenuItem.grams(10))
         #expect(item.fiberText == MenuItem.grams(3))
+        #expect(item.transFat == 1)
+        #expect(item.cholesterol == 80)
+    }
+
+    /// Холестерин, как и натрий, стоит на этикетке в миллиграммах.
+    @Test("холестерин показывается в миллиграммах")
+    func cholesterolInMilligrams() {
+        let item = Self.catalog(["cholesterol": 80]).items[0]
+
+        #expect(item.cholesterolText?.contains("80") == true)
+        #expect(item.cholesterolText?.contains("mg") == true)
+    }
+
+    /// Трансжиры меряют долями грамма, и «0.5 г» при округлении до целого
+    /// стало бы успокоительным нулём.
+    ///
+    /// Сравниваем с нулевой отрисовкой, а не с литералом «0.5»: разделитель
+    /// дробной части приходит из локали, и на машине с запятой литерал
+    /// провалил бы тест, ничего не сказав о самом округлении.
+    @Test("трансжиры не округляются до нуля")
+    func transFatKeepsTheFraction() {
+        let item = Self.catalog(["transFat": 0.5]).items[0]
+
+        #expect(item.transFatText != MenuItem.grams(0))
+        #expect(item.transFatText != MenuItem.grams(1))
     }
 
     /// Натрий стоит на этикетке в миллиграммах, и сравнивают его с дневной
@@ -399,6 +424,8 @@ struct LabelNutrientTests {
         #expect(item.sugar == nil)
         #expect(item.sugarText == nil)
         #expect(item.sodiumText == nil)
+        #expect(item.transFatText == nil)
+        #expect(item.cholesterolText == nil)
     }
 
     /// Ноль — законное число: у диетической колы сахара действительно нет.
@@ -421,5 +448,37 @@ struct LabelNutrientTests {
             catalog.items(in: "McDonald's").first { $0.name == "Big Mac" })
         #expect(bigMac.sugar == 9)
         #expect(bigMac.sodium == 950)
+        #expect(bigMac.cholesterol == 80)
+        #expect(bigMac.transFat == 1)
+    }
+
+    /// Доля не бывает больше целого. Конвейер гасит такие числа, и в паке,
+    /// который едет в бандле, их быть не должно ни одного: «Diet Dr Pepper»
+    /// с нулём углеводов и 96 г сахара — сломанное число, а не напиток.
+    @Test("в паке из бандла нет долей больше целого")
+    func noFractionExceedsItsWhole() throws {
+        let url = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let catalog = MenuCatalog(pack: try MenuPack.decode(from: Data(contentsOf: url)))
+
+        let broken = catalog.items.filter {
+            ($0.sugar ?? 0) > $0.carbs + 1 || ($0.fiber ?? 0) > $0.carbs + 1
+                || ($0.satFat ?? 0) > $0.fat + 1 || ($0.transFat ?? 0) > $0.fat + 1
+        }
+
+        #expect(broken.isEmpty)
+    }
+
+    @Test("холестерин и трансжиры есть почти у всех")
+    func realSeedHasTheRestOfTheLabel() throws {
+        let url = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let catalog = MenuCatalog(pack: try MenuPack.decode(from: Data(contentsOf: url)))
+
+        let withCholesterol = catalog.items.count { $0.cholesterol != nil }
+        let withTransFat = catalog.items.count { $0.transFat != nil }
+
+        #expect(Double(withCholesterol) / Double(catalog.items.count) > 0.95)
+        #expect(Double(withTransFat) / Double(catalog.items.count) > 0.90)
     }
 }

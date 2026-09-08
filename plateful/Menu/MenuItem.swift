@@ -27,13 +27,21 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     let carbs: Double
     let fat: Double
 
-    /// Остальная этикетка: сахар, насыщенные жиры, натрий, клетчатка.
+    /// Остальная этикетка: сахар, жиры, холестерин, натрий, клетчатка.
     ///
     /// Необязательные, и это не формальность: «нет числа» значит, что сеть
     /// его не публикует, а не что там ноль. Показывать ноль вместо пробела
     /// у сахара — прямой вред тому, кто его считает.
     let sugar: Double?
     let satFat: Double?
+
+    /// Трансжиры. Почти везде ноль — и именно поэтому их стоит показывать:
+    /// единица там, где ждёшь ноль, сама по себе повод выбрать другое.
+    let transFat: Double?
+
+    /// Холестерин, в миллиграммах.
+    let cholesterol: Double?
+
     let sodium: Double?
     let fiber: Double?
 
@@ -139,6 +147,8 @@ nonisolated extension MenuItem {
         self.fat = packItem.fat
         self.sugar = packItem.sugar
         self.satFat = packItem.satFat
+        self.transFat = packItem.transFat
+        self.cholesterol = packItem.cholesterol
         self.sodium = packItem.sodium
         self.fiber = packItem.fiber
         self.image = packItem.image
