@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import pdf_guide
 
-# Subway, U.S. NUTRITION INFORMATION, январь 2026.
+# Subway, U.S. NUTRITION INFORMATION, январь 2026. Два уровня заголовков:
+# капсом — формат подачи, обычным регистром — группа блюд внутри него.
 US = """SANDWICHES
 Cheesesteaks
 6" Steak Philly 192 510 25 9 1 85 1320 43 2 5 3 28 10 6 90 100
@@ -23,6 +24,17 @@ Cheesesteaks
 6" Sweet Onion Teriyaki Chicken® 256 430 11 5 0 70 1250 55 4 20 16 29 20 10 10 15
 6" Meatball Marinara 239 570 28 12 0 60 1370 53 4 7 4 27 20 15 110 100
 Ham & Jack (includes Pepper Jack Cheese)** 71 160 4 2 0 20 550 21 <1 2 2 10 0 0 45 45
+WRAPS
+Wraps Values include 12" wrap, cheese, select fresh vegetables and footlong meat portions
+Cheesesteaks
+Steak Philly 253 710 39 12 1 120 1880 55 3 6 4 44 15 8 45 45
+Local Favorites **
+Turkey & Ham ** 309 620 28 8 1 85 1700 55 3 7 4 37 20 6 20 30
+Protein Pockets Values include 9" wrap (pocket), cheese, select fresh vegetables
+Turkey & Ham 193 320 11 4 0 50 1260 32 2 4 3 21 10 4 15 20
+SALADS
+Cheesesteaks
+Steak Philly 400 450 33 9 1 65 930 12 4 6 1 21 80 35 20 15
 """
 
 # Wendy's, тот же собственный домен — но гид британский: соль в граммах.
@@ -86,7 +98,7 @@ class Refusals(unittest.TestCase):
 
     def test_американский_гид_принимается(self):
         items = pdf_guide.read(US, layout=pdf_guide.SUBWAY)
-        self.assertEqual(len(items), 6)
+        self.assertEqual(len(items), 10)
 
     def test_британский_гид_отвергается(self):
         """У Wendy's на своём домене лежит гид с солью в граммах."""
@@ -104,6 +116,60 @@ class Refusals(unittest.TestCase):
         import statistics
         drift = pdf_guide.atwater_drift(pdf_guide.parse(US, pdf_guide.SUBWAY))
         self.assertLess(statistics.median(drift), 0.05)
+
+
+class Ambiguity(unittest.TestCase):
+    """Одно название — несколько блюд.
+
+    «Steak Philly» у Subway есть сэндвичем, обёрткой и салатом, с разными
+    числами. Ключ позиции считается из имени, поэтому без различения два
+    из трёх молча потерялись бы — что и случилось на первом прогоне:
+    завести собирались 162 позиции, доехало 114.
+    """
+
+    def test_одно_имя_в_разных_форматах_это_разные_блюда(self):
+        items = pdf_guide.read(US, layout=pdf_guide.SUBWAY)
+        philly = sorted(i.name for i in items if "Steak Philly" in i.name)
+
+        self.assertEqual(philly, ['6" Steak Philly', "Steak Philly, Salads",
+                                  "Steak Philly, Wraps"])
+
+    def test_ключи_позиций_уникальны(self):
+        from plateful_data.slug import slugify
+        items = pdf_guide.read(US, layout=pdf_guide.SUBWAY)
+        keys = [slugify(i.name) for i in items]
+
+        self.assertEqual(len(keys), len(set(keys)))
+
+    def test_группа_отделяется_от_пояснения(self):
+        """«Protein Pockets Values include 9" wrap…» — имя и пояснение
+        в одной строке. Пока строка отбрасывалась за длину, обёртка и
+        карман попадали в одну группу и становились неразличимы."""
+        items = pdf_guide.read(US, layout=pdf_guide.SUBWAY)
+        pockets = [i for i in items if i.category == "Protein Pockets"]
+
+        self.assertEqual(len(pockets), 1)
+        self.assertEqual(pockets[0].values["kcal"], 320)
+
+    def test_внешний_раздел_читается_капсом(self):
+        items = pdf_guide.parse(US, pdf_guide.SUBWAY)
+        self.assertEqual({i.section for i in items}, {"SANDWICHES", "WRAPS", "SALADS"})
+
+    def test_сноска_не_часть_названия(self):
+        """«**» значит «не во всех точках» — факт о доступности, не имя."""
+        items = pdf_guide.read(US, layout=pdf_guide.SUBWAY)
+        self.assertFalse([i.name for i in items if i.name.endswith("*")])
+
+    def test_неразличимое_отвергается_а_не_теряется(self):
+        """Две строки, которые нечем развести, — отказ, а не тихая потеря."""
+        same = """WRAPS
+Cheesesteaks
+Steak Philly 253 710 39 12 1 120 1880 55 3 6 4 44 15 8 45 45
+Steak Philly 260 720 40 12 1 120 1900 56 3 6 4 45 15 8 45 45
+"""
+        with self.assertRaises(pdf_guide.WrongGuide) as caught:
+            pdf_guide.read(same, layout=pdf_guide.SUBWAY)
+        self.assertIn("неразличимые", str(caught.exception))
 
 
 if __name__ == "__main__":

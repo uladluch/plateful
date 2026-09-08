@@ -64,6 +64,10 @@ class Crawled:
     name: str
     source: str
     source_url: str
+    #: Заголовок раздела из гида и порция. Нужны только заведению новой
+    #: позиции: у обновления и то и другое уже есть в каталоге.
+    category: str | None = None
+    serving: str | None = None
     kcal: float | None = None
     protein: float | None = None
     carbs: float | None = None
@@ -249,6 +253,9 @@ def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
     host = urlparse(url).netloc.removeprefix("www.").removeprefix("media.")
     return [Crawled(chain=chain, ext_key=slugify(item.name), name=item.name,
                     source=host, source_url=url,
+                    category=item.category,
+                    serving=(f"{item.values['serving']:g} g"
+                             if item.values.get("serving") else None),
                     **{field: item.values.get(field) for field in
                        ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
                         "trans_fat", "cholesterol", "sodium", "fiber")})
@@ -265,6 +272,9 @@ def report(plan: crawl.Plan) -> None:
     print(f"  слишком непохоже:    {len(plan.suspicious)}")
     print(f"  не сходятся с собой: {broken}")
     print(f"  каталог не увидел:   {len(plan.unseen)} из {len(plan.unseen) + plan.seen}")
+    if plan.adopted or plan.retired:
+        print(f"  ЗАВЕСТИ новых:       {len(plan.adopted)}")
+        print(f"  УВЕСТИ в архив:      {len(plan.retired)}")
 
     errors = validate.errors(plan.problems)
     if errors:
@@ -282,7 +292,15 @@ def report(plan: crawl.Plan) -> None:
         for update in plan.suspicious[:10]:
             print(f"    {update.name}: {update.summary}")
 
-    if plan.unmatched:
+    if plan.adopted:
+        print("\n  Новые позиции сети:")
+        for adoption in plan.adopted[:10]:
+            print(f"    {adoption.name} — {adoption.values.get('kcal', 0):.0f} ккал"
+                  f"  [{adoption.category or 'без раздела'}]")
+        if len(plan.adopted) > 10:
+            print(f"    … ещё {len(plan.adopted) - 10}")
+
+    if plan.unmatched and not plan.adopted:
         print("\n  Без пары (лучшее сходство):")
         for name, score in plan.unmatched[:10]:
             print(f"    {name} — {score}")
@@ -346,6 +364,42 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
             f" date {sql_text(observed)}, false, 1.00\n"
             f"from closed;\n")
 
+    # Новые позиции сети. Раздел и вариант им проставит sync_taxonomy по
+    # тем же правилам, что и всем остальным: их считает конвейер по
+    # названию, а не берёт с источника, — поэтому здесь оставляем пусто.
+    if plan.adopted:
+        columns = ("chain_id", "ext_key", "name", "category", "serving_text",
+                   *crawl.NUTRIENTS,
+                   "source", "source_url", "observed_at", "stale", "confidence")
+        rows = []
+        for adoption in plan.adopted:
+            numbers = ", ".join(sql_number(adoption.values.get(name))
+                                for name in crawl.NUTRIENTS)
+            rows.append(
+                f"  ({chain_id}, {sql_text(adoption.ext_key)},"
+                f" {sql_text(adoption.name)}, {sql_text(adoption.category)},"
+                f" {sql_text(adoption.serving)}, {numbers},"
+                f" {sql_text(plan.source)}, {sql_text(adoption.source_url)},"
+                f" date {sql_text(observed)}, false, 1.00)")
+        lines.append(
+            f"insert into items ({', '.join(columns)})\nvalues\n"
+            + ",\n".join(rows)
+            # Позиция с таким ключом уже есть — значит её завёл прошлый
+            # прогон этого же гида. Повтор не ошибка, просто нечего делать.
+            + "\non conflict do nothing;\n")
+
+    # Чего сеть не назвала в собственном гиде, того она больше не подаёт.
+    # Строку не трогаем: человек мог сохранить блюдо в заказ, и исчезновение
+    # выглядело бы поломкой. Приложение уводит такие в раздел «Archive».
+    if plan.retired:
+        keys = ", ".join(sql_text(key) for key in plan.retired)
+        lines.append(
+            "insert into menu_presence (chain_id, ext_key, on_menu, source, checked_at)\n"
+            f"select {chain_id}, key, false, {sql_text(plan.source)}, now()\n"
+            f"from unnest(array[{keys}]::text[]) as key\n"
+            "on conflict (chain_id, ext_key) do update set on_menu = excluded.on_menu,"
+            " source = excluded.source, checked_at = excluded.checked_at;\n")
+
     kind = "pdf" if plan.menu_url.endswith(".pdf") else "json_in_html"
     lines.append(f"update chains set last_crawl_at = now(), source_url = "
                  f"{sql_text(plan.menu_url)}, source_kind = {sql_text(kind)}"
@@ -362,6 +416,10 @@ def main() -> int:
     parser.add_argument("--guide", metavar="URL",
                         help="взять позиции из PDF-гида сети вместо обхода сайта")
     parser.add_argument("--apply", action="store_true", help="записать в базу")
+    parser.add_argument("--replace", action="store_true",
+                        help="замена меню: завести новые позиции и увести в "
+                             "архив те, которых нет в гиде. Только для --guide "
+                             "и только осознанно")
     parser.add_argument("--limit", type=int, help="взять только первые N страниц")
     parser.add_argument("--browser", action="store_true",
                         help="ходить через curl с браузерными заголовками")
@@ -397,8 +455,14 @@ def main() -> int:
     stored = catalog(row["id"])
     print(f"  в каталоге: {len(stored)} позиций")
 
+    if args.replace and not args.guide:
+        raise SystemExit(
+            "--replace только с --guide: обход сайта неполон по природе, и "
+            "«мы не дошли до страницы» неотличимо от «блюда нет»")
+
     plan = crawl.build(row["name"], live, stored,
                        previous=previous_crawl(row_id, live[0].source),
+                       adopt=args.replace,
                        source=live[0].source, menu_url=menu_url)
     report(plan)
 
@@ -411,13 +475,20 @@ def main() -> int:
         print("\nНичего не записано. Повторите с --apply, если план верен.")
         return 0
 
-    if plan.held:
+    if plan.held and not args.replace:
         # Позиции не трогаем, но запись о кроуле нужна: иначе крон
         # молча уходит ни с чем и следующий запуск ничего не знает.
         record_only(plan, row_id, args.observed)
         print("С held в базу пишем только запись о кроуле.", file=sys.stderr)
         return 1
-    if not plan.updates:
+    if plan.held:
+        # Замена меню и должна выглядеть как катастрофа для дифф-проверки:
+        # у сети, чей каталог семь лет не трогали, меняется почти всё.
+        # Порог существует для обычного обновления, а это не оно — и потому
+        # решение принимает человек флагом, а не порог.
+        print(f"\nЗамена меню: дифф-проверка сказала «{plan.held}» — "
+              f"для замены это ожидаемо, продолжаю по --replace.")
+    if not (plan.updates or plan.adopted or plan.retired):
         print("\nОбновлять нечего.")
         record_only(plan, row_id, args.observed)
         return 0
@@ -433,7 +504,12 @@ def main() -> int:
     if result.returncode != 0:
         print(result.stderr, file=sys.stderr)
         return 1
-    print(f"Записано: {len(plan.updates)} позиций обновлено")
+    done = [f"{len(plan.updates)} обновлено"]
+    if plan.adopted:
+        done.append(f"{len(plan.adopted)} заведено")
+    if plan.retired:
+        done.append(f"{len(plan.retired)} уведено в архив")
+    print("Записано: " + ", ".join(done))
     return 0
 
 

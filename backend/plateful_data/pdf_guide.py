@@ -28,9 +28,14 @@ from __future__ import annotations
 
 import re
 import statistics
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import dataclass, replace
 
 from . import validate
+from .slug import slugify
+
+#: Хвост-сноска: «Local Favorites **», «Bacon**».
+_FOOTNOTE_MARKS = "*†‡§ "
 
 #: Число, «меньше единицы» или прочерк — всё, что бывает в клетке таблицы.
 _VALUE = re.compile(r"^(?:<\s*)?\d+(?:[.,]\d+)?$|^[-–—]$|^N/?A$", re.I)
@@ -72,6 +77,13 @@ class Layout:
 class GuideItem:
     name: str
     values: dict[str, float | None]
+    #: Заголовок раздела, под которым позиция стоит в гиде. Единственное
+    #: место, откуда у новой позиции может взяться категория: с сайта её
+    #: не возьмёшь, а без неё блюдо не ложится ни в один раздел меню.
+    category: str | None = None
+    #: Внешний раздел гида: SANDWICHES, WRAPS, SALADS, PROTEIN BOWLS.
+    #: Он и есть то, что отличает три разных «Steak Philly» друг от друга.
+    section: str | None = None
 
 
 #: Subway, U.S. NUTRITION INFORMATION. Порядок — как на этикетке FDA.
@@ -104,7 +116,9 @@ def _split(line: str, count: int) -> tuple[str, list[str]] | None:
         tail += 1
     if tail < count:
         return None
-    name = " ".join(tokens[:len(tokens) - tail]).strip()
+    # Сноски из имени убираем: «**» у Subway значит «не во всех точках»,
+    # это факт о доступности, а не часть названия блюда.
+    name = " ".join(tokens[:len(tokens) - tail]).strip().rstrip(_FOOTNOTE_MARKS)
     if not name:
         return None
     # Берём первые `count` клеток: дальше идут проценты дневной нормы,
@@ -112,19 +126,75 @@ def _split(line: str, count: int) -> tuple[str, list[str]] | None:
     return name, tokens[len(tokens) - tail:][:count]
 
 
+# Заголовок раздела — короткая строка с заглавной буквы. Сноски длинны и
+# заканчиваются точкой, но не все: перенос сноски «…see values for salad
+# dressing portion» выглядел заголовком и раздал свою категорию 57
+# позициям. Отличает их регистр первой буквы — заголовки в гидах пишут
+# с заглавной или капсом, продолжения строк нет.
+MAX_HEADING = 48
+
+# Имя группы бывает склеено с пояснением в одной строке: «Protein Pockets
+# Values include 9" wrap (pocket)…». Пока строка отбрасывалась целиком за
+# длину, обёртка и карман попадали в одну группу — и две разные позиции
+# становились неразличимы. Режем по началу пояснения.
+_EXPLANATION = re.compile(
+    r"\s+(?:Values?\s+(?:include|are)|Double\s+values|Amount\s+on)\b.*$", re.I)
+
+#: Хвост в скобках: «Soup (8 oz. bowl)».
+_PARENTHETICAL = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def _outer(line: str) -> str | None:
+    """Внешний раздел гида — заголовок капсом.
+
+    У гида два уровня: капсом идёт формат подачи (SANDWICHES, WRAPS,
+    SALADS, PROTEIN BOWLS), а под ним обычным регистром — группа блюд
+    (Cheesesteaks, Chicken, Italians). Одно и то же название встречается
+    в нескольких форматах: «Steak Philly» есть обёрткой, салатом и боулом,
+    и это три разных блюда с разными числами, а не повтор строки.
+    """
+    text = _EXPLANATION.sub("", line.strip()).strip().rstrip(_FOOTNOTE_MARKS)
+    if not text or len(text) > MAX_HEADING:
+        return None
+    letters = [c for c in text if c.isalpha()]
+    if len(letters) < 4 or not all(c.isupper() for c in letters):
+        return None
+    return text
+
+
+def _heading(line: str) -> str | None:
+    text = _EXPLANATION.sub("", line.strip())
+    text = _PARENTHETICAL.sub("", text).strip().rstrip(_FOOTNOTE_MARKS)
+    if not text or len(text) > MAX_HEADING or text.endswith((".", ":", ",")):
+        return None
+    if not text[0].isupper():
+        return None
+    return text
+
+
 def parse(text: str, layout: Layout) -> list[GuideItem]:
     items: list[GuideItem] = []
+    category: str | None = None
+    section: str | None = None
+
     for line in text.splitlines():
         if not line.strip():
             continue
         split = _split(line, layout.count)
         if not split:
+            # Не позиция. Заголовок капсом меняет формат подачи, обычный —
+            # группу блюд внутри него.
+            if outer := _outer(line):
+                section = outer
+            elif heading := _heading(line):
+                category = heading
             continue
         name, cells = split
         values = {field: _number(cell)
                   for field, cell in zip(layout.columns, cells)
                   if field is not None}
-        items.append(GuideItem(name=name, values=values))
+        items.append(GuideItem(name=name, values=values,
+                               category=category, section=section))
     return items
 
 
@@ -169,6 +239,49 @@ def check_layout(items: list[GuideItem]) -> None:
             f"({len(drift)} строк) — колонки прочитаны не в том порядке")
 
 
+def qualify(items: list[GuideItem]) -> list[GuideItem]:
+    """Уточняет имена, которые без раздела неразличимы.
+
+    «Steak Philly» в гиде Subway встречается трижды — обёрткой, салатом и
+    боулом, с разными числами. Это три блюда, а не повтор строки, и по
+    одному имени их не развести: ключ позиции считается из имени, и без
+    уточнения два из трёх молча потерялись бы.
+
+    Уточняем в том же виде, что принят в каталоге, — «Название, Раздел».
+    Его понимает `variants.py`: одинаковые начала он склеит в одно блюдо
+    с переключателем, то есть человек увидит один «Steak Philly» и выбор
+    подачи, а не три карточки подряд.
+    """
+    counts = Counter(slugify(item.name) for item in items)
+    once = {key for key, n in counts.items() if n == 1}
+
+    qualified = [
+        item if slugify(item.name) in once or not item.section
+        else replace(item, name=f"{item.name}, {item.section.title()}")
+        for item in items
+    ]
+
+    # Раздела не хватило — уточняем ещё и группой внутри него.
+    counts = Counter(slugify(item.name) for item in qualified)
+    once = {key for key, n in counts.items() if n == 1}
+    qualified = [
+        item if slugify(item.name) in once or not item.category
+        else replace(item, name=f"{item.name} ({item.category})")
+        for item in qualified
+    ]
+
+    duplicated = [key for key, n in Counter(slugify(i.name)
+                                            for i in qualified).items() if n > 1]
+    if duplicated:
+        # Две строки, которые мы не умеем различить. Завести их обе нельзя
+        # (вторая молча затрёт первую), выбрать одну — тоже: неизвестно,
+        # какая. Значит гид устроен не так, как мы думаем.
+        raise WrongGuide(
+            f"неразличимые позиции даже с разделом: {', '.join(duplicated[:5])}")
+
+    return qualified
+
+
 def read(text: str, *, layout: Layout) -> list[GuideItem]:
     """Текст гида → позиции. Бросает `WrongGuide`, если гид не тот."""
     items = parse(text, layout)
@@ -176,4 +289,4 @@ def read(text: str, *, layout: Layout) -> list[GuideItem]:
         raise WrongGuide("ни одной строки блюда — раскладка или файл не те")
     check_american(items)
     check_layout(items)
-    return items
+    return qualify(items)

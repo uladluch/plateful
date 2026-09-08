@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 
 from . import validate
 from .matching import match_all
+from .validate import check_item, errors, strip_broken_label
 
 # Расхождение меньше этого — округление сети, а не изменение рецептуры.
 NOISE_KCAL = 5.0
@@ -49,6 +50,23 @@ SUSPICIOUS_FLOOR_GRAMS = 5.0
 # название позиции — ключ, по которому её ищет человек и цепляются правки.
 NUTRIENTS = ("kcal", "protein", "carbs", "fat",
              "sugar", "sat_fat", "trans_fat", "cholesterol", "sodium", "fiber")
+
+
+@dataclass(frozen=True)
+class Adoption:
+    """Позиция, которой в каталоге нет, — завести как новую.
+
+    Заводим только из гида и только с разрешения человека. Обход сайта на
+    это права не имеет: он неполон по природе, и «мы не дошли до страницы»
+    неотличимо от «блюда нет». Гид же — полное заявление сети о своём меню,
+    один документ; чего в нём нет, того сеть не публикует.
+    """
+    ext_key: str
+    name: str
+    category: str | None
+    serving: str | None
+    source_url: str
+    values: dict[str, float]
 
 
 @dataclass(frozen=True)
@@ -90,6 +108,11 @@ class Plan:
     #: сходится сама с собой, а проверка Атуотера — единственное, чем мы
     #: ловим съехавшую колонку.
     partial: list[tuple[str, tuple[str, ...]]] = field(default_factory=list)
+    #: Новые позиции сети. Пусто, пока не разрешили заводить.
+    adopted: list[Adoption] = field(default_factory=list)
+    #: Позиции каталога, которых в гиде нет: сеть их больше не подаёт.
+    #: Не удаляем — уводим в архив, чтобы сохранённые заказы не сломались.
+    retired: list[str] = field(default_factory=list)
     #: Сошлись с сайтом до округления — их большинство, и это норма.
     agreed: int = 0
     #: Сколько позиций сняли со страниц. Отдельным числом, а не суммой
@@ -106,6 +129,52 @@ class Plan:
     @property
     def seen(self) -> int:
         return len(self.updates) + self.agreed
+
+
+#: По чему сравниваются кроулы между собой. Этикетка сюда не входит:
+#: сеть может уточнить натрий, не тронув блюдо, и это не повод держать релиз.
+DIFF_FIELDS = ("kcal", "protein", "carbs", "fat")
+
+
+def _macros(records: dict[str, dict]) -> dict[str, tuple]:
+    """Одна форма для обеих сторон сравнения."""
+    return {key: tuple(record.get(field) for field in DIFF_FIELDS)
+            for key, record in records.items()}
+
+
+def _adoptions(plan: Plan, live, matched: dict[str, dict]) -> list[Adoption]:
+    """Несматченные позиции, годные для заведения.
+
+    Через ту же валидацию, что и обновления: блюдо, которое не сходится
+    само с собой, не станет лучше оттого, что оно новое. Разница лишь в
+    том, что здесь нечего портить — поэтому непрошедшее просто не заводим.
+    """
+    unmatched = {name for name, _ in plan.unmatched}
+    adopted: list[Adoption] = []
+
+    for item in live:
+        if item.name not in unmatched or item.ext_key in matched:
+            continue
+        if any(getattr(item, field, None) is None
+               for field in ("kcal", "protein", "carbs", "fat")):
+            continue
+
+        problems = check_item(item)
+        plan.problems.extend(problems)
+        if errors(problems):
+            continue
+
+        [clean] = strip_broken_label([item])
+        values = {name: value for name in NUTRIENTS
+                  if (value := getattr(clean, name, None)) is not None}
+        adopted.append(Adoption(
+            ext_key=item.ext_key, name=item.name,
+            category=getattr(item, "category", None),
+            serving=getattr(item, "serving", None),
+            source_url=getattr(item, "source_url", "") or "",
+            values=values))
+
+    return adopted
 
 
 def _changes(live: dict[str, float], stored: dict) -> dict[str, tuple[float, float]]:
@@ -138,6 +207,7 @@ def is_suspicious(changes: dict[str, tuple[float, float]]) -> bool:
 
 def build(chain: str, live, stored: dict[str, dict], *,
           previous: dict[str, dict] | None = None,
+          adopt: bool = False,
           source: str = "", menu_url: str = "") -> Plan:
     """Живые позиции + текущий каталог → план.
 
@@ -195,11 +265,33 @@ def build(chain: str, live, stored: dict[str, dict], *,
 
     plan.unseen = sorted(set(stored) - taken)
 
+    if adopt:
+        plan.adopted = _adoptions(plan, live, matched)
+        # Ключ позиции считается из имени, и два одинаковых имени дают один
+        # ключ: второе молча затрёт первое. На первом прогоне Subway так
+        # потерялись 48 позиций из 162 — гид перечисляет «Steak Philly»
+        # трижды, обёрткой, салатом и боулом. Разводить их — дело
+        # `pdf_guide.qualify`; здесь мы только отказываемся, если не развели.
+        taken_keys = {a.ext_key for a in plan.adopted}
+        if len(taken_keys) != len(plan.adopted) or taken_keys & set(stored):
+            plan.held = ("новые позиции сталкиваются ключами с каталогом или "
+                         "друг с другом — заводить нельзя, потеряем часть")
+            plan.adopted = []
+            return plan
+        # Чего сеть не назвала в своём же гиде, того она больше не подаёт.
+        plan.retired = plan.unseen
+
     # Что этот кроул увидел — против того, что видел прошлый. На первом
     # кроуле `previous` пуст, и check_diff честно говорит: сравнивать не с чем.
+    #
+    # Обе стороны приводим к четырём макросам. Без этого сравнивались
+    # словари разной формы — запись каталога со всеми полями против
+    # четырёх чисел прошлого кроула, — и «изменилось» получалось у всего
+    # подряд: повторный кроул той же сети показывал 100% на неизменных
+    # данных. Проверка, срабатывающая всегда, не значит ничего.
     seen_now = {key: record for key, record in stored.items() if key in taken}
     seen_now |= {u.ext_key: u.values for u in plan.updates + plan.suspicious}
-    ok, why = validate.check_diff(previous or {}, seen_now)
+    ok, why = validate.check_diff(_macros(previous or {}), _macros(seen_now))
     if not ok:
         plan.held = why
 

@@ -340,3 +340,99 @@ class ProbeVerdicts(unittest.TestCase):
         page = ("<!DOCTYPE html><html><head><title>Menu | Wendy's</title></head>"
                 "<body><h1>Our menu</h1></body></html>")
         self.assertFalse(self._looks_like_a_wall(page))
+
+
+class DiffShape(unittest.TestCase):
+    """Обе стороны сравнения должны быть одной формы.
+
+    Прошлый кроул хранит четыре макроса, каталог — запись целиком. Пока
+    сравнивались они, «изменилось» получалось у всего подряд: повторный
+    кроул той же сети показывал 100% на неизменных данных, и проверка
+    срабатывала всегда — то есть не значила ничего.
+    """
+
+    def test_повторный_кроул_на_тех_же_данных_ничего_не_меняет(self):
+        catalog = {f"item-{i}": {"ext_key": f"item-{i}", "name": f"Item {i}",
+                                 "kcal": 400.0, "protein": 20.0, "carbs": 40.0,
+                                 "fat": 15.0, "sodium": 900.0, "sugar": 5.0}
+                   for i in range(10)}
+        # Прошлый кроул записал только макросы — как их и отдаёт база.
+        previous = {key: {"kcal": 400.0, "protein": 20.0, "carbs": 40.0, "fat": 15.0}
+                    for key in catalog}
+        live = [Live(name=f"Item {i}", kcal=400.0, protein=20.0,
+                     carbs=40.0, fat=15.0) for i in range(10)]
+
+        plan = crawl.build("X", live, catalog, previous=previous)
+
+        self.assertTrue(plan.ok, plan.held)
+        self.assertEqual(plan.updates, [])
+
+
+class MenuReplacement(unittest.TestCase):
+    """Замена меню: завести новое и увести старое в архив.
+
+    Разрешено только из гида и только человеком: гид — полное заявление
+    сети о своём меню, обход сайта неполон по природе.
+    """
+
+    def _catalog(self) -> dict[str, dict]:
+        return {"old-sandwich": {"ext_key": "old-sandwich", "name": "Old Sandwich",
+                                 "kcal": 300.0, "protein": 15.0,
+                                 "carbs": 30.0, "fat": 12.0}}
+
+    def test_без_разрешения_ничего_не_заводится(self):
+        plan = crawl.build("X", [Live(name="Totally New Wrap")], self._catalog())
+        self.assertEqual(plan.adopted, [])
+        self.assertEqual(plan.retired, [])
+
+    def test_с_разрешением_новое_заводится(self):
+        plan = crawl.build("X", [Live(name="Totally New Wrap")], self._catalog(),
+                           adopt=True)
+        [adopted] = plan.adopted
+        self.assertEqual(adopted.name, "Totally New Wrap")
+        self.assertEqual(adopted.values["kcal"], 500.0)
+
+    def test_чего_нет_в_гиде_уходит_в_архив(self):
+        plan = crawl.build("X", [Live(name="Totally New Wrap")], self._catalog(),
+                           adopt=True)
+        self.assertEqual(plan.retired, ["old-sandwich"])
+
+    def test_битая_новая_позиция_не_заводится(self):
+        """Блюдо, которое не сходится само с собой, не станет лучше
+        оттого, что оно новое."""
+        plan = crawl.build("X", [Live(name="Broken New Thing", kcal=100.0,
+                                      protein=30.0, carbs=40.0, fat=20.0)],
+                           self._catalog(), adopt=True)
+        self.assertEqual(plan.adopted, [])
+        self.assertTrue(crawl.validate.errors(plan.problems))
+
+    def test_сматченное_не_уходит_в_архив(self):
+        plan = crawl.build("X", [Live(name="Old Sandwich", kcal=300.0, protein=15.0,
+                                      carbs=30.0, fat=12.0)],
+                           self._catalog(), adopt=True)
+        self.assertEqual(plan.retired, [])
+        self.assertEqual(plan.adopted, [])
+
+    def test_столкновение_ключей_останавливает_заведение(self):
+        """Ключ считается из имени: два одинаковых имени — один ключ, и
+        второе молча затрёт первое. На первом прогоне Subway так потерялись
+        48 позиций из 162, и никто бы не заметил."""
+        catalog = self._catalog()
+        plan = crawl.build("X", [Live(name="Steak Philly"),
+                                 Live(name="Steak Philly")],
+                           catalog, adopt=True)
+        self.assertEqual(plan.adopted, [])
+        self.assertFalse(plan.ok)
+        self.assertIn("сталкиваются ключами", plan.held)
+
+    def test_новая_позиция_не_затирает_каталожную(self):
+        """Ключ каталога занят, а по имени пара не нашлась. Завести —
+        значит затереть существующую позицию вместе с её правками."""
+        catalog = {"old-sandwich": {"ext_key": "old-sandwich",
+                                    "name": "Completely Different Dish",
+                                    "kcal": 300.0, "protein": 15.0,
+                                    "carbs": 30.0, "fat": 12.0}}
+        plan = crawl.build("X", [Live(name="Old Sandwich")], catalog, adopt=True)
+
+        self.assertEqual(plan.adopted, [])
+        self.assertFalse(plan.ok)
