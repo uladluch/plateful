@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Две вкладки: справочник и сохранённое.
+/// Справочник, что рядом и сохранённое.
 ///
 /// Поиск остаётся первым и главным — он бесплатный и работает без аккаунта.
 struct RootView: View {
@@ -8,6 +8,9 @@ struct RootView: View {
         TabView {
             Tab("Menus", systemImage: "magnifyingglass") {
                 ChainsView()
+            }
+            Tab("Nearby", systemImage: "location") {
+                NearbyView()
             }
             Tab("Saved", systemImage: "bookmark") {
                 SavedOrdersView()
