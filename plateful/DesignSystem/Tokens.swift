@@ -12,6 +12,10 @@ enum Tokens {
         static let textSecondary = SwiftUI.Color.secondary
         static let accent = SwiftUI.Color.accentColor
 
+        /// Фон карточки на групповом фоне — на шаг светлее самого фона,
+        /// как у системных сгруппированных ячеек.
+        static let cardBackground = SwiftUI.Color(.secondarySystemGroupedBackground)
+
         /// Цвета макросов. Разные оттенки нужны, чтобы белки/углеводы/жиры
         /// различались взглядом за те самые тридцать секунд у кассы.
         static let protein = SwiftUI.Color(.systemBlue)
@@ -32,6 +36,7 @@ enum Tokens {
 
     enum Radius {
         static let image: CGFloat = 8
+        static let card: CGFloat = 16
     }
 
     /// Имена символов — строки, и главный актор им ни к чему: их спрашивает

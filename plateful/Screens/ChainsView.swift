@@ -42,13 +42,21 @@ struct ChainsView: View {
         }
     }
 
+    /// Две колонки минимум, больше — на широком экране: тот же приём, что
+    /// в системных плиточных списках (Музыка, Погода).
+    private static let columns = [GridItem(.adaptive(minimum: 150), spacing: Tokens.Spacing.m)]
+
     private var chainList: some View {
-        List {
-            ForEach(menu.chains) { chain in
-                NavigationLink(value: chain) {
-                    ChainRow(chain: chain)
+        ScrollView {
+            LazyVGrid(columns: Self.columns, spacing: Tokens.Spacing.m) {
+                ForEach(menu.chains) { chain in
+                    NavigationLink(value: chain) {
+                        ChainCard(chain: chain)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(Tokens.Spacing.m)
         }
         .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
         .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
