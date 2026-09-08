@@ -5,6 +5,7 @@
 //  Created by Ulad Luch on 07/09/2026.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -16,21 +17,46 @@ struct platefulApp: App {
     /// бандла или из скачанного пака.
     @State private var menu = MenuRepository()
 
-    /// История и сохранённые заказы. Конфигурация по умолчанию идёт с
-    /// `cloudKitDatabase: .automatic`, поэтому данные начнут синхронизироваться
-    /// через iCloud, как только у таргета появится entitlement, — без правок
-    /// в моделях и без аккаунта в приложении.
-    private let userData: ModelContainer = {
+    /// История, сохранённые заказы и цели.
+    ///
+    /// Конфигурация по умолчанию идёт с `cloudKitDatabase: .automatic`: при
+    /// наличии entitlement данные синхронизируются через iCloud, аккаунт в
+    /// приложении для этого не нужен.
+    private let userData: ModelContainer = Self.makeUserDataContainer()
+
+    private static let schema: [any PersistentModel.Type] = [
+        ViewedItem.self, SavedOrder.self, SavedOrderLine.self, UserGoals.self,
+    ]
+
+    /// Лестница отступления, а не один запасной вариант.
+    ///
+    /// Порядок важен: сначала iCloud, потом локальный файл, и только в самом
+    /// конце память. Уронить синхронизацию — неприятно, а свалиться сразу в
+    /// память значит молча терять сохранённые заказы при каждом запуске,
+    /// и человек об этом не узнает.
+    private static func makeUserDataContainer() -> ModelContainer {
+        let log = Logger(subsystem: "com.anluch.plateful", category: "storage")
+
         do {
-            return try ModelContainer(for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self, UserGoals.self)
+            return try ModelContainer(for: Schema(schema))
         } catch {
-            // Хранилище пользователя не должно ронять справочник: поиск и
-            // калории работают и без истории.
-            return try! ModelContainer(
-                for: ViewedItem.self, SavedOrder.self, SavedOrderLine.self, UserGoals.self,
-                configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            log.error("iCloud-хранилище не поднялось, остаюсь на локальном: \(error.localizedDescription)")
         }
-    }()
+
+        do {
+            return try ModelContainer(
+                for: Schema(schema),
+                configurations: ModelConfiguration(cloudKitDatabase: .none))
+        } catch {
+            log.error("Локальное хранилище не поднялось: \(error.localizedDescription)")
+        }
+
+        // Справочник должен работать даже так: поиск и калории от истории
+        // не зависят.
+        return try! ModelContainer(
+            for: Schema(schema),
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
+    }
 
     var body: some Scene {
         WindowGroup {
