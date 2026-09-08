@@ -53,10 +53,13 @@ _SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}
 _TILE_JUNK = re.compile(r"\b(evm|hb|hl|v\s?\d|no bag|potato bun|glass|cup|bag|"
                         r"alt|protein|shredded|with can|light|"
                         # Ракурс и подача — свойства кадра, а не блюда.
-                        r"upright|front|side|angle|hero|closeup|top|open|stacked)\b", re.I)
+                        r"upright|front|side|angle|hero|closeup|top|open|stacked|"
+                        r"standing|pile|half slice|contour|"
+                        # Служебные плитки навигации и промо-наборов.
+                        r"category|header|left rail|pcp|meal deal|bundle)\b", re.I)
 # Размеры и количества для сопоставления **снимков**.
 _PORTION_WORDS = re.compile(
-    r"\b(small|medium|large|kids?|jr|extra small|child|snack size|"
+    r"\b(small|medium|large|kids?|jr|extra small|child|snack size|mini|"
     r"\d+\s*(oz|pc|piece|ct)?)\b", re.I)
 _PAGE_SUFFIX = re.compile(r"\s*nutrition and ingredients\s*$")
 # Суббренды внутри сети блюдо не называют: «McCafe Strawberry Shake» и
@@ -81,12 +84,16 @@ def comparable(name: str) -> str:
 
 
 def photo_words(name: str, is_tile: bool = False) -> list[str]:
-    """Слова названия без размеров, количеств и служебного мусора."""
+    """Слова названия без размеров, количеств и служебного мусора.
+
+    Однобуквенные выбрасываем: «w» из «w/ Cheese» — не слово, а обломок
+    пунктуации, и в проверке вхождения он находится в любой строке.
+    """
     text = name.lower()
     if is_tile:
         text = _TILE_JUNK.sub(" ", text)
     text = _PORTION_WORDS.sub(" ", re.sub(r"[^a-z0-9 ]+", " ", text))
-    return _BRAND.sub(" ", text).split()
+    return [w for w in _BRAND.sub(" ", text).split() if len(w) > 1]
 
 
 def photo_key(name: str, is_tile: bool = False) -> str:
@@ -106,7 +113,27 @@ def photo_key(name: str, is_tile: bool = False) -> str:
 # и «beefsteak» и ловили бы половину меню.
 _DISCRIMINATORS = ("steak", "bacon", "sausage", "chicken", "fish", "turkey",
                    "spicy", "deluxe", "double", "triple", "grilled", "crispy",
-                   "diet", "zero")
+                   "diet", "zero", "frozen",
+                   # Нужны с тех пор, как совпадением считается вхождение:
+                   # «Sausage McMuffin» целиком лежит внутри «Sausage Egg
+                   # McMuffin», и без «egg» одно подменило бы другое.
+                   # «cheese» сидит внутри «cheeseburger» — и правильно:
+                   # гамбургер не чизбургер.
+                   "egg", "cheese")
+
+
+# Что название подразумевает, не написав. Сайт подписывает плитку
+# «10 Mc Nuggets», каталог — «10 Chicken McNuggets»; наггетсы у McDonald's
+# куриные, и различитель «chicken» не должен разводить их по разным блюдам.
+_IMPLIED = {"nugget": "chicken"}
+
+
+def _discriminators_in(name: str, is_tile: bool = False) -> set[str]:
+    text = "".join(photo_words(name, is_tile))
+    for token, implied in _IMPLIED.items():
+        if token in text:
+            text += implied
+    return {word for word in _DISCRIMINATORS if word in text}
 
 
 def ingredients_agree(catalog_name: str, tile_name: str) -> bool:
@@ -116,9 +143,48 @@ def ingredients_agree(catalog_name: str, tile_name: str) -> bool:
     имени файла разбор даёт «Mc Double». По словам это разные множества,
     по буквам — одно и то же.
     """
-    left = "".join(photo_words(catalog_name))
-    right = "".join(photo_words(tile_name, True))
-    return all((word in left) == (word in right) for word in _DISCRIMINATORS)
+    return _discriminators_in(catalog_name) == _discriminators_in(tile_name, True)
+
+
+# Ниже этой доли вхождение перестаёт что-либо значить: «Sprite» целиком
+# лежит внутри «Sprite Berry Blast», но это другой напиток.
+CONTAINMENT_FLOOR = 0.5
+
+
+def containment(catalog_name: str, tile_name: str) -> float:
+    """Насколько одно название целиком укладывается в другое.
+
+    Сайт называет блюдо то подробнее каталога («Dasani Bottled Water» против
+    «Dasani Water»), то короче («10 Mc Nuggets» против «10 Chicken
+    McNuggets»). Обычное сходство строк за такую разницу в длине штрафует, и
+    верное совпадение не добирает до порога.
+
+    Поэтому проверяем вхождение в обе стороны и оцениваем его отношением
+    длин: чем меньше лишнего в длинном названии, тем выше оценка.
+
+    Порядок слов обязателен. Без него «10 Chicken McNuggets» забирало плитку
+    «McChicken»: слова «mc» и «chicken» лежат в названии наггетсов оба, но
+    в другом порядке, и вхождение выходило таким же убедительным, как у
+    настоящей плитки «10 Mc Nuggets». Цена — «Fruit & Maple Oatmeal» и
+    «Oatmeal Fruit» больше не считаются одним блюдом; чужой снимок хуже,
+    чем отсутствующий.
+    """
+    left, right = photo_words(catalog_name), photo_words(tile_name, True)
+    if not left or not right:
+        return 0.0
+
+    best = 0.0
+    for short, long in ((left, right), (right, left)):
+        joined = "".join(long)
+        at = 0
+        for word in short:
+            at = joined.find(word, at)
+            if at < 0:
+                break
+            at += len(word)
+        else:
+            best = max(best, len("".join(short)) / len(joined))
+    return best if best >= CONTAINMENT_FLOOR else 0.0
 
 
 def similarity(catalog_name: str, tile_name: str) -> float:
@@ -138,6 +204,27 @@ def similarity(catalog_name: str, tile_name: str) -> float:
     return max(by_words, by_letters)
 
 
+def photo_score(catalog_name: str, tile_name: str) -> float:
+    """Оценка совпадения плитки с позицией; 0 — не совпало.
+
+    Два независимых правила, а не одна шкала: сходство строк и вхождение
+    одного названия в другое меряют разное, и общий порог для них
+    бессмыслен — вхождение «10 Mc Nuggets» в «10 Chicken McNuggets» даёт
+    0.56 там, где сходство требует 0.86.
+
+    Вхождение оценивается ниже сходства намеренно: если у блюда есть своя
+    плитка, брать надо её. «Sweet Tea» лежит внутри «Unsweet Tea», но своя
+    плитка у неё тоже есть, и выиграть должна она.
+    """
+    if not ingredients_agree(catalog_name, tile_name):
+        return 0.0
+    similar = similarity(catalog_name, tile_name)
+    if similar >= PHOTO_THRESHOLD:
+        return similar
+    inside = containment(catalog_name, tile_name)
+    return inside * PHOTO_THRESHOLD if inside else 0.0
+
+
 def match_photos(pairs: list[tuple[str, str, str]],
                  catalog: dict[str, dict]) -> dict[str, tuple[str, str, str]]:
     """Ключ позиции → снимок. Одна плитка может обслужить несколько позиций."""
@@ -145,12 +232,10 @@ def match_photos(pairs: list[tuple[str, str, str]],
     for key, item in catalog.items():
         best, score = None, 0.0
         for pair in pairs:
-            if not ingredients_agree(item["name"], pair[0]):
-                continue
-            ratio = similarity(item["name"], pair[0])
+            ratio = photo_score(item["name"], pair[0])
             if ratio > score:
                 best, score = pair, ratio
-        if best and score >= PHOTO_THRESHOLD:
+        if best:
             matches[key] = best
     return matches
 

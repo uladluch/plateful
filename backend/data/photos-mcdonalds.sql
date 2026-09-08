@@ -1,4 +1,34 @@
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '1-low-fat-milk-jug', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--1-low-fat-milk-jug.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Milk Jug', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '10-chicken-mcnuggets', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--10-chicken-mcnuggets.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', '4 Mc Nuggets Stacked', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '20-chicken-mcnuggets', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--10-chicken-mcnuggets.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', '4 Mc Nuggets Stacked', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '4-chicken-mcnuggets', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--10-chicken-mcnuggets.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', '4 Mc Nuggets Stacked', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '40-chicken-mcnuggets', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--10-chicken-mcnuggets.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', '4 Mc Nuggets Stacked', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, '6-chicken-mcnuggets', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--10-chicken-mcnuggets.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', '4 Mc Nuggets Stacked', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'apple-slices', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--apple-slices.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Apple Slices No Bag', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
@@ -39,12 +69,27 @@ from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'big-mac-sauce', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--big-mac.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Big Mac', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'buttermilk-crispy-chicken-sandwich', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--buttermilk-crispy-chicken-sandwich.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Crispy Chicken Sandwich Potato Bun', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'cheeseburger', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--cheeseburger.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Cheeseburger Alt Protein', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'chocolate-chip-cookie', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--chocolate-chip-cookie.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Chocolate Chip Cookie Upright', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'dasani-water', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--dasani-water.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Dasani Bottled Water', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
@@ -104,6 +149,76 @@ from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-bacon-egg-cheese-biscuit', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--bacon-egg-cheese-biscuit.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Bacon Egg Cheese Biscuit', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-bacon-egg-cheese-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--bacon-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'EVM HB Bacon Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-bacon-egg-cheese-mcgriddles-medium-coffee', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--bacon-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'EVM HB Bacon Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-large-bacon-egg-cheese-biscuit-small-coffee', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--bacon-egg-cheese-biscuit.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Bacon Egg Cheese Biscuit', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-sausage-biscuit', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-biscuit.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Biscuit', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-sausage-egg-cheese-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-sausage-egg-cheese-mcgriddles-medium-coffee', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-sausage-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'extra-value-meal-w-sausage-mcmuffin', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-mcmuffin.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Muffin', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'filet-o-fish', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--filet-o-fish.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Filet O Fish Half Slice Protein', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'french-fries-kids', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--french-fries-kids.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Small French Fries Standing', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'french-fries-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--french-fries-kids.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Small French Fries Standing', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'french-fries-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--french-fries-kids.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Small French Fries Standing', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'french-fries-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--french-fries-kids.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Small French Fries Standing', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'hamburger', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--hamburger.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Hamburger', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
@@ -144,12 +259,77 @@ from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-americano-w-espresso-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-americano-medium.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Americano HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-cappuccino-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-cappuccino-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-cappuccino-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-cappuccino-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-cappuccino-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-cappuccino-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'mccafe-caramel-frappe-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-frappe-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Frappe', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'mccafe-caramel-frappe-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-frappe-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Frappe', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-latte-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-latte-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-latte-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-macchiato-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-macchiato-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Macchiato HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-macchiato-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-macchiato-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Macchiato HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-caramel-macchiato-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-macchiato-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Macchiato HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
@@ -185,6 +365,46 @@ on conflict (chain_id, ext_key) do update set url = excluded.url, license = excl
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
 select c.id, 'mccafe-frappe-caramel-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-caramel-frappe-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Caramel Frappe', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-cappuccino-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Vanilla Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-cappuccino-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Vanilla Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-cappuccino-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-cappuccino-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Vanilla Cappuccino HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-latte-w-whole-milk-large', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium French Vanilla Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-latte-w-whole-milk-medium', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium French Vanilla Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-french-vanilla-latte-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-french-vanilla-latte-w-whole-milk-large.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium French Vanilla Latte HL', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-iced-coffee-w-light-cream-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-iced-coffee-w-light-cream-small.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Iced Coffee', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+from chains c where c.name = 'McDonald''s'
+on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
+
+insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
+select c.id, 'mccafe-iced-latte-w-whole-milk-small', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--mccafe-iced-latte-w-whole-milk-small.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Medium Iced Latte', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
@@ -279,7 +499,7 @@ from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
-select c.id, 'sausage-biscuit', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--sausage-biscuit.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Biscuit', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+select c.id, 'sausage-biscuit', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-biscuit.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Biscuit', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
@@ -294,17 +514,17 @@ from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
-select c.id, 'sausage-egg-cheese-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--sausage-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+select c.id, 'sausage-egg-cheese-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-egg-cheese-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Egg Cheese Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
-select c.id, 'sausage-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--sausage-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+select c.id, 'sausage-mcgriddles', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-mcgriddles.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Griddle', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
 insert into item_photos (chain_id, ext_key, url, license, creator, title, source_page)
-select c.id, 'sausage-mcmuffin', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--sausage-mcmuffin.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Muffin', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
+select c.id, 'sausage-mcmuffin', 'https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos/mcdonalds--extra-value-meal-w-sausage-mcmuffin.png', '© McDonald''s Corporation. Used with permission. Source: mcdonalds.com', 'McDonald''s', 'Sausage Mc Muffin', 'https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html'
 from chains c where c.name = 'McDonald''s'
 on conflict (chain_id, ext_key) do update set url = excluded.url, license = excluded.license, creator = excluded.creator, title = excluded.title, source_page = excluded.source_page;
 
