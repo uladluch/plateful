@@ -312,3 +312,31 @@ class RobotsRules(unittest.TestCase):
             lambda url: "User-agent: *\nDisallow: /\n")
         self.assertIsNone(fetcher.get("https://example.com/menu"))
         self.assertEqual(fetcher.forbidden, ["https://example.com/menu"])
+
+
+class ProbeVerdicts(unittest.TestCase):
+    """Разведка кладёт сеть в корзину, из которой её потом достают.
+
+    Ошибка здесь не видна сразу: сеть просто оказывается не в той очереди
+    и лечится не тем способом.
+    """
+
+    def _looks_like_a_wall(self, html):
+        import importlib.util
+        from pathlib import Path as _Path
+        spec = importlib.util.spec_from_file_location(
+            "vacuum", _Path(__file__).resolve().parents[1] / "scripts" / "vacuum.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.looks_like_a_wall(html)
+
+    def test_заглушка_cdn_это_не_меню_на_скрипте(self):
+        """Sonic отдал 403 со страницей Cloudflare и был записан rendered."""
+        wall = ("<!DOCTYPE html><html><head><title>Attention Required! | "
+                "Cloudflare</title></head><body></body></html>")
+        self.assertTrue(self._looks_like_a_wall(wall))
+
+    def test_обычная_страница_не_считается_стеной(self):
+        page = ("<!DOCTYPE html><html><head><title>Menu | Wendy's</title></head>"
+                "<body><h1>Our menu</h1></body></html>")
+        self.assertFalse(self._looks_like_a_wall(page))

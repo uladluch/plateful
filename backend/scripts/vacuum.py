@@ -49,6 +49,23 @@ BROWSER_HEADERS = {
 # «сайт отдаёт этикетку» от «не отдаёт»; больше — уже кроул.
 PROBE_DEPTH = 2
 
+# Страница-заглушка от CDN выглядит для разбора так же, как меню,
+# нарисованное скриптом: ни ссылок на блюда, ни цифр. Разница же
+# принципиальная — первое значит «нас не пустили», второе «пустили, но
+# смотреть нечем», и лечится это разными способами. Sonic отдал 403 и был
+# записан как rendered, то есть в очереди оказался не в той корзине.
+_WALL_MARKERS = (
+    "attention required", "just a moment", "access denied",
+    "please enable javascript and cookies", "cf-browser-verification",
+    "/cdn-cgi/challenge-platform", "request unsuccessful", "incapsula",
+    "akamai reference", "you have been blocked",
+)
+
+
+def looks_like_a_wall(html: str) -> bool:
+    head = html[:4000].lower()
+    return any(marker in head for marker in _WALL_MARKERS)
+
 
 def query(sql: str) -> list[dict]:
     with tempfile.NamedTemporaryFile("w", suffix=".sql", delete=False) as fh:
@@ -102,8 +119,12 @@ def show(rows: list[dict]) -> None:
         print(f"  {todo:22} {len(chains):3}  {names}{more}")
 
 
-def probe(chain: dict) -> tuple[str, str]:
+def probe(chain: dict) -> tuple[str | None, str]:
     """Смотрит, чем сеть отдаёт данные. Возвращает (source_kind, заметка).
+
+    `None` вместо вида значит «ничего не узнали»: приговор не выносим и
+    `probed_at` не ставим, чтобы следующий заход попробовал снова. Записать
+    «blocked» из-за таймаута — вычеркнуть сеть навсегда по случайности.
 
     Разведка идёт по двум страницам блюд, и этого достаточно: вопрос не
     «сколько позиций у сети», а «есть ли этикетка в HTML вообще».
@@ -115,8 +136,15 @@ def probe(chain: dict) -> tuple[str, str]:
                                               robots=fetcher.robots)
     if not index:
         if fetcher.forbidden:
+            # Отличаем «сайт запретил» от «файл не прочитался»: первое
+            # окончательно, второе — наша неудача, а не его отказ.
+            if getattr(fetcher.robots, "_unreachable", set()):
+                return None, "robots.txt не отдался — попробуем в другой раз"
             return "blocked", "robots.txt запрещает страницу меню"
         return "blocked", "страница меню не отдалась: 403, обрыв TLS или таймаут"
+
+    if looks_like_a_wall(index):
+        return "blocked", "вместо меню страница бот-защиты — нас не пустили"
 
     links = site.item_links(index, menu_url)
     facts = site.read_page(index)
@@ -161,6 +189,9 @@ def run_probes(rows: list[dict], limit: int) -> None:
     print(f"\n── Разведка: {len(todo)} сетей ──")
     for chain in todo:
         kind, note = probe(chain)
+        if kind is None:
+            print(f"  ? {chain['slug']:20} {'—':14} {note}")
+            continue
         record(chain["slug"], kind, note)
         mark = "✓" if kind not in ("rendered", "blocked") else "×"
         print(f"  {mark} {chain['slug']:20} {kind:14} {note}")

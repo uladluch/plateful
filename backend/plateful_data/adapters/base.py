@@ -70,7 +70,13 @@ class Robots:
         self._unreachable: set[str] = set()
 
     def _fetch(self, url: str) -> str | None:
-        """Текст robots.txt, или None если файла нет. Бросает при 5xx."""
+        """Текст robots.txt, или None если файла нет. Бросает при 5xx.
+
+        При сетевой неудаче пробуем через curl. У KFC и Taco Bell `urllib`
+        уходит в таймаут там, где curl отвечает мгновенно, и сдаться на
+        первой попытке значит не прочитать правила вовсе — а не прочитать
+        их хуже, чем прочитать и подчиниться.
+        """
         request = urllib.request.Request(url, headers={"User-Agent": self.user_agent})
         try:
             with urllib.request.urlopen(request, timeout=20) as response:
@@ -79,6 +85,10 @@ class Robots:
             if 400 <= error.code < 500:
                 return None            # файла нет — ходить можно
             raise                      # 5xx — сервер нездоров
+        except (urllib.error.URLError, TimeoutError, OSError):
+            body = curl_get(url, {"User-Agent": self.user_agent}, timeout=20)
+            if body is None:
+                raise
         # За CDN на месте robots.txt нередко лежит HTML: страница-заглушка,
         # челлендж или 404 приложения. Это не правила, это отсутствие правил.
         if "<html" in body[:2000].lower():
