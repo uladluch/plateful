@@ -66,16 +66,7 @@ struct ItemDetailView: View {
             Section {
                 // Размер — первым: он меняет все числа под собой, и читать
                 // карточку сверху вниз надо уже с выбранным сегментом.
-                if variants.count > 1 {
-                    Picker("Size", selection: $sizeKey) {
-                        ForEach(variants) { variant in
-                            Text(variant.size?.label ?? variant.name).tag(variant.key)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .listRowInsets(EdgeInsets(top: Tokens.Spacing.s, leading: Tokens.Spacing.m,
-                                              bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
-                }
+                if variants.count > 1 { sizePicker }
                 calories
                 macro("Protein", value: shown.proteinText, color: Tokens.Color.protein)
                 macro("Carbs", value: shown.carbsText, color: Tokens.Color.carbs)
@@ -167,6 +158,32 @@ struct ItemDetailView: View {
                 }
             }
             .font(.caption2)
+        }
+    }
+
+    /// Сегментов столько же, сколько размеров: у кассы выбирают из того,
+    /// что на табло, а не из выпадающего списка.
+    ///
+    /// Но дальше четырёх сегменты перестают читаться — у Steak 'n Shake
+    /// газировка идёт девятью объёмами от 12 до 44 oz, и на iPhone это
+    /// девять нажимаемых полосок в три буквы. Там переключатель становится
+    /// системным списком: тот же выбор, только листаемый.
+    private static let maxSegments = 4
+
+    @ViewBuilder
+    private var sizePicker: some View {
+        let picker = Picker("Size", selection: $sizeKey) {
+            ForEach(variants) { variant in
+                Text(variant.size?.label ?? variant.name).tag(variant.key)
+            }
+        }
+        if variants.count <= Self.maxSegments {
+            picker
+                .pickerStyle(.segmented)
+                .listRowInsets(EdgeInsets(top: Tokens.Spacing.s, leading: Tokens.Spacing.m,
+                                          bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
+        } else {
+            picker.pickerStyle(.navigationLink)
         }
     }
 
