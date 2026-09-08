@@ -108,6 +108,21 @@ private struct SavedOrderDetailView: View {
                         }
                     }
 
+                    // Блюдо ещё в каталоге, но сеть его больше не продаёт.
+                    let archived = resolved.order.lines.filter(\.item.isOffMenu)
+                    if !archived.isEmpty {
+                        Section {
+                            ForEach(archived) { line in
+                                Label(line.item.name, systemImage: Tokens.Symbol.stale)
+                                    .foregroundStyle(Tokens.Color.staleWarning)
+                            }
+                        } header: {
+                            Text("No longer on the menu")
+                        } footer: {
+                            Text("Still counted in the total, but you may not be able to order them.")
+                        }
+                    }
+
                     // Исчезнувшие позиции называем прямо: молчаливый недосчёт
                     // калорий — ровно та претензия, за которую бьют конкурентов.
                     if resolved.hasMissing {

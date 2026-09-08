@@ -10,6 +10,15 @@ struct MenuItemRow: View {
     let item: MenuItem
     let showsChain: Bool
 
+    private var subtitle: String? {
+        switch (item.isOffMenu, showsChain) {
+        case (true, true): "\(item.chain) · archived"
+        case (true, false): "Archived"
+        case (false, true): item.chain
+        case (false, false): nil
+        }
+    }
+
     var body: some View {
         LabeledContent {
             VStack(alignment: .trailing, spacing: Tokens.Spacing.xs) {
@@ -29,10 +38,17 @@ struct MenuItemRow: View {
                 }
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
                     Text(item.name)
-                    if showsChain {
-                        Text(item.chain)
+                        .foregroundStyle(item.isOffMenu
+                                         ? Tokens.Color.textSecondary
+                                         : Tokens.Color.textPrimary)
+                    // Пометка нужна именно в списке: иначе человек узнаёт,
+                    // что блюдо снято, уже открыв карточку.
+                    if let subtitle {
+                        Text(subtitle)
                             .font(.caption)
-                            .foregroundStyle(Tokens.Color.textSecondary)
+                            .foregroundStyle(item.isOffMenu
+                                             ? Tokens.Color.staleWarning
+                                             : Tokens.Color.textSecondary)
                     }
                 }
             }

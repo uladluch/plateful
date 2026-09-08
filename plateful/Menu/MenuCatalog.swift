@@ -97,7 +97,12 @@ nonisolated struct MenuCatalog: Sendable {
             for position in candidates { scan(position) }
         }
 
+        // Снятые с меню опускаем в конец при любой релевантности: заказать
+        // их всё равно нельзя, но и прятать нечестно.
         hits.sort {
+            let leftArchived = items[Int($0.item)].isOffMenu
+            let rightArchived = items[Int($1.item)].isOffMenu
+            if leftArchived != rightArchived { return !leftArchived }
             if $0.score != $1.score { return $0.score > $1.score }
             if $0.length != $1.length { return $0.length < $1.length }
             return $0.item < $1.item

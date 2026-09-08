@@ -16,22 +16,43 @@ nonisolated extension MenuCatalog {
     ///
     /// Порядок категорий — как в паке: он идёт от источника, а не от
     /// алфавита, и завтраки там раньше десертов.
+    ///
+    /// Блюда, которых больше нет в меню, собираются в отдельный раздел
+    /// в самом конце. Держать их вперемешку с текущими — вводить в
+    /// заблуждение: человек стоит у кассы и не может это заказать.
     func sections(for chain: String) -> [MenuSection] {
         var order: [String] = []
         var grouped: [String: [MenuItem]] = [:]
+        var archived: [MenuItem] = []
 
         for item in items(in: chain) {
+            if item.isOffMenu {
+                archived.append(item)
+                continue
+            }
             let title = item.category ?? MenuSection.uncategorized
             if grouped[title] == nil { order.append(title) }
             grouped[title, default: []].append(item)
         }
-        return order.map { MenuSection(title: $0, items: grouped[$0] ?? []) }
+
+        var sections = order.map { MenuSection(title: $0, items: grouped[$0] ?? []) }
+        if !archived.isEmpty {
+            sections.append(MenuSection(title: MenuSection.archived, items: archived))
+        }
+        return sections
     }
 }
 
 nonisolated extension MenuSection {
     /// Для позиций, у которых источник не указал категорию.
     static let uncategorized = "Other"
+
+    /// Раздел со снятыми с меню блюдами. Заголовок — место («Archive»),
+    /// а объяснение живёт в подписи под разделом: в шапке списка длинная
+    /// фраза читается хуже короткого имени.
+    static let archived = "Archive"
+
+    var isArchive: Bool { title == Self.archived }
 }
 
 nonisolated extension MenuItem {

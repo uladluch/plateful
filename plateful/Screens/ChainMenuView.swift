@@ -20,11 +20,17 @@ struct ChainMenuView: View {
                     noMatches
                 } else {
                     ForEach(sections) { section in
-                        Section(section.title) {
+                        Section {
                             ForEach(section.items) { item in
                                 NavigationLink(value: item) {
                                     MenuItemRow(item: item, showsChain: false)
                                 }
+                            }
+                        } header: {
+                            Text(section.title)
+                        } footer: {
+                            if section.isArchive {
+                                Text("These were on the menu when the data was collected. \(chain.name) does not list them today.")
                             }
                         }
                     }
