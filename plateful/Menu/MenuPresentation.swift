@@ -100,6 +100,39 @@ nonisolated extension Array where Element == MenuItem {
     }
 }
 
+nonisolated extension MenuItem.Size {
+
+    /// Сокращения размеров. Ключи в нижнем регистре: источник пишет и
+    /// «Large», и «large».
+    private static let abbreviations = [
+        "extra small": "XS", "small": "S", "medium": "M",
+        "large": "L", "extra large": "XL", "regular": "Reg",
+    ]
+
+    /// Подпись на сегменте.
+    ///
+    /// «S · M · L» — то, чем размеры подписаны на табло у кассы, и то, что
+    /// влезает в сегмент шириной с палец. Полное слово остаётся у VoiceOver:
+    /// «эс» вслух — не размер.
+    ///
+    /// У объёмов буквы нет, поэтому остаётся число: единица повторяется в
+    /// каждом сегменте, места не стоит, а под переключателем её всё равно
+    /// показывает строка «Serving».
+    ///
+    /// Фирменные размеры не трогаем: «Grande» — имя, а не мера, и «G»
+    /// рядом с «Venti» ничего не значит.
+    var shortLabel: String {
+        if let short = Self.abbreviations[label.lowercased()] { return short }
+
+        let parts = label.split(separator: " ")
+        if parts.count > 1, parts.last?.lowercased() == "oz",
+           let number = parts.first, Double(number) != nil {
+            return String(number)
+        }
+        return label
+    }
+}
+
 nonisolated extension MenuItem {
 
     /// Калории — целым числом: доли грамма у кассы никому не нужны.

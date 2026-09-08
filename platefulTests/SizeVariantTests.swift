@@ -218,6 +218,56 @@ struct SizeVariantTests {
         #expect(variants.calorieRangeText == "5")
     }
 
+    // MARK: - Подписи на сегментах
+
+    /// «S · M · L» — то, чем размеры подписаны на табло у кассы.
+    @Test("словарные размеры сокращаются до буквы")
+    func abbreviatesKnownSizes() {
+        let short = ["Extra Small": "XS", "Small": "S", "Medium": "M",
+                     "Large": "L", "Extra Large": "XL", "Regular": "Reg"]
+        for (label, expected) in short {
+            #expect(MenuItem.Size(group: "g", label: label, order: 0).shortLabel == expected)
+        }
+    }
+
+    /// Источник пишет и «Large», и «large».
+    @Test("регистр в подписи не мешает сокращению")
+    func abbreviationIgnoresCase() {
+        #expect(MenuItem.Size(group: "g", label: "large", order: 0).shortLabel == "L")
+    }
+
+    /// Единица повторяется в каждом сегменте, места не стоит, а полное
+    /// «12 oz» остаётся в строке «Serving» под переключателем.
+    @Test("у объёма остаётся число без единицы")
+    func dropsVolumeUnit() {
+        #expect(MenuItem.Size(group: "g", label: "12 oz", order: 0).shortLabel == "12")
+        #expect(MenuItem.Size(group: "g", label: "16 fl oz", order: 0).shortLabel == "16")
+        #expect(MenuItem.Size(group: "g", label: "1.5 fl oz", order: 0).shortLabel == "1.5")
+    }
+
+    /// «Grande» — имя, а не мера: «G» рядом с «Venti» ничего не значит.
+    @Test("фирменные и штучные размеры остаются как есть")
+    func keepsNamedSizes() {
+        for label in ["Kids", "Snack", "Mini", "Jr", "Short", "Tall",
+                      "Grande", "Venti", "Bowl", "Cup", "2 Slices"] {
+            #expect(MenuItem.Size(group: "g", label: label, order: 0).shortLabel == label)
+        }
+    }
+
+    /// Сокращение экономит ширину, а не смысл: в паке не должно оказаться
+    /// подписи, которая после сокращения стала пустой или чужой.
+    @Test("в паке из бандла каждое сокращение непусто и коротко")
+    func realSeedAbbreviationsAreSane() throws {
+        let url = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let catalog = MenuCatalog(pack: try MenuPack.decode(from: Data(contentsOf: url)))
+        let sizes = catalog.items.compactMap(\.size)
+
+        #expect(!sizes.isEmpty)
+        #expect(sizes.allSatisfy { !$0.shortLabel.isEmpty })
+        #expect(sizes.allSatisfy { $0.shortLabel.count <= $0.label.count })
+    }
+
     // MARK: - Настоящие данные
 
     /// Группы считает конвейер, а показывает приложение. Проверка на паке из

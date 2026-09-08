@@ -164,17 +164,21 @@ struct ItemDetailView: View {
     /// Сегментов столько же, сколько размеров: у кассы выбирают из того,
     /// что на табло, а не из выпадающего списка.
     ///
-    /// Но дальше четырёх сегменты перестают читаться — у Steak 'n Shake
-    /// газировка идёт девятью объёмами от 12 до 44 oz, и на iPhone это
-    /// девять нажимаемых полосок в три буквы. Там переключатель становится
-    /// системным списком: тот же выбор, только листаемый.
-    private static let maxSegments = 4
+    /// Потолок — шесть: на узком iPhone это по 57 pt на сегмент, ещё выше
+    /// минимальной цели нажатия в 44 pt. Дальше переключатель становится
+    /// системным списком — у Steak 'n Shake газировка идёт девятью объёмами
+    /// от 12 до 44 oz, и девять полосок не нажать даже с сокращениями.
+    private static let maxSegments = 6
 
     @ViewBuilder
     private var sizePicker: some View {
         let picker = Picker("Size", selection: $sizeKey) {
             ForEach(variants) { variant in
-                Text(variant.size?.label ?? variant.name).tag(variant.key)
+                // На сегменте — «L», в озвучке — «Large»: сокращение
+                // экономит ширину, а не смысл.
+                Text(variant.size?.shortLabel ?? variant.name)
+                    .accessibilityLabel(variant.size?.label ?? variant.name)
+                    .tag(variant.key)
             }
         }
         if variants.count <= Self.maxSegments {
