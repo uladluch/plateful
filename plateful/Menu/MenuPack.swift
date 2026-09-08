@@ -42,6 +42,10 @@ nonisolated struct MenuPack: Decodable, Sendable {
         let carbs: Double
         let fat: Double
 
+        /// Архетип блюда: по нему подбирается снимок. Необязательный —
+        /// паки, выпущенные до появления картинок, его не несут.
+        let image: String?
+
         let source: String?
         let observed: String?
         let stale: Bool?

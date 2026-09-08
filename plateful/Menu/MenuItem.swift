@@ -22,6 +22,12 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     let carbs: Double
     let fat: Double
 
+    /// Архетип блюда — имя изображения в каталоге ассетов.
+    ///
+    /// Не фотография конкретной позиции сети: снимок общий для всех
+    /// чизбургеров, потому что чизбургер выглядит чизбургером везде.
+    let image: String?
+
     /// Откуда цифра и на какую дату. Приложение обещает это показывать —
     /// конкурентов бьют именно за молчаливо устаревшие данные.
     let source: String
@@ -50,6 +56,7 @@ nonisolated extension MenuItem {
         self.protein = packItem.protein
         self.carbs = packItem.carbs
         self.fat = packItem.fat
+        self.image = packItem.image
         self.source = packItem.source ?? defaults.source
         self.observed = packItem.observed ?? defaults.observed
         self.isStale = packItem.stale ?? defaults.stale

@@ -6,7 +6,7 @@
     pack           {format, version, source, observed, stale,
                     chains: [{name, itemCount}],
                     items:  [{chain, key, name, category, serving,
-                              kcal, protein, carbs, fat,
+                              kcal, protein, carbs, fat, image,
                               source?, observed?, stale?}]}
 
 Происхождение (`source`, `observed`, `stale`) вынесено на уровень пака, а у
@@ -25,6 +25,8 @@ import hashlib
 import json
 import zlib
 from collections import Counter
+
+from .archetype import classify
 from datetime import date
 from pathlib import Path
 
@@ -65,6 +67,10 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             "protein": item.protein,
             "carbs": item.carbs,
             "fat": item.fat,
+            # Архетип блюда: по нему приложение подбирает снимок. Считается
+            # здесь, а не на клиенте, чтобы ошибочно назначенную картинку
+            # можно было исправить публикацией пака, без релиза.
+            "image": classify(item.name, item.category),
         }
         # Только отличия от умолчаний пака — иначе пак раздувается втрое.
         if item_source != pack_source:

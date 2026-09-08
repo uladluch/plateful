@@ -30,6 +30,10 @@ enum Tokens {
         static let l: CGFloat = 24
     }
 
+    enum Radius {
+        static let image: CGFloat = 8
+    }
+
     enum Symbol {
         static let chain = "storefront"
         static let calories = "flame"
