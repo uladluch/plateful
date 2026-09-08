@@ -14,6 +14,8 @@ struct ChainMenuView: View {
 
     var body: some View {
         List {
+            header
+
             if query.isEmpty {
                 // Свёртка размеров — последней: фильтр по целям должен
                 // видеть все размеры, иначе группа пропадёт из-за среднего.
@@ -54,12 +56,32 @@ struct ChainMenuView: View {
                 }
             }
         }
-        .navigationTitle(chain.name)
+        // Название уже стоит в шапке контента, крупно и под маркой; в навбаре
+        // оно было бы дублем. Пустой заголовок отдаёт эту строку шапке и
+        // всё равно оставляет системную кнопку «Назад».
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $query, prompt: "Search \(chain.name)")
         .toolbar {
             MenuFilterMenu(filter: $filter, goals: goals.first)
         }
+    }
+
+    /// Марка сети сверху, название под ней — первое, что видно на экране
+    /// меню, ещё до самих категорий.
+    private var header: some View {
+        VStack(spacing: Tokens.Spacing.s) {
+            ChainMarkView(chain: chain.name, size: 72)
+            Text(chain.name)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Tokens.Spacing.m)
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     /// Пустой результат объясняется целями, а не выглядит как поломка.
