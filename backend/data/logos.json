@@ -1,0 +1,607 @@
+{
+ "7-eleven": {
+  "chain": "7 Eleven",
+  "wikidata": "Q259340",
+  "source": "wikimedia",
+  "file": "7-Eleven logo 2021.svg",
+  "license": "Public domain"
+ },
+ "applebee-s": {
+  "chain": "Applebee's",
+  "wikidata": "Q621532",
+  "source": "wikimedia",
+  "file": "AB Brand Refresh Logo R.png",
+  "license": "CC BY-SA 4.0"
+ },
+ "arby-s": {
+  "chain": "Arby's",
+  "wikidata": "Q630866",
+  "source": "wikimedia",
+  "file": "Arby's logo.svg",
+  "license": "Public domain"
+ },
+ "auntie-anne-s": {
+  "chain": "Auntie Anne's",
+  "source": "none"
+ },
+ "bj-s-restaurant-brewhouse": {
+  "chain": "BJ's Restaurant & Brewhouse",
+  "wikidata": "Q4835755",
+  "source": "wikimedia",
+  "file": "BJ's Restaurants logo.svg",
+  "license": "Public domain"
+ },
+ "baskin-robbins": {
+  "chain": "Baskin Robbins",
+  "wikidata": "Q584601",
+  "source": "wikimedia",
+  "file": "Baskin-Robbins logo 2022.svg",
+  "license": "Public domain"
+ },
+ "bob-evans": {
+  "chain": "Bob Evans",
+  "wikidata": "Q4932386",
+  "source": "none"
+ },
+ "bojangles": {
+  "chain": "Bojangles",
+  "wikidata": "Q891163",
+  "source": "none"
+ },
+ "bonefish-grill": {
+  "chain": "Bonefish Grill",
+  "wikidata": "Q4941599",
+  "source": "wikimedia",
+  "file": "Bonefish Grill sign.jpg",
+  "license": "CC BY 2.0"
+ },
+ "boston-market": {
+  "chain": "Boston Market",
+  "wikidata": "Q603617",
+  "source": "none"
+ },
+ "burger-king": {
+  "chain": "Burger King",
+  "wikidata": "Q177054",
+  "source": "wikimedia",
+  "file": "Burger King 2020.svg",
+  "license": "Public domain"
+ },
+ "california-pizza-kitchen": {
+  "chain": "California Pizza Kitchen",
+  "wikidata": "Q15109854",
+  "source": "chain-site",
+  "url": "https://www.cpk.com/logo192.png",
+  "license": "trademark, nominative use"
+ },
+ "captain-d-s": {
+  "chain": "Captain D's",
+  "wikidata": "Q5036616",
+  "source": "chain-site",
+  "url": "https://www.captainds.com/wp-content/uploads/2022/10/logo.png",
+  "license": "trademark, nominative use"
+ },
+ "carl-s-jr": {
+  "chain": "Carl's Jr.",
+  "wikidata": "Q1043486",
+  "source": "wikimedia",
+  "file": "Carl's Jr logo.svg",
+  "license": "Public domain"
+ },
+ "carrabba-s-italian-grill": {
+  "chain": "Carrabba's Italian Grill",
+  "wikidata": "Q5045999",
+  "source": "none"
+ },
+ "casey-s-general-store": {
+  "chain": "Casey's General Store",
+  "wikidata": "Q2940968",
+  "source": "wikimedia",
+  "file": "Casey's logo.svg",
+  "license": "Public domain"
+ },
+ "checker-s-drive-in-rallys": {
+  "chain": "Checker's Drive-In/Rallys",
+  "source": "none"
+ },
+ "chick-fil-a": {
+  "chain": "Chick-Fil-A",
+  "wikidata": "Q491516",
+  "source": "wikimedia",
+  "file": "Chick-fil-A Logo.svg",
+  "license": "Public domain"
+ },
+ "chili-s": {
+  "chain": "Chili's",
+  "wikidata": "Q1072948",
+  "source": "wikimedia",
+  "file": "Chili's Logo.svg",
+  "license": "Public domain"
+ },
+ "chipotle": {
+  "chain": "Chipotle",
+  "wikidata": "Q465751",
+  "source": "chain-site",
+  "url": "https://chipotle.com/etc.clientlibs/cmgaemacs/clientlibs/clientlib-base/resources/apple-touch-icon-180x180.png",
+  "license": "trademark, nominative use"
+ },
+ "chuck-e-cheese": {
+  "chain": "Chuck E. Cheese",
+  "wikidata": "Q2438391",
+  "source": "wikimedia",
+  "file": "Chuck E. Cheese 2019 wordmark.svg",
+  "license": "Public domain"
+ },
+ "church-s-chicken": {
+  "chain": "Church's Chicken",
+  "wikidata": "Q1089932",
+  "source": "chain-site",
+  "url": "https://juicipattiesusa.com/wp-content/uploads/2023/04/cropped-Jamaican-Franchise_juici-patties_logo-180x180.png",
+  "license": "trademark, nominative use"
+ },
+ "ci-ci-s-pizza": {
+  "chain": "Ci Ci's Pizza",
+  "source": "none"
+ },
+ "culver-s": {
+  "chain": "Culver's",
+  "wikidata": "Q1143589",
+  "source": "wikimedia",
+  "file": "Culver's logo.svg",
+  "license": "Public domain"
+ },
+ "dairy-queen": {
+  "chain": "Dairy Queen",
+  "wikidata": "Q1141226",
+  "source": "wikimedia",
+  "file": "Dairy Queen logo.svg",
+  "license": "Public domain"
+ },
+ "del-taco": {
+  "chain": "Del Taco",
+  "wikidata": "Q1183818",
+  "source": "wikimedia",
+  "file": "Logo of Del Taco.png",
+  "license": "Public domain"
+ },
+ "denny-s": {
+  "chain": "Denny's",
+  "wikidata": "Q1189695",
+  "source": "wikimedia",
+  "file": "Denny's Logo 06.2022.svg",
+  "license": "Public domain"
+ },
+ "dickey-s-barbeque-pit": {
+  "chain": "Dickey's Barbeque Pit",
+  "source": "none"
+ },
+ "dominos": {
+  "chain": "Dominos",
+  "wikidata": "Q5291227",
+  "source": "none"
+ },
+ "dunkin-donuts": {
+  "chain": "Dunkin' Donuts",
+  "wikidata": "Q847743",
+  "source": "wikimedia",
+  "file": "Dunkin1.JPG",
+  "license": "Public domain"
+ },
+ "einstein-bros": {
+  "chain": "Einstein Bros",
+  "wikidata": "Q5349788",
+  "source": "none"
+ },
+ "el-pollo-loco": {
+  "chain": "El Pollo Loco",
+  "wikidata": "Q2353849",
+  "source": "none"
+ },
+ "famous-dave-s": {
+  "chain": "Famous Dave's",
+  "wikidata": "Q5433448",
+  "source": "none"
+ },
+ "firehouse-subs": {
+  "chain": "Firehouse Subs",
+  "wikidata": "Q5451873",
+  "source": "wikimedia",
+  "file": "Firehosue Subs Logo 2024.png",
+  "license": "Public domain"
+ },
+ "five-guys": {
+  "chain": "Five Guys",
+  "wikidata": "Q1131810",
+  "source": "wikimedia",
+  "file": "Five Guys logo.svg",
+  "license": "Public domain"
+ },
+ "friendly-s": {
+  "chain": "Friendly's",
+  "wikidata": "Q1464513",
+  "source": "wikimedia",
+  "file": "Friendly's logo.svg",
+  "license": "Public domain"
+ },
+ "frisch-s-big-boy": {
+  "chain": "Frisch's Big Boy",
+  "wikidata": "Q5504660",
+  "source": "chain-site",
+  "url": "http://frischs.com/wp-content/themes/frischs_2019/apple-icon-57x57.png",
+  "license": "trademark, nominative use"
+ },
+ "golden-corral": {
+  "chain": "Golden Corral",
+  "wikidata": "Q4039560",
+  "source": "wikimedia",
+  "file": "Golden Corral logo.svg",
+  "license": "CC BY-SA 4.0"
+ },
+ "hardee-s": {
+  "chain": "Hardee's",
+  "wikidata": "Q1585088",
+  "source": "wikimedia",
+  "file": "Hardee brand logo.svg",
+  "license": "Public domain"
+ },
+ "hooters": {
+  "chain": "Hooters",
+  "wikidata": "Q1025921",
+  "source": "wikimedia",
+  "file": "Supper Friday night (2268485759).jpg",
+  "license": "CC BY 2.0"
+ },
+ "ihop": {
+  "chain": "IHOP",
+  "wikidata": "Q1185675",
+  "source": "wikimedia",
+  "file": "IHOP Restaurant logo.svg",
+  "license": "Public domain"
+ },
+ "in-n-out-burger": {
+  "chain": "In-N-Out Burger",
+  "wikidata": "Q1205312",
+  "source": "wikimedia",
+  "file": "InNOut 2021 logo.svg",
+  "license": "Public domain"
+ },
+ "jack-in-the-box": {
+  "chain": "Jack in the Box",
+  "wikidata": "Q1538507",
+  "source": "wikimedia",
+  "file": "Jack in the Box 2009 logo.svg",
+  "license": "Public domain"
+ },
+ "jamba-juice": {
+  "chain": "Jamba Juice",
+  "wikidata": "Q3088784",
+  "source": "wikimedia",
+  "file": "Jamba logo.svg",
+  "license": "Public domain"
+ },
+ "jason-s-deli": {
+  "chain": "Jason's Deli",
+  "wikidata": "Q16997641",
+  "source": "wikimedia",
+  "file": "Jason's Deli logo.svg",
+  "license": "Public domain"
+ },
+ "jersey-mike-s-subs": {
+  "chain": "Jersey Mike's Subs",
+  "wikidata": "Q6184897",
+  "source": "wikimedia",
+  "file": "Jersey Mike's logo.svg",
+  "license": "Public domain"
+ },
+ "jimmy-john-s": {
+  "chain": "Jimmy John's",
+  "wikidata": "Q1689380",
+  "source": "wikimedia",
+  "file": "Jimmy Johns logo.svg",
+  "license": "Public domain"
+ },
+ "joe-s-crab-shack": {
+  "chain": "Joe's Crab Shack",
+  "wikidata": "Q6208210",
+  "source": "none"
+ },
+ "kfc": {
+  "chain": "KFC",
+  "wikidata": "Q524757",
+  "source": "wikimedia",
+  "file": "Kfc textlogo.svg",
+  "license": "Public domain"
+ },
+ "krispy-kreme": {
+  "chain": "Krispy Kreme",
+  "wikidata": "Q1192805",
+  "source": "wikimedia",
+  "file": "Logo.KrispyKreme.svg",
+  "license": "CC BY-SA 4.0"
+ },
+ "krystal": {
+  "chain": "Krystal",
+  "source": "none"
+ },
+ "little-caesars": {
+  "chain": "Little Caesars",
+  "wikidata": "Q1393809",
+  "source": "wikimedia",
+  "file": "Little Caesars wordmark.svg",
+  "license": "Public domain"
+ },
+ "long-john-silver-s": {
+  "chain": "Long John Silver's",
+  "wikidata": "Q1535221",
+  "source": "chain-site",
+  "url": "https://www.ljsilvers.com/_nuxt/icons/icon_512x512.1b190a.png",
+  "license": "trademark, nominative use"
+ },
+ "longhorn-steakhouse": {
+  "chain": "LongHorn Steakhouse",
+  "wikidata": "Q3259007",
+  "source": "none"
+ },
+ "marco-s-pizza": {
+  "chain": "Marco's Pizza",
+  "wikidata": "Q6757382",
+  "source": "none"
+ },
+ "mcalister-s-deli": {
+  "chain": "McAlister's Deli",
+  "wikidata": "Q17020829",
+  "source": "wikimedia",
+  "file": "McAlister's Deli logo.svg",
+  "license": "Public domain"
+ },
+ "mcdonald-s": {
+  "chain": "McDonald's",
+  "wikidata": "Q38076",
+  "source": "wikimedia",
+  "file": "McDonald's with slogan 2020.svg",
+  "license": "Public domain"
+ },
+ "moe-s-southwest-grill": {
+  "chain": "Moe's Southwest Grill",
+  "wikidata": "Q6889938",
+  "source": "wikimedia",
+  "file": "Moes Southwest Grill logo.png",
+  "license": "Public domain"
+ },
+ "noodles-company": {
+  "chain": "Noodles & Company",
+  "wikidata": "Q7049673",
+  "source": "chain-site",
+  "url": "https://www.noodles.com/themes/custom/noodles/favicon/apple-touch-icon.png",
+  "license": "trademark, nominative use"
+ },
+ "o-charley-s": {
+  "chain": "O'Charley's",
+  "wikidata": "Q7071703",
+  "source": "wikimedia",
+  "file": "O'Charley'sLogo.png",
+  "license": "Public domain"
+ },
+ "olive-garden": {
+  "chain": "Olive Garden",
+  "wikidata": "Q3045312",
+  "source": "none"
+ },
+ "on-the-border": {
+  "chain": "On the Border",
+  "source": "none"
+ },
+ "outback-steakhouse": {
+  "chain": "Outback Steakhouse",
+  "wikidata": "Q1064893",
+  "source": "none"
+ },
+ "pf-chang-s": {
+  "chain": "PF Chang's",
+  "source": "none"
+ },
+ "panda-express": {
+  "chain": "Panda Express",
+  "wikidata": "Q1358690",
+  "source": "wikimedia",
+  "file": "Panda Express Gourmet Chinese Food Sign.jpg",
+  "license": "CC BY 2.0"
+ },
+ "panera-bread": {
+  "chain": "Panera Bread",
+  "wikidata": "Q7130852",
+  "source": "wikimedia",
+  "file": "Panera Bread wordmark.svg",
+  "license": "Public domain"
+ },
+ "papa-john-s": {
+  "chain": "Papa John's",
+  "wikidata": "Q2759586",
+  "source": "wikimedia",
+  "file": "Papa John's Logo 2019.svg",
+  "license": "Public domain"
+ },
+ "papa-murphy-s": {
+  "chain": "Papa Murphy's",
+  "wikidata": "Q7132349",
+  "source": "wikimedia",
+  "file": "Papa Murphy's logo.svg",
+  "license": "Public domain"
+ },
+ "perkins": {
+  "chain": "Perkins",
+  "wikidata": "Q7169056",
+  "source": "none"
+ },
+ "pizza-hut": {
+  "chain": "Pizza Hut",
+  "wikidata": "Q191615",
+  "source": "wikimedia",
+  "file": "Pizza Hut classic logo.svg",
+  "license": "Public domain"
+ },
+ "popeyes": {
+  "chain": "Popeyes",
+  "wikidata": "Q1330910",
+  "source": "none"
+ },
+ "potbelly-sandwich-shop": {
+  "chain": "Potbelly Sandwich Shop",
+  "wikidata": "Q7234777",
+  "source": "wikimedia",
+  "file": "PotbellyLogo.jpg",
+  "license": "CC BY-SA 4.0"
+ },
+ "qdoba": {
+  "chain": "Qdoba",
+  "wikidata": "Q1363885",
+  "source": "wikimedia",
+  "file": "Qdoba Logo.svg",
+  "license": "Public domain"
+ },
+ "quiznos": {
+  "chain": "Quiznos",
+  "wikidata": "Q1936229",
+  "source": "wikimedia",
+  "file": "Quiznos logo.svg",
+  "license": "Public domain"
+ },
+ "red-lobster": {
+  "chain": "Red Lobster",
+  "wikidata": "Q846301",
+  "source": "none"
+ },
+ "red-robin": {
+  "chain": "Red Robin",
+  "source": "none"
+ },
+ "romano-s-macaroni-grill": {
+  "chain": "Romano's Macaroni Grill",
+  "wikidata": "Q7362714",
+  "source": "wikimedia",
+  "file": "Romano's Macaroni Grill Logo.svg",
+  "license": "Public domain"
+ },
+ "round-table-pizza": {
+  "chain": "Round Table Pizza",
+  "wikidata": "Q7371139",
+  "source": "none"
+ },
+ "ruby-tuesday": {
+  "chain": "Ruby Tuesday",
+  "wikidata": "Q7376400",
+  "source": "wikimedia",
+  "file": "Rubytuesday.svg",
+  "license": "Public domain"
+ },
+ "sbarro": {
+  "chain": "Sbarro",
+  "wikidata": "Q2589409",
+  "source": "wikimedia",
+  "file": "Sbarro LLC logo.svg",
+  "license": "Public domain"
+ },
+ "sheetz": {
+  "chain": "Sheetz",
+  "wikidata": "Q7492551",
+  "source": "wikimedia",
+  "file": "Sheetz logo.svg",
+  "license": "Public domain"
+ },
+ "sonic": {
+  "chain": "Sonic",
+  "source": "none"
+ },
+ "starbucks": {
+  "chain": "Starbucks",
+  "wikidata": "Q37158",
+  "source": "wikimedia",
+  "file": "Starbucks coffee wordmark.png",
+  "license": "Public domain"
+ },
+ "steak-n-shake": {
+  "chain": "Steak 'N Shake",
+  "wikidata": "Q7605233",
+  "source": "wikimedia",
+  "file": "2011-06-21 Raleigh Steak-n-Shake at night.jpg",
+  "license": "CC BY-SA 4.0"
+ },
+ "subway": {
+  "chain": "Subway",
+  "wikidata": "Q244457",
+  "source": "wikimedia",
+  "file": "Subway 2016 logo.svg",
+  "license": "Public domain"
+ },
+ "tgi-friday-s": {
+  "chain": "TGI Friday's",
+  "wikidata": "Q1524184",
+  "source": "wikimedia",
+  "file": "Tgi fridays logo13.svg",
+  "license": "Public domain"
+ },
+ "taco-bell": {
+  "chain": "Taco Bell",
+  "wikidata": "Q752941",
+  "source": "wikimedia",
+  "file": "1984TacoBellSign.svg",
+  "license": "Public domain"
+ },
+ "the-capital-grille": {
+  "chain": "The Capital Grille",
+  "wikidata": "Q110391697",
+  "source": "none"
+ },
+ "tim-hortons": {
+  "chain": "Tim Hortons",
+  "wikidata": "Q175106",
+  "source": "wikimedia",
+  "file": "Tim Hortons Logo.svg",
+  "license": "Public domain"
+ },
+ "wawa": {
+  "chain": "Wawa",
+  "wikidata": "Q5936320",
+  "source": "none"
+ },
+ "wendy-s": {
+  "chain": "Wendy's",
+  "wikidata": "Q550258",
+  "source": "wikimedia",
+  "file": "Wendy's logo 2012.svg",
+  "license": "Public domain"
+ },
+ "whataburger": {
+  "chain": "Whataburger",
+  "wikidata": "Q376627",
+  "source": "wikimedia",
+  "file": "Whataburger logo.svg",
+  "license": "Public domain"
+ },
+ "white-castle": {
+  "chain": "White Castle",
+  "wikidata": "Q1244034",
+  "source": "wikimedia",
+  "file": "White Castle Sign.JPG",
+  "license": "Public domain"
+ },
+ "wingstop": {
+  "chain": "Wingstop",
+  "wikidata": "Q8025339",
+  "source": "chain-site",
+  "url": "https://ir.wingstop.com/wp-content/uploads/2023/05/favicon.png",
+  "license": "trademark, nominative use"
+ },
+ "yard-house": {
+  "chain": "Yard House",
+  "wikidata": "Q21189156",
+  "source": "wikimedia",
+  "file": "Yard House logo.svg",
+  "license": "Public domain"
+ },
+ "zaxby-s": {
+  "chain": "Zaxby's",
+  "wikidata": "Q8067525",
+  "source": "none"
+ }
+}

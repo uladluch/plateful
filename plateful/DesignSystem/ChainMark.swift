@@ -32,6 +32,25 @@ nonisolated enum ChainMark {
         return String(letters).uppercased()
     }
 
+    /// Слаг сети — тот же, что в конвейере и в базе.
+    ///
+    /// Считается здесь же, чтобы имя ассета с логотипом и ключ сети в базе
+    /// никогда не разошлись.
+    static func slug(for chain: String) -> String {
+        var slug = ""
+        var pendingSeparator = false
+        for character in chain.lowercased() {
+            if character.isLetter || character.isNumber {
+                if pendingSeparator, !slug.isEmpty { slug.append("-") }
+                pendingSeparator = false
+                slug.append(character)
+            } else {
+                pendingSeparator = true
+            }
+        }
+        return slug
+    }
+
     /// Цвет по имени сети.
     ///
     /// Хеш свой, а не `hashValue`: у Swift он засеивается заново при каждом
@@ -45,20 +64,42 @@ nonisolated enum ChainMark {
     }
 }
 
-/// Кружок с инициалами сети.
+/// Значок сети: логотип, если он у нас есть, иначе инициалы.
+///
+/// Логотип берётся из каталога ассетов по слагу сети. Там, где его найти не
+/// удалось, остаются инициалы — пустого места в списке не бывает.
 struct ChainMarkView: View {
 
     let chain: String
     var size: CGFloat = 30
 
+    /// Префикс имён в каталоге ассетов: `logo-mcdonald-s`, `logo-subway`…
+    static let logoPrefix = "logo-"
+
+    private var logoName: String? {
+        let name = Self.logoPrefix + ChainMark.slug(for: chain)
+        return UIImage(named: name) == nil ? nil : name
+    }
+
     var body: some View {
-        Text(ChainMark.initials(for: chain))
-            .font(.caption)
-            .fontWeight(.semibold)
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(ChainMark.color(for: chain), in: .circle)
-            .accessibilityHidden(true)
+        Group {
+            if let logoName {
+                Image(logoName)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(size * 0.1)
+                    .frame(width: size, height: size)
+                    .background(Color(.secondarySystemFill), in: .circle)
+            } else {
+                Text(ChainMark.initials(for: chain))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .frame(width: size, height: size)
+                    .background(ChainMark.color(for: chain), in: .circle)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import UIKit
 
 @testable import plateful
 
@@ -33,6 +34,29 @@ struct ChainMarkTests {
     func colorIsStable() {
         for chain in ["McDonald's", "Subway", "Chipotle"] {
             #expect(ChainMark.color(for: chain) == ChainMark.color(for: chain))
+        }
+    }
+
+    /// Слаг в приложении и слаг в конвейере обязаны совпадать: по нему
+    /// ищется файл логотипа, и расхождение оставило бы сеть без картинки.
+    @Test("слаг совпадает с тем, что делает конвейер")
+    func slugMatchesPipeline() {
+        #expect(ChainMark.slug(for: "McDonald's") == "mcdonald-s")
+        #expect(ChainMark.slug(for: "Chick-Fil-A") == "chick-fil-a")
+        #expect(ChainMark.slug(for: "7 Eleven") == "7-eleven")
+        #expect(ChainMark.slug(for: "Dunkin' Donuts") == "dunkin-donuts")
+        #expect(ChainMark.slug(for: "BJ's Restaurant & Brewhouse")
+                == "bj-s-restaurant-brewhouse")
+        #expect(ChainMark.slug(for: "") == "")
+    }
+
+    /// Логотип ищется по слагу; если ассет не находится, сеть молча получает
+    /// инициалы — и никто не заметит, что картинка пропала.
+    @Test("логотипы ключевых сетей лежат в бандле")
+    func keyLogosAreBundled() {
+        for chain in ["McDonald's", "Chick-Fil-A", "Starbucks", "Subway", "Taco Bell"] {
+            let name = ChainMarkView.logoPrefix + ChainMark.slug(for: chain)
+            #expect(UIImage(named: name) != nil, "нет ассета \(name)")
         }
     }
 
