@@ -1,14 +1,14 @@
 import SwiftData
 import SwiftUI
 
-/// Корневой экран: список сетей и поиск по всему каталогу.
+/// Корневой экран: список сетей и последние просмотры.
 ///
 /// Первое, что видит человек, — уже полезно: ни онбординга, ни аккаунта,
-/// ни пейволла. Это и есть позиционирование против всей категории.
+/// ни пейволла. Это и есть позиционирование против всей категории. Поиск
+/// живёт отдельной вкладкой панели; здесь — то, что видно без запроса.
 struct ChainsView: View {
 
     @Environment(MenuRepository.self) private var menu
-    @State private var query = ""
 
     /// Последние просмотры. Бесплатны и лежат локально; через iCloud
     /// подхватятся на другом устройстве, когда включим entitlement.
@@ -18,8 +18,16 @@ struct ChainsView: View {
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle("Chains")
-                .searchable(text: $query, prompt: "Search chains and dishes")
+                .navigationTitle("Restaurants")
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        NavigationLink {
+                            NearbyView()
+                        } label: {
+                            Label("Nearby", systemImage: "location")
+                        }
+                    }
+                }
         }
     }
 
@@ -36,11 +44,7 @@ struct ChainsView: View {
                 description: Text(message))
 
         case .ready:
-            if query.isEmpty {
-                chainList
-            } else {
-                searchResults
-            }
+            chainList
         }
     }
 
@@ -59,16 +63,7 @@ struct ChainsView: View {
             Section(recentItems.isEmpty ? "" : "Chains") {
                 ForEach(menu.chains) { chain in
                     NavigationLink(value: chain) {
-                        LabeledContent {
-                            Text(chain.itemCount.formatted())
-                                .monospacedDigit()
-                        } label: {
-                            Label {
-                                Text(chain.name)
-                            } icon: {
-                                ChainMarkView(chain: chain.name)
-                            }
-                        }
+                        ChainRow(chain: chain)
                     }
                 }
             }
@@ -86,22 +81,6 @@ struct ChainsView: View {
     /// «открыть снова», и вести он должен на живую карточку.
     private var recentItems: [MenuItem] {
         recent.prefix(10).compactMap { menu.item($0.reference) }
-    }
-
-    @ViewBuilder
-    private var searchResults: some View {
-        let results = menu.collapsingVariants(menu.search(query))
-        if results.isEmpty {
-            ContentUnavailableView.search(text: query)
-        } else {
-            List(results) { item in
-                NavigationLink(value: item) {
-                    MenuItemRow(item: item, showsChain: true,
-                                variants: menu.variants(of: item))
-                }
-            }
-            .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
-        }
     }
 }
 
