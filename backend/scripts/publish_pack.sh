@@ -19,11 +19,34 @@ echo "── Сборка пака из базы ──"
 python3 backend/scripts/export_pack.py --version "$VERSION"
 
 echo "── Загрузка в Storage ──"
-# Версии пака неизменяемы, поэтому кэшируются навсегда.
-supabase storage cp "$DEFLATE" "ss:///packs/v${VERSION}.deflate" \
-  --linked --experimental --content-type application/octet-stream \
-  --cache-control "max-age=31536000, immutable"
-# Манифест перезаписывается каждым релизом, кэш короткий.
+# Версии пака кэшируются как неизменяемые, поэтому подменять уже выложенный
+# файл нельзя: у клиентов останется старая копия под тем же именем. Если
+# версия уже лежит — сверяем содержимое. Совпало (например, повтор после
+# сорвавшейся публикации) — пропускаем; разошлось — это ошибка, нужна новая
+# версия, а не тихая подмена.
+EXISTING=$(curl -s -o /tmp/existing.deflate -w "%{http_code}" \
+  "$BASE_URL/v${VERSION}.deflate")
+if [ "$EXISTING" = "200" ]; then
+  if cmp -s /tmp/existing.deflate "$DEFLATE"; then
+    echo "  v${VERSION} уже выложен и совпадает — пропускаю"
+  else
+    echo "  ОШИБКА: v${VERSION} уже выложен и отличается." >&2
+    echo "  Неизменяемую версию подменять нельзя — публикуйте следующую." >&2
+    exit 1
+  fi
+else
+  supabase storage cp "$DEFLATE" "ss:///packs/v${VERSION}.deflate" \
+    --linked --experimental --content-type application/octet-stream \
+    --cache-control "max-age=31536000, immutable"
+fi
+rm -f /tmp/existing.deflate
+# Манифест перезаписывается каждым релизом, но `storage cp` отказывается
+# затирать существующий файл (409 KeyAlreadyExists), а флага upsert у него
+# нет — поэтому сначала убираем старый. Пак так удалять нельзя и не нужно:
+# его версии неизменяемы.
+# --yes обязателен: без него rm спрашивает подтверждение и в скрипте
+# молча висит, а `|| true` прячет это за успешным кодом возврата.
+supabase storage rm "ss:///packs/manifest.json" --linked --experimental --yes >/dev/null 2>&1 || true
 supabase storage cp "$MANIFEST" "ss:///packs/manifest.json" \
   --linked --experimental --content-type application/json \
   --cache-control "max-age=60"

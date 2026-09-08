@@ -35,21 +35,49 @@ DATA = ROOT / "backend" / "data"
 ADAPTERS = {"chick-fil-a": chick_fil_a}
 
 # Ниже этого сходства имён считаем, что позиция не найдена.
-MATCH_THRESHOLD = 0.72
+MATCH_THRESHOLD = 0.82
 # Расхождение меньше этого — округление сети, а не изменение рецептуры.
 NOISE_KCAL = 5.0
 NOISE_GRAMS = 1.0
 
-_NOISE_WORDS = re.compile(
-    r"\b(chick fil a|chickfila|mcdonalds|nutrition|and ingredients|meal|entree)\b")
+# Расхождение больше этой доли — почти наверняка не дрейф рецептуры, а разный
+# смысл строки. Проверено на Side Salad: страница сети показывает салат
+# с заправкой (470 ккал), в каталоге он без неё (160). Матч при этом верный,
+# сравнивать нечего — такие строки уходят человеку, а не в правки.
+SUSPICIOUS_SHARE = 0.30
+
+# Хвост со страниц сети: «… Nutrition and Ingredients».
+_PAGE_SUFFIX = re.compile(r"\s*nutrition and ingredients\s*$")
+_BRAND_WORDS = re.compile(r"\b(chick fil a|chickfila|mcdonalds)\b")
+
+# Размер и количество — не украшение названия, а другая позиция. «Milkshake»
+# и «Milkshake, Large» отличаются на сотни калорий, а по строке почти
+# совпадают, поэтому сравниваем их отдельно и строго.
+_SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}
+
+
+def normalized(name: str) -> str:
+    text = name.lower().replace("®", " ").replace("™", " ").replace("’", "'")
+    text = _PAGE_SUFFIX.sub("", text)
+    text = re.sub(r"[^a-z0-9 ]+", " ", text)
+    return " ".join(_BRAND_WORDS.sub(" ", text).split())
+
+
+def portion(name: str) -> frozenset[str]:
+    """Числа и слова размера из названия.
+
+    Совпадать обязаны точно: «4 Grilled Nuggets» и «8 Grilled Nuggets» —
+    разные блюда, и подменить одно другим значит выдумать расхождение.
+    """
+    words = normalized(name).split()
+    return frozenset(w for w in words if w.isdigit() or w in _SIZE_WORDS)
 
 
 def comparable(name: str) -> str:
-    """Имя без бренда, значков и пунктуации — только для сопоставления."""
-    text = name.lower().replace("®", " ").replace("™", " ")
-    text = re.sub(r"[^a-z0-9 ]+", " ", text)
-    text = _NOISE_WORDS.sub(" ", text)
-    return " ".join(sorted(text.split()))
+    """Имя без бренда, размеров и порядка слов — для нестрогого сравнения."""
+    words = [w for w in normalized(name).split()
+             if not w.isdigit() and w not in _SIZE_WORDS]
+    return " ".join(sorted(words))
 
 
 def load_catalog(chain: str) -> dict[str, dict]:
@@ -57,17 +85,38 @@ def load_catalog(chain: str) -> dict[str, dict]:
     return {item["key"]: item for item in pack["items"] if item["chain"] == chain}
 
 
-def match(live: LiveItem, catalog: dict[str, dict]) -> tuple[dict | None, float]:
-    if live.ext_key in catalog:
-        return catalog[live.ext_key], 1.0
+def match_all(live: list[LiveItem],
+              catalog: dict[str, dict]) -> tuple[dict[str, dict], dict[str, float]]:
+    """Сопоставляет позиции один к одному.
 
-    target = comparable(live.name)
-    best, score = None, 0.0
-    for item in catalog.values():
-        ratio = difflib.SequenceMatcher(None, target, comparable(item["name"])).ratio()
-        if ratio > score:
-            best, score = item, ratio
-    return (best, score) if score >= MATCH_THRESHOLD else (None, score)
+    Раньше несколько живых позиций могли указать на одну запись каталога, и
+    отчёт показывал её дважды с разными числами. Теперь запись занимается
+    первым же самым похожим кандидатом, остальные остаются несопоставленными —
+    это честнее, чем выдать выдуманную пару за расхождение.
+    """
+    pairs: list[tuple[float, str, str]] = []
+    for item in live:
+        target, size = comparable(item.name), portion(item.name)
+        for key, stored in catalog.items():
+            if portion(stored["name"]) != size:
+                continue
+            ratio = difflib.SequenceMatcher(None, target, comparable(stored["name"])).ratio()
+            if ratio >= MATCH_THRESHOLD:
+                pairs.append((ratio, item.ext_key, key))
+
+    pairs.sort(reverse=True)
+    matched: dict[str, dict] = {}
+    best_score: dict[str, float] = {}
+    used: set[str] = set()
+
+    for ratio, live_key, catalog_key in pairs:
+        best_score[live_key] = max(best_score.get(live_key, 0.0), ratio)
+        if live_key in matched or catalog_key in used:
+            continue
+        matched[live_key] = catalog[catalog_key]
+        used.add(catalog_key)
+
+    return matched, best_score
 
 
 def differences(live: LiveItem, stored: dict) -> dict[str, tuple[float, float]]:
@@ -79,6 +128,11 @@ def differences(live: LiveItem, stored: dict) -> dict[str, tuple[float, float]]:
     return {field: (was, now)
             for field, now, was, noise in checks
             if now is not None and abs(now - was) > noise}
+
+
+def suspicious(diff: dict[str, tuple[float, float]]) -> bool:
+    return any(was > 0 and abs(now - was) / was > SUSPICIOUS_SHARE
+               for was, now in diff.values())
 
 
 def sql_for(chain: str, rows: list[tuple[dict, LiveItem, dict]], observed: str) -> str:
@@ -132,11 +186,13 @@ def main() -> int:
     catalog = load_catalog(adapter.CHAIN)
     print(f"В каталоге {adapter.CHAIN}: {len(catalog)} позиций\n")
 
+    matched, scores = match_all(live, catalog)
+
     changed, same, unmatched = [], 0, []
     for item in live:
-        stored, score = match(item, catalog)
+        stored = matched.get(item.ext_key)
         if stored is None:
-            unmatched.append((item, score))
+            unmatched.append((item, scores.get(item.ext_key, 0.0)))
             continue
         diff = differences(item, stored)
         if diff:
@@ -144,27 +200,38 @@ def main() -> int:
         else:
             same += 1
 
-    print(f"Совпало без изменений: {same}")
-    print(f"Разошлось:             {len(changed)}")
-    print(f"Не сопоставлено:       {len(unmatched)}\n")
+    confident = [row for row in changed if not suspicious(row[2])]
+    review = [row for row in changed if suspicious(row[2])]
 
-    if changed:
-        print("РАСХОЖДЕНИЯ")
-        for stored, item, diff in sorted(changed, key=lambda r: -abs(
-                r[2].get("kcal", (0, 0))[1] - r[2].get("kcal", (0, 0))[0])):
+    print(f"Совпало без изменений:      {same}")
+    print(f"Уверенные правки:           {len(confident)}")
+    print(f"На глаза (расхождение >30%): {len(review)}")
+    print(f"Не сопоставлено:            {len(unmatched)}\n")
+
+    def report(title: str, rows: list) -> None:
+        if not rows:
+            return
+        print(title)
+        for stored, _, diff in sorted(rows, key=lambda r: -max(
+                abs(now - was) / was if was else 0 for was, now in r[2].values())):
             detail = "  ".join(f"{f} {was:g}→{now:g}" for f, (was, now) in diff.items())
             print(f"  {stored['name'][:36]:<36} {detail}")
+        print()
+
+    report("УВЕРЕННЫЕ ПРАВКИ", confident)
+    report("НА ПРОВЕРКУ ЧЕЛОВЕКУ — вероятно разный смысл строки, а не дрейф", review)
 
     if unmatched:
-        print("\nНЕ СОПОСТАВЛЕНО (нужны глаза)")
+        print("НЕ СОПОСТАВЛЕНО")
         for item, score in unmatched[:15]:
-            print(f"  {item.name[:44]:<44} лучшее сходство {score:.2f}")
+            print(f"  {item.name[:46]:<46} лучшее сходство {score:.2f}")
+        print()
 
-    if args.apply and changed:
+    if args.apply and confident:
         out = DATA / "overrides" / f"{args.chain}.sql"
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(sql_for(adapter.CHAIN, changed, args.observed), encoding="utf-8")
-        print(f"\nSQL правок: {out.relative_to(ROOT)}")
+        out.write_text(sql_for(adapter.CHAIN, confident, args.observed), encoding="utf-8")
+        print(f"SQL уверенных правок: {out.relative_to(ROOT)}")
         print(f"Применить:  supabase db query --linked -f {out.relative_to(ROOT)}")
 
     return 0
