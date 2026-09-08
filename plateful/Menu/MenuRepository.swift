@@ -18,6 +18,11 @@ final class MenuRepository {
 
     private(set) var state: State = .loading
 
+    /// Идущая загрузка. Без неё параллельные вызовы гонятся, и поздно
+    /// завершившийся разбор старого пака затирает уже загруженный новый —
+    /// человек видит устаревшие цифры после успешного обновления.
+    private var loading: Task<Void, Never>?
+
     private let store: PackStore
     private let updater: PackUpdater
     private let log = Logger(subsystem: "com.anluch.plateful", category: "menu")
@@ -44,13 +49,27 @@ final class MenuRepository {
 
     /// Разбор пака идёт вне главного потока: это мегабайты JSON, на главном
     /// они видны как подвисший запуск.
-    /// Загружает каталог. Повторный вызов на готовом каталоге ничего не делает.
+    /// Загружает каталог. Повторные и параллельные вызовы схлопываются в один.
     ///
-    /// `.task` может сработать не один раз за жизнь окна, а разбор пака стоит
-    /// четверть секунды — повторять его незачем.
+    /// `.task` срабатывает не один раз за жизнь окна, а разбор пака стоит
+    /// четверть секунды.
     func load(force: Bool = false) async {
+        if let loading {
+            await loading.value
+            if !force { return }
+        }
         if case .ready = state, !force { return }
 
+        let task = Task { @MainActor [weak self] in
+            await self?.performLoad()
+            return ()
+        }
+        loading = task
+        await task.value
+        loading = nil
+    }
+
+    private func performLoad() async {
         state = .loading
         let store = store
         let started = ContinuousClock.now

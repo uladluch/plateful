@@ -70,6 +70,37 @@ struct MenuRepositoryTests {
         }
     }
 
+    /// В симуляторе `.task` запускал загрузку шесть раз подряд, и поздно
+    /// завершившийся разбор старого пака затирал уже загруженный новый.
+    /// Параллельные вызовы обязаны схлопываться в один.
+    @Test("параллельные загрузки схлопываются и не затирают результат")
+    func concurrentLoadsCoalesce() async throws {
+        let seedURL = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let directory = FileManager.default.temporaryDirectory
+            .appending(path: "race-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let repository = MenuRepository(store: PackStore(
+            seedURL: seedURL,
+            installedURL: directory.appending(path: "current.json", directoryHint: .notDirectory)))
+
+        // Все вызовы на главном акторе, как и в приложении: гонка возникает
+        // не от параллелизма, а от повторного входа на точках await.
+        let attempts = (0..<6).map { _ in
+            Task { @MainActor in await repository.load() }
+        }
+        for attempt in attempts { await attempt.value }
+
+        let catalog = try #require(repository.catalog)
+        #expect(catalog.items.count > 20_000)
+        guard case .ready = repository.state else {
+            Issue.record("после гонки состояние должно быть .ready, а не \(repository.state)")
+            return
+        }
+    }
+
     @Test("до загрузки репозиторий отвечает пусто, а не падает")
     func emptyBeforeLoad() {
         let repository = MenuRepository(store: PackStore(
