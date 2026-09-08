@@ -189,6 +189,12 @@ nonisolated extension MenuItem {
                 numberFormatStyle: .number.precision(.fractionLength(0))))
     }
 
+    /// Пометки в порядке объявления: набор неупорядочен, а список на экране
+    /// не должен прыгать между открытиями карточки.
+    var orderedFlags: [MenuItem.Flag] {
+        MenuItem.Flag.allCases.filter(flags.contains)
+    }
+
     /// Человеческое имя источника.
     ///
     /// Приложение обещает показывать, откуда цифра, — значит `menustat-2018`
@@ -215,5 +221,39 @@ nonisolated extension MenuItem {
         isStale
             ? "Published \(observedDisplay). Chains change portions and recipes, so treat this as a guide."
             : nil
+    }
+}
+
+nonisolated extension MenuItem.Flag {
+
+    var title: String {
+        switch self {
+        case .kids: "Kids meal"
+        case .shareable: "Made to share"
+        case .regional: "Not at every location"
+        case .seasonal: "Was a seasonal item"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .kids: Tokens.Symbol.kidsMeal
+        case .shareable: Tokens.Symbol.shareable
+        case .regional: Tokens.Symbol.regional
+        case .seasonal: Tokens.Symbol.seasonal
+        }
+    }
+
+    /// Что пометка значит на самом деле. Показывается там, где формулировка
+    /// сама по себе может обмануть.
+    var notice: String? {
+        switch self {
+        case .seasonal:
+            "This was a limited-time item when the figures were collected, so the chain may no longer serve it."
+        case .regional:
+            "The chain lists this dish at some locations only."
+        case .kids, .shareable:
+            nil
+        }
     }
 }

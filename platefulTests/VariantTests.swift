@@ -482,3 +482,78 @@ struct LabelNutrientTests {
         #expect(Double(withTransFat) / Double(catalog.items.count) > 0.90)
     }
 }
+
+/// Пометки позиции: детская порция, на компанию, не во всех точках, сезонное.
+@Suite("Пометки позиции")
+struct MenuFlagTests {
+
+    private static func catalog(_ flags: [String]?) -> MenuCatalog {
+        var item: [String: Any] = [
+            "chain": "Applebee's", "key": "mini-cheeseburger",
+            "name": "1 Mini Cheeseburger",
+            "kcal": 360, "protein": 15, "carbs": 22, "fat": 23,
+        ]
+        if let flags { item["flags"] = flags }
+        let json: [String: Any] = [
+            "format": 1, "version": 1,
+            "source": "menustat-2018", "observed": "2018-12-31", "stale": true,
+            "chains": [["name": "Applebee's", "itemCount": 1]],
+            "items": [item],
+        ]
+        return MenuCatalog(
+            pack: try! MenuPack.decode(from: JSONSerialization.data(withJSONObject: json)))
+    }
+
+    @Test("пометки доезжают из пака")
+    func readsFlags() {
+        let item = Self.catalog(["kids", "shareable"]).items[0]
+
+        #expect(item.flags == [.kids, .shareable])
+    }
+
+    @Test("без пометок множество пустое, а не сломанный разбор")
+    func absentMeansEmpty() {
+        #expect(Self.catalog(nil).items[0].flags.isEmpty)
+        #expect(Self.catalog([]).items[0].flags.isEmpty)
+    }
+
+    /// Пак обновляется публикацией, приложение — релизом. Пак с термином,
+    /// которого эта версия не знает, обязан прочитаться: иначе публикация
+    /// нового словаря выключит каталог у всех, кто не обновился.
+    @Test("незнакомый термин отбрасывается, а не ломает пак")
+    func unknownFlagIsIgnored() {
+        let item = Self.catalog(["kids", "vegan-certified-by-someone"]).items[0]
+
+        #expect(item.flags == [.kids])
+    }
+
+    /// Набор неупорядочен, а строки на экране прыгать не должны.
+    @Test("порядок показа не зависит от порядка в паке")
+    func orderIsStable() {
+        let straight = Self.catalog(["kids", "shareable", "regional", "seasonal"])
+        let shuffled = Self.catalog(["seasonal", "regional", "shareable", "kids"])
+
+        #expect(straight.items[0].orderedFlags == shuffled.items[0].orderedFlags)
+        #expect(straight.items[0].orderedFlags == [.kids, .shareable, .regional, .seasonal])
+    }
+
+    /// «Сезонное» из снимка 2018 года не обещает окна, которое давно закрылось.
+    @Test("сезонное объясняется, а не выдаётся за действующее предложение")
+    func seasonalIsExplained() {
+        #expect(MenuItem.Flag.seasonal.notice != nil)
+        #expect(MenuItem.Flag.seasonal.title.contains("Was"))
+        #expect(MenuItem.Flag.kids.notice == nil)
+    }
+
+    @Test("в паке из бандла пометки есть у тысяч позиций")
+    func realSeedHasFlags() throws {
+        let url = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let catalog = MenuCatalog(pack: try MenuPack.decode(from: Data(contentsOf: url)))
+
+        let kids = catalog.items.count { $0.flags.contains(.kids) }
+
+        #expect(kids > 1_000)
+        #expect(catalog.items.contains { $0.flags.contains(.shareable) })
+    }
+}

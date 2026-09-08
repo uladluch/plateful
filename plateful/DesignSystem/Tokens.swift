@@ -34,7 +34,9 @@ enum Tokens {
         static let image: CGFloat = 8
     }
 
-    enum Symbol {
+    /// Имена символов — строки, и главный актор им ни к чему: их спрашивает
+    /// в том числе представление каталога, а оно `nonisolated`.
+    nonisolated enum Symbol {
         static let chain = "storefront"
         static let calories = "flame"
         static let protein = "circle.fill"

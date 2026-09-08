@@ -55,6 +55,14 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     /// по архетипу — она есть всегда.
     let photo: MenuPack.Photo?
 
+    /// Пометки позиции. Множество, а не набор булевых свойств: термины
+    /// приходят из пака и там открыты — адаптер сети добавит свои.
+    ///
+    /// Незнакомый термин молча отбрасывается, а не ломает разбор: пак
+    /// обновляется публикацией, приложение — релизом, и старая версия
+    /// обязана прочитать новый пак.
+    let flags: Set<Flag>
+
     /// Вариант блюда, если оно выпускается в нескольких.
     ///
     /// «Coca Cola, Small» и «Coca Cola, Large» — одно блюдо в двух порциях;
@@ -77,6 +85,25 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     let isStale: Bool
 
     var persistentID: PersistentID { PersistentID(chain: chain, key: key) }
+
+    /// Пометка позиции.
+    ///
+    /// Порядок объявления — порядок показа: сперва что это за порция,
+    /// потом где и когда её можно застать.
+    enum Flag: String, CaseIterable, Hashable, Sendable {
+        /// Детская порция.
+        case kids
+        /// Порция на компанию — этим и объясняются её калории.
+        case shareable
+        /// Есть не во всех точках сети.
+        case regional
+        /// На момент снятия данных блюдо было сезонным.
+        ///
+        /// Не «действует до»: срок из снимка 2018 года давно истёк. Это
+        /// признак того, что блюда, скорее всего, уже нет, — и лучший из
+        /// имеющихся там, где присутствие в меню никто не проверял.
+        case seasonal
+    }
 
     /// Вариант блюда: порция или исполнение.
     struct Variant: Hashable, Sendable {
@@ -157,6 +184,7 @@ nonisolated extension MenuItem {
             MenuItem.Variant(group: $0.group, label: $0.label, order: $0.order,
                              kind: MenuItem.Variant.Kind(pack: $0.kind), base: $0.base)
         }
+        self.flags = Set((packItem.flags ?? []).compactMap(Flag.init(rawValue:)))
         self.isOffMenu = packItem.offMenu ?? false
         self.source = packItem.source ?? defaults.source
         self.observed = packItem.observed ?? defaults.observed

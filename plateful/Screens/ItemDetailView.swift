@@ -77,15 +77,7 @@ struct ItemDetailView: View {
 
             label
 
-            if let serving = shown.serving {
-                Section {
-                    LabeledContent {
-                        Text(serving)
-                    } label: {
-                        Label("Serving", systemImage: Tokens.Symbol.serving)
-                    }
-                }
-            }
+            portion
 
             // Конкурентов бьют за молчаливо устаревшие данные. Мы говорим,
             // откуда цифра и на какой год, — это одно из трёх отличий.
@@ -241,6 +233,38 @@ struct ItemDetailView: View {
                 }
             } header: {
                 Text("Label")
+            }
+        }
+    }
+
+    /// Порция и пометки: детская, на компанию, не везде, сезонная.
+    ///
+    /// Одной секцией с размером порции, а не отдельной: всё это ответы на
+    /// «что мне принесут и застану ли я это», и разносить их по карточке
+    /// значит заставить читать её дважды.
+    @ViewBuilder
+    private var portion: some View {
+        let flags = shown.orderedFlags
+
+        if shown.serving != nil || !flags.isEmpty {
+            Section {
+                if let serving = shown.serving {
+                    LabeledContent {
+                        Text(serving)
+                    } label: {
+                        Label("Serving", systemImage: Tokens.Symbol.serving)
+                    }
+                }
+                ForEach(flags, id: \.self) { flag in
+                    Label(flag.title, systemImage: flag.symbol)
+                }
+            } footer: {
+                // Пояснение — только там, где сама формулировка может
+                // обмануть: «сезонное» в снимке 2018 года это не «успей
+                // до конца месяца», а «скорее всего уже не подают».
+                if let notice = flags.compactMap(\.notice).first {
+                    Text(notice)
+                }
             }
         }
     }
