@@ -23,8 +23,9 @@ struct MenuItemRow: View {
             }
         } label: {
             HStack(spacing: Tokens.Spacing.s) {
+                DishImage(item: item, size: 44)
                 if showsChain {
-                    ChainMarkView(chain: item.chain, size: 26)
+                    ChainMarkView(chain: item.chain, size: 22)
                 }
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
                     Text(item.name)

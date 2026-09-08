@@ -40,6 +40,10 @@ struct ProfileView: View {
                 }
 
                 Section {
+                    NavigationLink("Image credits") { PhotoCreditsView() }
+                }
+
+                Section {
                     LabeledContent("Account", value: "None")
                 } footer: {
                     Text("Plateful has no accounts. Your goals, history and saved orders stay on your devices and sync through iCloud.")
