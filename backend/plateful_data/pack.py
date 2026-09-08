@@ -7,7 +7,8 @@
                     sections: [name],            порядок разделов в меню
                     chains: [{name, itemCount}],
                     items:  [{chain, key, name, category, section, serving,
-                              kcal, protein, carbs, fat, image,
+                              kcal, protein, carbs, fat,
+                              sugar?, satFat?, sodium?, fiber?, image,
                               variant?: {group, label, order, kind, base},
                               source?, observed?, stale?}]}
 
@@ -91,6 +92,15 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             # можно было исправить публикацией пака, без релиза.
             "image": classify(item.name, item.category),
         }
+        # Остальная этикетка. Она есть почти везде — источник берёт её из
+        # того же обязательного раскрытия, что и калории (21 CFR 101.11), —
+        # но приходит не всегда, поэтому только там, где число есть.
+        for field, key in (("sugar", "sugar"), ("sat_fat", "satFat"),
+                           ("sodium", "sodium"), ("fiber", "fiber")):
+            value = getattr(item, field, None)
+            if value is not None:
+                row[key] = value
+
         if variant := groups.get((item.chain, item.ext_key)):
             group, label, order, kind, base = variant
             row["variant"] = {"group": group, "label": label,

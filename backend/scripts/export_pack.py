@@ -36,8 +36,9 @@ PAGE = 5000
 class Row:
     """Утиный двойник menustat.Item — pack.build читает только эти поля."""
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
-                 "kcal", "protein", "carbs", "fat", "source", "observed", "stale",
-                 "photo", "off_menu")
+                 "kcal", "protein", "carbs", "fat",
+                 "sugar", "sat_fat", "sodium", "fiber",
+                 "source", "observed", "stale", "photo", "off_menu")
 
     def __init__(self, item: dict, key: str):
         self.chain = item["chain"]
@@ -49,6 +50,12 @@ class Row:
         self.protein = float(item["protein"])
         self.carbs = float(item["carbs"])
         self.fat = float(item["fat"])
+        # Остальная этикетка: сахар, насыщенные жиры, натрий, клетчатка.
+        # Есть не у всех позиций, поэтому None проходит насквозь.
+        for field, key in (("sugar", "sugar"), ("sat_fat", "satFat"),
+                           ("sodium", "sodium"), ("fiber", "fiber")):
+            value = item.get(key)
+            setattr(self, field, float(value) if value is not None else None)
         # После override у позиции может быть свой источник и дата — пак их несёт.
         self.source = item.get("source")
         self.observed = item.get("observed")
@@ -141,7 +148,7 @@ def check_against_previous(pack: dict, version: int) -> list[str]:
     now = pack["items"]
     problems = []
     for field, label in (("photo", "снимков блюд"), ("offMenu", "снятых с меню"),
-                         ("variant", "вариантов")):
+                         ("variant", "вариантов"), ("sugar", "сахара")):
         before = sum(1 for i in was if i.get(field))
         after = sum(1 for i in now if i.get(field))
         if before and after < before * (1 - MAX_LOSS):

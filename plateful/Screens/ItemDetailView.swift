@@ -75,6 +75,8 @@ struct ItemDetailView: View {
                 Text(item.chain)
             }
 
+            label
+
             if let serving = shown.serving {
                 Section {
                     LabeledContent {
@@ -211,6 +213,32 @@ struct ItemDetailView: View {
         }
         .padding(.vertical, Tokens.Spacing.xs)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Остальная этикетка.
+    ///
+    /// Отдельным разделом, а не вперемешку с макросами: белки, углеводы и
+    /// жиры — то, ради чего открывают карточку, а сахар и натрий ищут
+    /// прицельно, когда есть повод. Строки, которых сеть не публикует,
+    /// не показываем вовсе — прочерк там читался бы как ноль.
+    @ViewBuilder
+    private var label: some View {
+        let rows: [(String, String)] = [
+            ("Sugars", shown.sugarText), ("Saturated fat", shown.satFatText),
+            ("Sodium", shown.sodiumText), ("Fiber", shown.fiberText),
+        ].compactMap { title, value in value.map { (title, $0) } }
+
+        if !rows.isEmpty {
+            Section {
+                ForEach(rows, id: \.0) { title, value in
+                    LabeledContent(title) {
+                        Text(value).monospacedDigit()
+                    }
+                }
+            } header: {
+                Text("Label")
+            }
+        }
     }
 
     private func macro(_ title: String, value: String, color: Color) -> some View {

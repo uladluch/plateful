@@ -81,6 +81,14 @@ nonisolated struct MenuPack: Decodable, Sendable {
         let carbs: Double
         let fat: Double
 
+        /// Остальная этикетка. Источник раскрывает её наравне с калориями,
+        /// поэтому она есть почти везде — но не везде, и «нет числа» это не
+        /// «ноль».
+        let sugar: Double?
+        let satFat: Double?
+        let sodium: Double?
+        let fiber: Double?
+
         /// Архетип блюда: по нему подбирается снимок. Необязательный —
         /// паки, выпущенные до появления картинок, его не несут.
         let image: String?

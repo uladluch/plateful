@@ -146,6 +146,22 @@ nonisolated extension MenuItem {
     }
 
     var proteinText: String { Self.grams(protein) }
+
+    var sugarText: String? { sugar.map(Self.grams) }
+    var satFatText: String? { satFat.map(Self.grams) }
+    var fiberText: String? { fiber.map(Self.grams) }
+
+    /// Натрий — в миллиграммах: так он стоит на этикетке, и так его
+    /// сравнивают с дневной нормой.
+    var sodiumText: String? {
+        sodium.map {
+            Measurement(value: $0, unit: UnitMass.milligrams)
+                .formatted(.measurement(
+                    width: .abbreviated,
+                    usage: .asProvided,
+                    numberFormatStyle: .number.precision(.fractionLength(0))))
+        }
+    }
     var carbsText: String { Self.grams(carbs) }
     var fatText: String { Self.grams(fat) }
 

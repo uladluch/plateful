@@ -348,3 +348,78 @@ struct VariantTests {
         #expect(text == "1–" + MenuItem.grams(2.9))
     }
 }
+
+/// Остальная этикетка: сахар, насыщенные жиры, натрий, клетчатка.
+///
+/// «Нет числа» значит, что сеть его не публикует, а не что там ноль.
+/// Показать ноль вместо пробела у сахара — прямой вред тому, кто его считает.
+@Suite("Этикетка")
+struct LabelNutrientTests {
+
+    private static func catalog(_ row: [String: Any]) -> MenuCatalog {
+        var item: [String: Any] = [
+            "chain": "McDonald's", "key": "big-mac", "name": "Big Mac",
+            "kcal": 540, "protein": 25, "carbs": 46, "fat": 28,
+        ]
+        item.merge(row) { _, new in new }
+        let json: [String: Any] = [
+            "format": 1, "version": 1,
+            "source": "menustat-2018", "observed": "2018-12-31", "stale": true,
+            "chains": [["name": "McDonald's", "itemCount": 1]],
+            "items": [item],
+        ]
+        return MenuCatalog(
+            pack: try! MenuPack.decode(from: JSONSerialization.data(withJSONObject: json)))
+    }
+
+    @Test("этикетка доезжает из пака")
+    func readsTheLabel() {
+        let item = Self.catalog(["sugar": 9, "satFat": 10,
+                                 "sodium": 950, "fiber": 3]).items[0]
+
+        #expect(item.sugarText == MenuItem.grams(9))
+        #expect(item.satFatText == MenuItem.grams(10))
+        #expect(item.fiberText == MenuItem.grams(3))
+    }
+
+    /// Натрий стоит на этикетке в миллиграммах, и сравнивают его с дневной
+    /// нормой в них же. Показать «0.95 g» — заставить считать в уме.
+    @Test("натрий показывается в миллиграммах")
+    func sodiumInMilligrams() {
+        let item = Self.catalog(["sodium": 950]).items[0]
+
+        #expect(item.sodiumText?.contains("950") == true)
+        #expect(item.sodiumText?.contains("mg") == true)
+    }
+
+    @Test("отсутствие числа не превращается в ноль")
+    func missingIsNotZero() {
+        let item = Self.catalog([:]).items[0]
+
+        #expect(item.sugar == nil)
+        #expect(item.sugarText == nil)
+        #expect(item.sodiumText == nil)
+    }
+
+    /// Ноль — законное число: у диетической колы сахара действительно нет.
+    @Test("честный ноль показывается")
+    func zeroIsShown() {
+        let item = Self.catalog(["sugar": 0]).items[0]
+
+        #expect(item.sugarText == MenuItem.grams(0))
+    }
+
+    @Test("в паке из бандла сахар есть почти у всех")
+    func realSeedHasSugar() throws {
+        let url = try #require(
+            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
+        let catalog = MenuCatalog(pack: try MenuPack.decode(from: Data(contentsOf: url)))
+        let withSugar = catalog.items.count { $0.sugar != nil }
+
+        #expect(Double(withSugar) / Double(catalog.items.count) > 0.95)
+        let bigMac = try #require(
+            catalog.items(in: "McDonald's").first { $0.name == "Big Mac" })
+        #expect(bigMac.sugar == 9)
+        #expect(bigMac.sodium == 950)
+    }
+}

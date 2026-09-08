@@ -27,6 +27,16 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     let carbs: Double
     let fat: Double
 
+    /// Остальная этикетка: сахар, насыщенные жиры, натрий, клетчатка.
+    ///
+    /// Необязательные, и это не формальность: «нет числа» значит, что сеть
+    /// его не публикует, а не что там ноль. Показывать ноль вместо пробела
+    /// у сахара — прямой вред тому, кто его считает.
+    let sugar: Double?
+    let satFat: Double?
+    let sodium: Double?
+    let fiber: Double?
+
     /// Архетип блюда — имя изображения в каталоге ассетов.
     ///
     /// Не фотография конкретной позиции сети: снимок общий для всех
@@ -127,6 +137,10 @@ nonisolated extension MenuItem {
         self.protein = packItem.protein
         self.carbs = packItem.carbs
         self.fat = packItem.fat
+        self.sugar = packItem.sugar
+        self.satFat = packItem.satFat
+        self.sodium = packItem.sodium
+        self.fiber = packItem.fiber
         self.image = packItem.image
         self.photo = packItem.photo
         self.variant = packItem.variant.map {

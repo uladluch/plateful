@@ -42,7 +42,9 @@ OBSERVED = "2018-12-31"
 CHUNK = 2500
 
 COLUMNS = ("chain_id", "ext_key", "name", "category", "serving_text",
-           "kcal", "protein", "carbs", "fat", "source", "observed_at", "stale")
+           "kcal", "protein", "carbs", "fat",
+           "sugar", "sat_fat", "sodium", "fiber",
+           "source", "observed_at", "stale")
 
 
 def sql_literal(value, cast: str | None = None) -> str:
@@ -90,6 +92,10 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
                 sql_literal(i["protein"], cast("numeric")),
                 sql_literal(i["carbs"], cast("numeric")),
                 sql_literal(i["fat"], cast("numeric")),
+                sql_literal(i.get("sugar"), cast("numeric")),
+                sql_literal(i.get("satFat"), cast("numeric")),
+                sql_literal(i.get("sodium"), cast("numeric")),
+                sql_literal(i.get("fiber"), cast("numeric")),
             )) + ")")
 
         path = out_dir / f"{n:03d}-items.sql"
@@ -98,10 +104,11 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
             f"insert into items ({', '.join(COLUMNS)})\n"
             "select c.id, v.ext_key, v.name, v.category, v.serving_text,\n"
             "       v.kcal, v.protein, v.carbs, v.fat,\n"
+            "       v.sugar, v.sat_fat, v.sodium, v.fiber,\n"
             f"       '{SOURCE}', date '{OBSERVED}', true\n"
             "from (values\n" + ",\n".join(rows) + "\n"
             ") as v(chain_slug, ext_key, name, category, serving_text,"
-            " kcal, protein, carbs, fat)\n"
+            " kcal, protein, carbs, fat, sugar, sat_fat, sodium, fiber)\n"
             "join chains c on c.slug = v.chain_slug;\n", encoding="utf-8")
         written.append(path)
 
@@ -170,7 +177,9 @@ def main() -> int:
 
             with cur.copy(
                 """copy items (chain_id, ext_key, name, category, serving_text,
-                               kcal, protein, carbs, fat, source, observed_at, stale)
+                               kcal, protein, carbs, fat,
+                               sugar, sat_fat, sodium, fiber,
+                               source, observed_at, stale)
                    from stdin"""
             ) as copy:
                 for i in items:
@@ -178,6 +187,8 @@ def main() -> int:
                         chain_id[slugify(i["chain"])], i["key"], i["name"],
                         i.get("category"), i.get("serving"),
                         i["kcal"], i["protein"], i["carbs"], i["fat"],
+                        i.get("sugar"), i.get("satFat"),
+                        i.get("sodium"), i.get("fiber"),
                         SOURCE, OBSERVED, True,
                     ))
 
