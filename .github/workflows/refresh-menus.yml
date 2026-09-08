@@ -1,0 +1,56 @@
+name: refresh-menus
+
+# Раз в неделю: сверить меню сетей, добрать официальные снимки, выложить пак.
+# Ручной запуск оставлен для внеплановых обновлений.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Версия пака (пусто — только обновить базу, без публикации)"
+        required: false
+
+env:
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  SUPABASE_PROJECT_REF: tnlmtyhuuqpjwuhzximh
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: pip install -r backend/requirements.txt pillow
+      - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
+      # Сид нужен как справочник ключей позиций при сопоставлении.
+      - name: MenuStat raw из релиза
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download menustat-2018 -p menustat-2018.tab -D backend/data/raw
+      - run: python3 backend/scripts/build_seed.py
+
+      - name: Обновить сети
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            python3 backend/scripts/refresh_chain.py --all --publish "${{ inputs.version }}"
+          else
+            python3 backend/scripts/refresh_chain.py --all
+          fi
+
+      # Отчёт видно в логе запуска: сколько блюд снято и сколько снимков есть.
+      - name: Сводка
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, collections, pathlib
+          pack = json.loads(pathlib.Path("plateful/Resources/seed-pack.json").read_text())
+          print(f"позиций в сиде: {len(pack['items'])}")
+          PY
