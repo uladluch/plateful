@@ -41,6 +41,8 @@ _SCHEMA_NUTRIENTS = {
     "fatContent": "fat",
     "sugarContent": "sugar",
     "saturatedFatContent": "sat_fat",
+    "transFatContent": "trans_fat",
+    "cholesterolContent": "cholesterol",
     "sodiumContent": "sodium",
     "fiberContent": "fiber",
 }
@@ -54,19 +56,22 @@ _LOOSE_NUTRIENTS = {
     "fat": "fat", "totalfat": "fat",
     "sugar": "sugar", "sugars": "sugar", "totalsugars": "sugar",
     "saturatedfat": "sat_fat", "satfat": "sat_fat",
+    "transfat": "trans_fat", "transfattyacid": "trans_fat",
+    "cholesterol": "cholesterol",
     "sodium": "sodium",
     "fiber": "fiber", "dietaryfiber": "fiber",
 }
 
 NUTRIENTS = ("kcal", "protein", "carbs", "fat",
-             "sugar", "sat_fat", "sodium", "fiber")
+             "sugar", "sat_fat", "trans_fat", "cholesterol", "sodium", "fiber")
 
 # Потолки правдоподобия. Во вшитом JSON лежит всё состояние страницы, и
 # ключ «calories» там встречается не только у еды: разведка по Taco Bell
 # принесла блюдо на 6 700 205 ккал — это был чужой идентификатор, из
 # которого `to_number` выкусил цифры. Число вне диапазона — не число.
 _CEILINGS = {"kcal": 5000.0, "protein": 250.0, "carbs": 500.0, "fat": 400.0,
-             "sugar": 500.0, "sat_fat": 200.0, "sodium": 20000.0, "fiber": 200.0}
+             "sugar": 500.0, "sat_fat": 200.0, "trans_fat": 100.0,
+             "cholesterol": 5000.0, "sodium": 30000.0, "fiber": 200.0}
 
 # Одинокий «calories» посреди чужого JSON — почти наверняка совпадение.
 # У настоящего блока питания полей несколько.
@@ -95,6 +100,8 @@ class PageFacts:
     fat: float | None = None
     sugar: float | None = None
     sat_fat: float | None = None
+    trans_fat: float | None = None
+    cholesterol: float | None = None
     sodium: float | None = None
     fiber: float | None = None
 
@@ -258,7 +265,12 @@ def from_embedded_json(html: str) -> PageFacts:
 _META = re.compile(
     r'<meta[^>]+(?:property|name)="og:(title|image)"[^>]+content="([^"]*)"', re.I)
 # Хвост вроде «Nutrition and Ingredients | Chick-fil-A» — не часть названия.
-_TITLE_TAIL = re.compile(r"\s*[|–—-]\s*[^|]*$")
+#
+# Дефис считается разделителем только с пробелами по обе стороны. Без этого
+# «Chick-fil-A® Nuggets» превращалось в «Chick»: дефис внутри бренда ничем
+# не отличался от тире между названием и хвостом, а `sub` берёт самое левое
+# совпадение. Сеть с дефисом в названии — не редкость, а половина рынка.
+_TITLE_TAIL = re.compile(r"\s*\|\s*[^|]*$|\s+[–—-]\s+.*$")
 
 
 def from_open_graph(html: str, *, strip_tail: bool = True) -> PageFacts:

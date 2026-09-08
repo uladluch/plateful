@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
-import difflib
 import json
 import re
 import sys
@@ -26,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data.adapters import chick_fil_a
 from plateful_data.adapters.base import Fetcher, LiveItem
+from plateful_data.matching import MATCH_THRESHOLD, comparable, match_all, portion
 from plateful_data.slug import slugify
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,8 +34,6 @@ DATA = ROOT / "backend" / "data"
 
 ADAPTERS = {"chick-fil-a": chick_fil_a}
 
-# Ниже этого сходства имён считаем, что позиция не найдена.
-MATCH_THRESHOLD = 0.82
 # Расхождение меньше этого — округление сети, а не изменение рецептуры.
 NOISE_KCAL = 5.0
 NOISE_GRAMS = 1.0
@@ -46,77 +44,9 @@ NOISE_GRAMS = 1.0
 # сравнивать нечего — такие строки уходят человеку, а не в правки.
 SUSPICIOUS_SHARE = 0.30
 
-# Хвост со страниц сети: «… Nutrition and Ingredients».
-_PAGE_SUFFIX = re.compile(r"\s*nutrition and ingredients\s*$")
-_BRAND_WORDS = re.compile(r"\b(chick fil a|chickfila|mcdonalds)\b")
-
-# Размер и количество — не украшение названия, а другая позиция. «Milkshake»
-# и «Milkshake, Large» отличаются на сотни калорий, а по строке почти
-# совпадают, поэтому сравниваем их отдельно и строго.
-_SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}
-
-
-def normalized(name: str) -> str:
-    text = name.lower().replace("®", " ").replace("™", " ").replace("’", "'")
-    text = _PAGE_SUFFIX.sub("", text)
-    text = re.sub(r"[^a-z0-9 ]+", " ", text)
-    return " ".join(_BRAND_WORDS.sub(" ", text).split())
-
-
-def portion(name: str) -> frozenset[str]:
-    """Числа и слова размера из названия.
-
-    Совпадать обязаны точно: «4 Grilled Nuggets» и «8 Grilled Nuggets» —
-    разные блюда, и подменить одно другим значит выдумать расхождение.
-    """
-    words = normalized(name).split()
-    return frozenset(w for w in words if w.isdigit() or w in _SIZE_WORDS)
-
-
-def comparable(name: str) -> str:
-    """Имя без бренда, размеров и порядка слов — для нестрогого сравнения."""
-    words = [w for w in normalized(name).split()
-             if not w.isdigit() and w not in _SIZE_WORDS]
-    return " ".join(sorted(words))
-
-
 def load_catalog(chain: str) -> dict[str, dict]:
     pack = json.loads(PACK.read_text(encoding="utf-8"))
     return {item["key"]: item for item in pack["items"] if item["chain"] == chain}
-
-
-def match_all(live: list[LiveItem],
-              catalog: dict[str, dict]) -> tuple[dict[str, dict], dict[str, float]]:
-    """Сопоставляет позиции один к одному.
-
-    Раньше несколько живых позиций могли указать на одну запись каталога, и
-    отчёт показывал её дважды с разными числами. Теперь запись занимается
-    первым же самым похожим кандидатом, остальные остаются несопоставленными —
-    это честнее, чем выдать выдуманную пару за расхождение.
-    """
-    pairs: list[tuple[float, str, str]] = []
-    for item in live:
-        target, size = comparable(item.name), portion(item.name)
-        for key, stored in catalog.items():
-            if portion(stored["name"]) != size:
-                continue
-            ratio = difflib.SequenceMatcher(None, target, comparable(stored["name"])).ratio()
-            if ratio >= MATCH_THRESHOLD:
-                pairs.append((ratio, item.ext_key, key))
-
-    pairs.sort(reverse=True)
-    matched: dict[str, dict] = {}
-    best_score: dict[str, float] = {}
-    used: set[str] = set()
-
-    for ratio, live_key, catalog_key in pairs:
-        best_score[live_key] = max(best_score.get(live_key, 0.0), ratio)
-        if live_key in matched or catalog_key in used:
-            continue
-        matched[live_key] = catalog[catalog_key]
-        used.add(catalog_key)
-
-    return matched, best_score
 
 
 def differences(live: LiveItem, stored: dict) -> dict[str, tuple[float, float]]:

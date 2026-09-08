@@ -75,7 +75,10 @@ _SUGAR_ALCOHOL_HINTS = (
 
 
 def _has_sugar_alcohols(item) -> bool:
-    haystack = f"{item.name} {item.category or ''}".lower()
+    # `category` есть у позиции из источника, но не у снятой со страницы
+    # сети: там её неоткуда взять. Проверка обязана работать на обеих —
+    # она стоит и перед сборкой пака, и перед записью кроула.
+    haystack = f"{item.name} {getattr(item, 'category', None) or ''}".lower()
     return any(hint in haystack for hint in _SUGAR_ALCOHOL_HINTS)
 
 

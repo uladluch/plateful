@@ -12,8 +12,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plateful_data.adapters.site import (MIN_NUTRIENTS_PER_BLOCK, item_links,
-                                         read_page)
+from plateful_data.adapters.site import (MIN_NUTRIENTS_PER_BLOCK, from_open_graph,
+                                         item_links, read_page)
 
 
 class JsonLdTests(unittest.TestCase):
@@ -126,6 +126,27 @@ class LinkTests(unittest.TestCase):
         html = '<a href="/menu/a">1</a><a href="/menu/a#nutrition">2</a>'
         self.assertEqual(item_links(html, "https://www.example.com/menu"),
                          ["https://www.example.com/menu/a"])
+
+
+
+class TitleTail(unittest.TestCase):
+    """Хвост заголовка страницы — не часть названия блюда, а дефис в бренде — часть."""
+
+    def test_хвост_после_палки_отрезается(self):
+        facts = from_open_graph(
+            '<meta property="og:title" content="Mac &amp; Cheese | Chick-fil-A">')
+        self.assertEqual(facts.name, "Mac & Cheese")
+
+    def test_дефис_внутри_бренда_не_разделитель(self):
+        """«Chick-fil-A® Nuggets» превращалось в «Chick»."""
+        facts = from_open_graph(
+            '<meta property="og:title" content="Chick-fil-A Nuggets">')
+        self.assertEqual(facts.name, "Chick-fil-A Nuggets")
+
+    def test_тире_с_пробелами_отрезается(self):
+        facts = from_open_graph(
+            '<meta property="og:title" content="Waffle Fries - Chick-fil-A">')
+        self.assertEqual(facts.name, "Waffle Fries")
 
 
 if __name__ == "__main__":
