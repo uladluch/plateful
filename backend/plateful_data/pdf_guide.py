@@ -327,6 +327,126 @@ def without_furniture(pages: list[str]) -> str:
         for page in pages)
 
 
+@dataclass(frozen=True)
+class Line:
+    """Строка страницы с координатами: где она стоит и чем начинается."""
+    top: float
+    x0: float
+    text: str
+
+
+#: Граница между колонкой названий и колонкой чисел, в долях ширины
+#: страницы. Слева имя, справа таблица.
+VALUES_COLUMN = 0.45
+
+#: На сколько пунктов имя может отстоять от своей строки чисел. Больше —
+#: это заголовок раздела, а не имя: по виду они неразличимы (оба короткие,
+#: с заглавной, без чисел), а по месту — вполне. Имя жмётся к своей
+#: строке, заголовок стоит на отдалении.
+NAME_PROXIMITY = 15.0
+
+
+def parse_positioned(pages: list[list[Line]], layout: Layout) -> list[GuideItem]:
+    """Разбор по координатам — для гидов, где имя не на одной строке с числами.
+
+    У Panera название занимает две строки левой колонки, а числа стоят
+    правее и вертикально между ними:
+
+        y=171  Catering Asian Sesame Chicken Salad -
+        y=180                         1 Container 1260 640 71 9 …
+        y=186  serves 5
+
+    Построчное чтение здесь бессильно: оно видит строку без чисел, строку
+    без имени и ещё одну без чисел. По координатам же правило простое —
+    **строка имени принадлежит ближайшей по вертикали строке чисел**. На
+    этой странице оно разводит всё без единой ошибки, а середины между
+    двумя блюдами не бывает: расстояние до своей строки чисел втрое меньше.
+    """
+    items: list[GuideItem] = []
+
+    for lines in pages:
+        if not lines:
+            continue
+        right = max(line.x0 for line in lines) or 1.0
+        boundary = right * VALUES_COLUMN
+
+        values_rows: list[tuple[Line, list[str]]] = []
+        name_lines: list[Line] = []
+        whole_rows: list[tuple[Line, str, list[str]]] = []
+        category: str | None = None
+        section: str | None = None
+        headings: list[tuple[float, str | None, str | None]] = []
+
+        for line in sorted(lines, key=lambda l: l.top):
+            split = _split(line.text, layout.count)
+            if split and line.x0 < boundary:
+                # Имя и числа на одной строке — геометрия тут не нужна и
+                # только помешает: такая строка сама себе имя.
+                whole_rows.append((line, split[0], split[1]))
+                continue
+            if split:
+                values_rows.append((line, split[1]))
+            elif _PAGE_MARKER.match(line.text.strip()):
+                continue
+            else:
+                # Заголовок или имя — решится ниже по расстоянию до чисел.
+                name_lines.append(line)
+
+        # Что из левой колонки — имя, а что заголовок. Имя жмётся к своей
+        # строке чисел; заголовок стоит на отдалении и достаётся категории.
+        def distance(line: Line) -> float:
+            return min((abs(v[0].top - line.top) for v in values_rows),
+                       default=float("inf"))
+
+        for line in sorted(name_lines, key=lambda l: l.top):
+            if distance(line) <= NAME_PROXIMITY:
+                continue
+            if outer := _outer(line.text):
+                section = outer
+                headings.append((line.top, section, category))
+            elif heading := _heading(line.text):
+                category = heading
+                headings.append((line.top, section, category))
+        name_lines = [line for line in name_lines
+                      if distance(line) <= NAME_PROXIMITY]
+
+        def emit(row: Line, name: str, cells: list[str]) -> None:
+            name = re.sub(r"\s*[-–—]\s*$", "", name.strip()).strip()
+            if not name:
+                return
+            serving = None
+            if layout.serving_in_name and (tail := _SERVING_TAIL.search(name)):
+                serving, name = tail.group(1), name[:tail.start()].strip() or name
+            here = [h for h in headings if h[0] < row.top]
+            items.append(GuideItem(
+                name=name,
+                values={field: _number(cell)
+                        for field, cell in zip(layout.columns, cells)
+                        if field is not None},
+                serving=serving,
+                section=here[-1][1] if here else None,
+                category=here[-1][2] if here else None))
+
+        for row, name, cells in whole_rows:
+            emit(row, name, cells)
+
+        for row, cells in values_rows:
+            # Своё имя — из строк, для которых эта строка чисел ближайшая.
+            mine = sorted(
+                (line for line in name_lines
+                 if min(values_rows, key=lambda v: abs(v[0].top - line.top))[0] is row),
+                key=lambda l: l.top)
+            # Порция у таких гидов стоит в начале строки чисел, а не в
+            # хвосте имени: «1 Container 1260 640 …».
+            head = _split(row.text, layout.count)
+            if layout.serving_in_name and head and head[0]:
+                emit(row, " ".join(l.text for l in mine) + " " + head[0], cells)
+            else:
+                emit(row, " ".join(l.text for l in mine), cells)
+
+    return items
+
+
 def dedupe(items: list[GuideItem]) -> list[GuideItem]:
     """Снимает строки, повторённые слово в слово.
 
@@ -400,11 +520,31 @@ def qualify(items: list[GuideItem]) -> list[GuideItem]:
     return qualified
 
 
-def read(text: str, *, layout: Layout) -> list[GuideItem]:
-    """Текст гида → позиции. Бросает `WrongGuide`, если гид не тот."""
-    items = parse(text, layout)
+def _checked(items: list[GuideItem]) -> list[GuideItem]:
     if not items:
         raise WrongGuide("ни одной строки блюда — раскладка или файл не те")
     check_american(items)
     check_layout(items)
     return qualify(dedupe(items))
+
+
+def read(text: str, *, layout: Layout) -> list[GuideItem]:
+    """Текст гида → позиции. Бросает `WrongGuide`, если гид не тот."""
+    return _checked(parse(text, layout))
+
+
+def read_pages(pages: list[list[Line]], *, layout: Layout) -> list[GuideItem]:
+    """То же, но по координатам — для гидов, где строка разорвана.
+
+    Колонтитулы снимаются здесь же: по координатам они видны так же плохо,
+    как в тексте, и точно так же становились бы именами блюд.
+    """
+    seen: Counter = Counter()
+    for page in pages:
+        seen.update({line.text for line in page})
+    if len(pages) >= MIN_PAGES_FOR_FURNITURE:
+        threshold = max(2, int(len(pages) * FURNITURE_SHARE))
+        furniture = {text for text, n in seen.items() if n >= threshold}
+        pages = [[line for line in page if line.text not in furniture]
+                 for page in pages]
+    return _checked(parse_positioned(pages, layout))

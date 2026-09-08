@@ -255,3 +255,55 @@ class PageFurniture(unittest.TestCase):
             pdf_guide.PANERA)
         self.assertEqual(items[0].category, "Creamy soups")
         self.assertEqual(items[0].name, "Broccoli")
+
+
+class Positioned(unittest.TestCase):
+    """Разбор по координатам — для гидов, где строка разорвана.
+
+    У Panera имя занимает две строки левой колонки, а числа стоят правее и
+    вертикально между ними. Построчное чтение видит строку без чисел,
+    строку без имени и ещё одну без чисел; по координатам же правило
+    простое — строка имени принадлежит ближайшей по вертикали строке чисел.
+    """
+
+    def _page(self) -> list[pdf_guide.Line]:
+        L = pdf_guide.Line
+        return [
+            L(150, 22, "SALADS"),
+            L(171, 22, "Catering Asian Sesame Chicken Salad -"),
+            L(180, 253, "1 Container 1260 640 71 9 0 175 4540 86 17 23 74 0"),
+            L(186, 22, "serves 5"),
+            L(198, 22, "Catering Asian Sesame Chicken Salad -"),
+            L(207, 253, "1 Container 1050 470 52 8 0 175 4540 79 13 21 67 0"),
+            L(213, 22, "serves 5 (no nuts)"),
+        ]
+
+    def test_имя_собирается_из_строк_вокруг_чисел(self):
+        items = pdf_guide.parse_positioned([self._page()], pdf_guide.PANERA)
+        names = sorted(i.name for i in items)
+
+        # Дефис — часть стиля Panera: в цельной строке она пишет так же,
+        # «Catering Asian Sesame Salad - serves 10».
+        self.assertEqual(names, [
+            "Catering Asian Sesame Chicken Salad - serves 5",
+            "Catering Asian Sesame Chicken Salad - serves 5 (no nuts)",
+        ])
+
+    def test_числа_достаются_своему_блюду(self):
+        items = pdf_guide.parse_positioned([self._page()], pdf_guide.PANERA)
+        plain = next(i for i in items if "no nuts" not in i.name)
+
+        self.assertEqual(plain.values["kcal"], 1260)
+        self.assertEqual(plain.serving, "1 Container")
+
+    def test_строка_с_именем_и_числами_не_идёт_в_геометрию(self):
+        """Обычная строка сама себе имя, и соседи ей не нужны."""
+        L = pdf_guide.Line
+        page = [L(150, 22, "SALADS"),
+                L(171, 22, "Asiago Cheese Bagel 1 Bagel 350 80 9 4 0 20 500 60 2 6 12 0"),
+                L(180, 22, "Blueberry Bagel 1 Bagel 290 30 3 1 0 0 450 59 2 12 10 0")]
+        items = pdf_guide.parse_positioned([page], pdf_guide.PANERA)
+
+        self.assertEqual([i.name for i in items],
+                         ["Asiago Cheese Bagel", "Blueberry Bagel"])
+        self.assertEqual([i.values["kcal"] for i in items], [350, 290])
