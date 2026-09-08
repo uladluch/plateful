@@ -44,7 +44,7 @@ CHUNK = 2500
 COLUMNS = ("chain_id", "ext_key", "name", "category", "serving_text",
            "kcal", "protein", "carbs", "fat",
            "sugar", "sat_fat", "trans_fat", "cholesterol", "sodium", "fiber",
-           "source", "observed_at", "stale")
+           "flags", "source", "observed_at", "stale")
 
 
 def sql_literal(value, cast: str | None = None) -> str:
@@ -55,6 +55,14 @@ def sql_literal(value, cast: str | None = None) -> str:
     else:
         text = "'" + str(value).replace("'", "''") + "'"
     return f"{text}::{cast}" if cast else text
+
+
+def sql_array(values, cast: str | None = None) -> str:
+    """Литерал text[]. Пустой массив — не NULL: колонка объявлена not null."""
+    inner = ",".join('"' + str(v).replace('\\', '\\\\').replace('"', '\\"') + '"'
+                     for v in values or ())
+    literal = "'{" + inner + "}'"
+    return f"{literal}::{cast}" if cast else literal
 
 
 def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
@@ -98,6 +106,7 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
                 sql_literal(i.get("cholesterol"), cast("numeric")),
                 sql_literal(i.get("sodium"), cast("numeric")),
                 sql_literal(i.get("fiber"), cast("numeric")),
+                sql_array(i.get("flags"), cast("text[]")),
             )) + ")")
 
         path = out_dir / f"{n:03d}-items.sql"
@@ -107,12 +116,12 @@ def emit_sql(items: list[dict], out_dir: Path) -> list[Path]:
             "select c.id, v.ext_key, v.name, v.category, v.serving_text,\n"
             "       v.kcal, v.protein, v.carbs, v.fat,\n"
             "       v.sugar, v.sat_fat, v.trans_fat, v.cholesterol,"
-            " v.sodium, v.fiber,\n"
+            " v.sodium, v.fiber, v.flags,\n"
             f"       '{SOURCE}', date '{OBSERVED}', true\n"
             "from (values\n" + ",\n".join(rows) + "\n"
             ") as v(chain_slug, ext_key, name, category, serving_text,"
             " kcal, protein, carbs, fat, sugar, sat_fat, trans_fat,"
-            " cholesterol, sodium, fiber)\n"
+            " cholesterol, sodium, fiber, flags)\n"
             "join chains c on c.slug = v.chain_slug;\n", encoding="utf-8")
         written.append(path)
 
@@ -183,7 +192,7 @@ def main() -> int:
                 """copy items (chain_id, ext_key, name, category, serving_text,
                                kcal, protein, carbs, fat,
                                sugar, sat_fat, trans_fat, cholesterol,
-                               sodium, fiber,
+                               sodium, fiber, flags,
                                source, observed_at, stale)
                    from stdin"""
             ) as copy:
@@ -195,6 +204,7 @@ def main() -> int:
                         i.get("sugar"), i.get("satFat"),
                         i.get("transFat"), i.get("cholesterol"),
                         i.get("sodium"), i.get("fiber"),
+                        i.get("flags") or [],
                         SOURCE, OBSERVED, True,
                     ))
 

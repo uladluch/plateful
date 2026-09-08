@@ -44,5 +44,11 @@ enum Tokens {
         static let source = "building.columns"
         static let serving = "fork.knife"
         static let failure = "exclamationmark.triangle"
+
+        /// Пометки позиции.
+        static let kidsMeal = "figure.and.child.holdinghands"
+        static let shareable = "person.2"
+        static let regional = "mappin.and.ellipse"
+        static let seasonal = "calendar"
     }
 }

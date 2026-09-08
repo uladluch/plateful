@@ -9,7 +9,7 @@
                     items:  [{chain, key, name, category, section, serving,
                               kcal, protein, carbs, fat,
                               sugar?, satFat?, transFat?, cholesterol?,
-                              sodium?, fiber?, image,
+                              sodium?, fiber?, flags?, image,
                               variant?: {group, label, order, kind, base},
                               source?, observed?, stale?}]}
 
@@ -103,6 +103,11 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             value = getattr(item, field, None)
             if value is not None:
                 row[key] = value
+
+        # Пометки позиции: детская порция, на компанию, не во всех точках,
+        # сезонное. Едут только там, где есть, — у 86% блюд их нет вовсе.
+        if flags := tuple(getattr(item, "flags", ()) or ()):
+            row["flags"] = list(flags)
 
         if variant := groups.get((item.chain, item.ext_key)):
             group, label, order, kind, base = variant

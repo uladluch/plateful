@@ -41,6 +41,23 @@ USER_AGENT = "plateful-data/1.0 (+https://github.com/uladluch/plateful)"
 # распухает дублями.
 COMBO_BUILD_MARKER = "Accompanying Item"
 
+# Пометки позиции: источник держит их нулём и единицей у всех 25 836 строк,
+# то есть про каждое блюдо известно точно, а не «может быть».
+#
+# `Limited_Time_Offer` едет под именем `seasonal`, а не «ограниченное
+# предложение»: в снимке 2018 года это обещало бы окно, которое давно
+# закрылось. Честное чтение — «блюдо было сезонным, когда снимали данные»,
+# и заодно лучший из имеющихся признаков, что сегодня его уже нет.
+#
+# `Combo_Meal` не берём: 166 позиций, и у большинства слово «Combo» и так
+# стоит в названии. Термин, который ничего не добавляет читателю, — шум.
+FLAG_COLUMNS = (
+    ("Kids_Meal", "kids"),
+    ("Shareable", "shareable"),
+    ("Regional", "regional"),
+    ("Limited_Time_Offer", "seasonal"),
+)
+
 _WS = re.compile(r"\s+")
 
 
@@ -61,6 +78,7 @@ class Item:
     sodium: float | None
     sugar: float | None
     fiber: float | None
+    flags: tuple[str, ...] = ()
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -109,6 +127,12 @@ def _ext_key(name: str) -> str:
     к кроулу: только нормализованное имя, без регистра и пунктуации.
     """
     return slugify(name)
+
+
+def _flags(row: dict) -> tuple[str, ...]:
+    """Порядок фиксирован объявлением: пак должен собираться байт-в-байт."""
+    return tuple(name for column, name in FLAG_COLUMNS
+                 if row.get(column, "").strip() == "1")
 
 
 def _serving(row: dict) -> str | None:
@@ -169,6 +193,7 @@ def parse(raw: str) -> list[Item]:
             sodium=_num(row.get("Sodium")),
             sugar=_num(row.get("Sugar")),
             fiber=_num(row.get("Dietary_Fiber")),
+            flags=_flags(row),
         )
 
     return sorted(seen.values(), key=lambda i: (i.chain, i.name))

@@ -38,7 +38,7 @@ class Row:
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
                  "kcal", "protein", "carbs", "fat",
                  "sugar", "sat_fat", "trans_fat", "cholesterol",
-                 "sodium", "fiber",
+                 "sodium", "fiber", "flags",
                  "source", "observed", "stale", "photo", "off_menu")
 
     def __init__(self, item: dict, key: str):
@@ -59,6 +59,9 @@ class Row:
                            ("sodium", "sodium"), ("fiber", "fiber")):
             value = item.get(key)
             setattr(self, field, float(value) if value is not None else None)
+        # Пометки позиции: детская порция, на компанию, не во всех точках,
+        # сезонное. Термины закрыты словарём в базе.
+        self.flags = tuple(item.get("flags") or ())
         # После override у позиции может быть свой источник и дата — пак их несёт.
         self.source = item.get("source")
         self.observed = item.get("observed")
