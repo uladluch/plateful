@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Снимок блюда по его архетипу.
+/// Снимок блюда, а где его нет — нейтральная заглушка.
 ///
-/// Пока набор изображений не заведён, вью не рисует ничего — пустых серых
-/// прямоугольников в списке быть не должно. Как только ассеты появятся,
-/// они подхватятся сами: имя ассета совпадает с архетипом из пака.
+/// Показываем только настоящие снимки: официальную съёмку сети или
+/// свободно лицензированный кадр именно этого блюда. Общих картинок
+/// «примерно такой бургер» больше нет — они обесценивали и те снимки,
+/// которые настоящие.
 struct DishImage: View {
 
     let item: MenuItem
@@ -12,20 +13,9 @@ struct DishImage: View {
     /// Во всю ширину и без скруглений — для шапки карточки блюда.
     var isHero: Bool = false
 
-    /// Префикс имён в каталоге ассетов: `dish-cheeseburger`, `dish-fries`…
-    static let assetPrefix = "dish-"
-
-    private var assetName: String? {
-        guard let image = item.image else { return nil }
-        let name = Self.assetPrefix + image
-        return UIImage(named: name) == nil ? nil : name
-    }
-
     var body: some View {
         Group {
             if let photo = item.photo {
-                // Пока снимок блюда качается — показываем картинку по
-                // архетипу, а не пустоту: строка списка не должна прыгать.
                 AsyncImage(url: photo.url) { image in
                     if photo.fitsInside {
                         image.resizable()
@@ -36,10 +26,12 @@ struct DishImage: View {
                         image.resizable().scaledToFill()
                     }
                 } placeholder: {
-                    archetypeImage
+                    // Пока снимок качается — та же заглушка, что и без него:
+                    // строка списка не должна прыгать.
+                    DishPlaceholderView(archetype: item.image)
                 }
             } else {
-                archetypeImage
+                DishPlaceholderView(archetype: item.image)
             }
         }
         .modifier(Shape(size: size, isHero: isHero))
@@ -62,15 +54,6 @@ struct DishImage: View {
                     .frame(width: size, height: size)
                     .clipShape(.rect(cornerRadius: Tokens.Radius.image))
             }
-        }
-    }
-
-    @ViewBuilder
-    private var archetypeImage: some View {
-        if let assetName {
-            Image(assetName).resizable().scaledToFill()
-        } else {
-            Color(.secondarySystemFill)
         }
     }
 }

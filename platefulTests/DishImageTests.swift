@@ -4,49 +4,33 @@ import UIKit
 
 @testable import plateful
 
-@Suite("Фотографии блюд")
-struct DishImageTests {
+@Suite("Заглушка блюда")
+struct DishPlaceholderTests {
 
-    /// Каждый архетип из пака обязан иметь снимок: иначе часть каталога
-    /// молча останется без картинок, и заметить это будет некому.
-    @Test("у каждого архетипа сида есть фотография в бандле")
-    func everyArchetypeHasPhoto() throws {
-        let url = try #require(
-            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
-        let pack = try MenuPack.decode(from: Data(contentsOf: url))
-        let archetypes = Set(pack.items.compactMap(\.image))
-
-        let missing = archetypes.filter {
-            UIImage(named: DishImage.assetPrefix + $0) == nil
-        }
-        #expect(missing.isEmpty, "нет снимков для: \(missing.sorted())")
-    }
-
-    /// Лицензии CC BY и BY-SA требуют указать автора — без этого файла
-    /// экран атрибуции пуст, а условие лицензии нарушено.
-    @Test("атрибуция лежит в бандле и не пуста")
-    func creditsAreBundled() throws {
-        let url = try #require(
-            Bundle.main.url(forResource: "photo-credits", withExtension: "json"),
-            "нет photo-credits.json")
-        let credits = try JSONDecoder().decode(
-            [PhotoCreditsView.Credit].self, from: Data(contentsOf: url))
-
-        #expect(credits.count > 20)
-        for credit in credits {
-            #expect(credit.license?.isEmpty == false, "\(credit.subject) без лицензии")
+    /// Символ должен существовать в системе: несуществующее имя рисуется
+    /// пустотой, и строка выглядит сломанной.
+    @Test("все символы заглушек есть в SF Symbols")
+    func symbolsExist() {
+        let archetypes = ["coffee", "soda", "water", "wine", "cake", "salad",
+                          "seafood", "chips", "fries", "cheeseburger", nil,
+                          "неизвестный-архетип"]
+        for archetype in archetypes {
+            let name = DishPlaceholder.symbol(for: archetype)
+            #expect(UIImage(systemName: name) != nil, "нет символа \(name)")
         }
     }
 
-    /// Снимков ровно столько, сколько архетипов: лишние файлы означают,
-    /// что классификатор поменялся, а картинки — нет.
-    @Test("нет снимков-сирот без архетипа")
-    func noOrphanPhotos() throws {
-        let url = try #require(
-            Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"))
-        let pack = try MenuPack.decode(from: Data(contentsOf: url))
-        let archetypes = Set(pack.items.compactMap(\.image))
+    @Test("напитки, десерты и еда различаются на вид")
+    func symbolsAreDistinct() {
+        #expect(DishPlaceholder.symbol(for: "coffee") != DishPlaceholder.symbol(for: "cake"))
+        #expect(DishPlaceholder.symbol(for: "salad") != DishPlaceholder.symbol(for: "fries"))
+    }
 
-        #expect(archetypes.count >= 50, "архетипов подозрительно мало")
+    /// Неизвестный архетип не должен ронять экран: приложение переживает
+    /// пак, выпущенный с новыми типами блюд.
+    @Test("неизвестный архетип даёт общий символ")
+    func unknownFallsBack() {
+        #expect(DishPlaceholder.symbol(for: "чего-то-новое") == "fork.knife")
+        #expect(DishPlaceholder.symbol(for: nil) == "fork.knife")
     }
 }

@@ -44,7 +44,7 @@ struct PhotoCreditsView: View {
         }
         .navigationTitle("Image credits")
         .navigationBarTitleDisplayMode(.inline)
-        .task { credits = Self.load() + Self.fromCatalog(menu.catalog) }
+        .task { credits = Self.fromCatalog(menu.catalog) }
     }
 
     @ViewBuilder
@@ -82,13 +82,6 @@ struct PhotoCreditsView: View {
         }
     }
 
-    private static func load() -> [Credit] {
-        guard let url = Bundle.main.url(forResource: "photo-credits", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let credits = try? JSONDecoder().decode([Credit].self, from: data)
-        else { return [] }
-        return credits
-    }
 }
 
 #Preview {
