@@ -60,6 +60,19 @@ class WrongGuide(Exception):
     """Гид не тот: другая страна или другая раскладка колонок."""
 
 
+#: Порция текстом в хвосте названия: «Asiago Cheese Bagel 1 Bagel»,
+#: «Sweet Cream Cold Foam 3 swirls», «Chicken Salad 1/2 Salad».
+_SERVING_TAIL = re.compile(
+    r"\s+(\d+(?:/\d+)?(?:\.\d+)?\s+[A-Za-z][\w.'’-]*(?:\s+[A-Za-z][\w.'’-]*){0,2})$")
+
+#: Вся «строка блюда» — одна порция: «1 Bowl», «1/2 Stuffer». Значит имя
+#: перенесено на предыдущую строку, и там его и надо брать. Пока этого не
+#: делали, у Panera девять пар блюд оказывались неразличимы: половинка
+#: боула и целый назывались «1/2 Bowl» и «1 Bowl» вместо своих имён.
+_SERVING_ONLY = re.compile(
+    r"^\d+(?:/\d+)?(?:\.\d+)?\s+[A-Za-z][\w.'’-]*(?:\s+[A-Za-z][\w.'’-]*){0,2}$")
+
+
 @dataclass(frozen=True)
 class Layout:
     """Порядок числовых колонок в гиде одной сети.
@@ -71,12 +84,19 @@ class Layout:
     """
     columns: tuple[str | None, ...]
     count: int
+    #: Порция стоит текстом в хвосте названия, а не отдельной колонкой.
+    #: У Subway это число граммов среди чисел, у Panera — «1 Bagel» прямо
+    #: в имени, и без отделения половинка салата и целый салат становятся
+    #: одной позицией.
+    serving_in_name: bool = False
 
 
 @dataclass(frozen=True)
 class GuideItem:
     name: str
     values: dict[str, float | None]
+    #: Порция словами, если гид пишет её текстом: «1 Bagel», «3 swirls».
+    serving: str | None = None
     #: Заголовок раздела, под которым позиция стоит в гиде. Единственное
     #: место, откуда у новой позиции может взяться категория: с сайта её
     #: не возьмёшь, а без неё блюдо не ложится ни в один раздел меню.
@@ -94,7 +114,14 @@ SUBWAY = Layout(
     count=16,
 )
 
-LAYOUTS = {"subway": SUBWAY}
+#: Panera Bread® Nutrition Guide. Порция стоит текстом в названии, а среди
+#: чисел вместо неё — калории из жира, которые нам не нужны.
+PANERA = Layout(
+    columns=("kcal", None, "fat", "sat_fat", "trans_fat", "cholesterol",
+             "sodium", "carbs", "fiber", "sugar", "protein", None),
+    count=12, serving_in_name=True)
+
+LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA}
 
 
 def _number(token: str) -> float | None:
@@ -175,7 +202,12 @@ def _heading(line: str) -> str | None:
 def parse(text: str, layout: Layout) -> list[GuideItem]:
     items: list[GuideItem] = []
     category: str | None = None
+    previous_category: str | None = None
     section: str | None = None
+    #: Последняя строка не-позиция. Она либо заголовок раздела, либо
+    #: перенесённое имя блюда — что именно, становится ясно только по
+    #: следующей строке.
+    pending: str | None = None
 
     for line in text.splitlines():
         if not line.strip():
@@ -184,16 +216,28 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
         if not split:
             # Не позиция. Заголовок капсом меняет формат подачи, обычный —
             # группу блюд внутри него.
+            pending = line.strip()
             if outer := _outer(line):
                 section = outer
             elif heading := _heading(line):
-                category = heading
+                previous_category, category = category, heading
             continue
         name, cells = split
+        serving = None
+        if layout.serving_in_name and (tail := _SERVING_TAIL.search(name)):
+            serving = tail.group(1)
+            name = name[:tail.start()].strip() or name
+        elif layout.serving_in_name and pending and _SERVING_ONLY.match(name):
+            # Имя перенесено на предыдущую строку, а здесь осталась порция.
+            serving, name = name, pending
+            # Эта строка была именем, а не заголовком группы: возвращаем ту,
+            # что стояла до неё.
+            if category == pending:
+                category = previous_category
         values = {field: _number(cell)
                   for field, cell in zip(layout.columns, cells)
                   if field is not None}
-        items.append(GuideItem(name=name, values=values,
+        items.append(GuideItem(name=name, values=values, serving=serving,
                                category=category, section=section))
     return items
 
@@ -239,6 +283,26 @@ def check_layout(items: list[GuideItem]) -> None:
             f"({len(drift)} строк) — колонки прочитаны не в том порядке")
 
 
+def dedupe(items: list[GuideItem]) -> list[GuideItem]:
+    """Снимает строки, повторённые слово в слово.
+
+    У Panera страница 30 печатает часть таблицы дважды: одинаковые имя,
+    раздел, порция и все числа. Такой повтор не несёт информации, и снять
+    его безопасно — в отличие от повтора с разными числами, который значит
+    два разных блюда и разбирается уточнением имени.
+    """
+    seen: set[tuple] = set()
+    unique: list[GuideItem] = []
+    for item in items:
+        mark = (item.name, item.section, item.category, item.serving,
+                tuple(sorted(item.values.items())))
+        if mark in seen:
+            continue
+        seen.add(mark)
+        unique.append(item)
+    return unique
+
+
 def qualify(items: list[GuideItem]) -> list[GuideItem]:
     """Уточняет имена, которые без раздела неразличимы.
 
@@ -270,6 +334,16 @@ def qualify(items: list[GuideItem]) -> list[GuideItem]:
         for item in qualified
     ]
 
+    # Раздела и группы не хватило — уточняем порцией. У Panera половинка
+    # салата и целый салат стоят в одной группе и различаются только ею.
+    counts = Counter(slugify(item.name) for item in qualified)
+    once = {key for key, n in counts.items() if n == 1}
+    qualified = [
+        item if slugify(item.name) in once or not item.serving
+        else replace(item, name=f"{item.name}, {item.serving}")
+        for item in qualified
+    ]
+
     duplicated = [key for key, n in Counter(slugify(i.name)
                                             for i in qualified).items() if n > 1]
     if duplicated:
@@ -289,4 +363,4 @@ def read(text: str, *, layout: Layout) -> list[GuideItem]:
         raise WrongGuide("ни одной строки блюда — раскладка или файл не те")
     check_american(items)
     check_layout(items)
-    return qualify(items)
+    return qualify(dedupe(items))

@@ -172,5 +172,53 @@ Steak Philly 260 720 40 12 1 120 1900 56 3 6 4 45 15 8 45 45
         self.assertIn("неразличимые", str(caught.exception))
 
 
+# Panera Bread® Nutrition Guide: порция стоит словами в названии, а имя
+# блюда порой переносится на предыдущую строку.
+PANERA_TEXT = """SOUPS
+Broccoli Cheddar - Cup 1 Cup 280 180 20 13 1.5 60 1010 17 1 6 8 0
+Broccoli Cheddar - Cup 1 Cup 280 180 20 13 1.5 60 1010 17 1 6 8 0
+Sesame Ginger Chicken Market Bowl
+1 Bowl 930 280 38 8 0 105 3200 96 12 22 38 0
+1/2 Bowl 470 140 19 4 0 55 1600 48 6 11 19 0
+"""
+
+
+class TextualServing(unittest.TestCase):
+    """Гид Panera устроен иначе, чем Subway, и на нём ломались две вещи."""
+
+    def test_порция_словами_отделяется_от_имени(self):
+        items = pdf_guide.parse(PANERA_TEXT, pdf_guide.PANERA)
+        cup = next(i for i in items if i.name.startswith("Broccoli"))
+
+        self.assertEqual(cup.name, "Broccoli Cheddar - Cup")
+        self.assertEqual(cup.serving, "1 Cup")
+
+    def test_перенесённое_имя_берётся_со_строки_выше(self):
+        """В строке осталась одна порция — «1 Bowl». Половинка и целый
+        боул назывались бы «1/2 Bowl» и «1 Bowl» вместо своих имён."""
+        items = pdf_guide.parse(PANERA_TEXT, pdf_guide.PANERA)
+        bowls = [i for i in items if "Sesame Ginger" in i.name]
+
+        self.assertEqual(len(bowls), 2)
+        self.assertEqual({i.serving for i in bowls}, {"1 Bowl", "1/2 Bowl"})
+
+    def test_точный_повтор_строки_снимается(self):
+        """Страница 30 гида печатает часть таблицы дважды, символ в символ."""
+        items = pdf_guide.dedupe(pdf_guide.parse(PANERA_TEXT, pdf_guide.PANERA))
+        cups = [i for i in items if i.name == "Broccoli Cheddar - Cup"]
+
+        self.assertEqual(len(cups), 1)
+
+    def test_повтор_с_разными_числами_не_снимается(self):
+        """Одинаковое имя при разных числах — два блюда, а не дубль."""
+        text = """SOUPS
+Broccoli Cheddar - Cup 1 Cup 280 180 20 13 1.5 60 1010 17 1 6 8 0
+Broccoli Cheddar - Cup 1 Cup 420 280 31 19 2.5 90 1520 25 1 9 12 0
+"""
+        items = pdf_guide.dedupe(pdf_guide.parse(text, pdf_guide.PANERA))
+
+        self.assertEqual(len(items), 2)
+
+
 if __name__ == "__main__":
     unittest.main()
