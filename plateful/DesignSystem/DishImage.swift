@@ -21,9 +21,13 @@ struct DishImage: View {
                         image.resizable()
                             .scaledToFit()
                             .padding(size * 0.06)
-                            .background(Color(.secondarySystemGroupedBackground))
+                            .background(Tokens.Color.photoBackground)
                     } else {
+                        // Кадр без полей и так покрывает весь размер, но
+                        // прозрачные углы или недогрузившийся угол снимка не
+                        // должны показать системный серый под ним.
                         image.resizable().scaledToFill()
+                            .background(Tokens.Color.photoBackground)
                     }
                 } placeholder: {
                     // Пока снимок качается — та же заглушка, что и без него:
