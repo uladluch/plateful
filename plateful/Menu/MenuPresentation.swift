@@ -74,13 +74,22 @@ nonisolated extension MenuCatalog {
             $0.protein != $1.protein ? $0.protein > $1.protein : $0.name < $1.name
         }
 
-        // Без сахара на этикетке позиция сюда не попадает: «меньше сахара»
-        // не должно значить «сахар не измерили».
+        // «Меньше сахара» — это порог, не просто сортировка: меньше 6 г на
+        // 100 г продукта, тот же порог, что называют «низкий сахар» на
+        // этикетке. Сравнивать абсолютные граммы порции было бы нечестно —
+        // банка 500 мл и стакан 200 мл не равны просто потому что у одной
+        // цифра меньше. Без веса порции позиция не попадает в подборку: он
+        // есть не у каждой строки («1 Slice», «Small» веса не несут), и
+        // лучше не показать число, чем придумать его.
         let lessSugar = items
-            .filter { $0.sugar != nil }
-            .sorted {
-                $0.sugar! != $1.sugar! ? $0.sugar! < $1.sugar! : $0.name < $1.name
+            .compactMap { item -> (item: MenuItem, per100: Double)? in
+                guard let per100 = item.sugarPer100g, per100 < 6 else { return nil }
+                return (item, per100)
             }
+            .sorted {
+                $0.per100 != $1.per100 ? $0.per100 < $1.per100 : $0.item.name < $1.item.name
+            }
+            .map(\.item)
 
         // Газировка почти всегда дешевле по калориям, чем еда, и заняла бы
         // подборку целиком — а «меньше калорий» здесь про то, что съесть,
@@ -229,6 +238,38 @@ nonisolated extension MenuItem {
                 width: .abbreviated,
                 usage: .asProvided,
                 numberFormatStyle: .number.precision(.fractionLength(0))))
+    }
+
+    /// Вес порции в граммах — только если строка серванса его несёт явно.
+    ///
+    /// «12 fl oz», «4 oz», «85 g» разбираются; «1 Slice», «Small», «Regular»
+    /// — нет, вес у них не написан, и его неоткуда взять, кроме как
+    /// придумать. Жидкость и объём переводятся через плотность воды: для
+    /// газировки и большинства напитков это точно, для сиропа — приближённо,
+    /// но здесь речь о ранжировании в подборке, а не об этикетке.
+    private static let servingUnits: [String: Double] = [
+        "g": 1, "gram": 1, "grams": 1,
+        "ml": 1, "milliliter": 1, "milliliters": 1,
+        "fl oz": 29.5735, "floz": 29.5735,
+        "oz": 28.3495, "ounce": 28.3495, "ounces": 28.3495,
+        "lb": 453.592, "lbs": 453.592, "pound": 453.592, "pounds": 453.592,
+    ]
+
+    var servingGrams: Double? {
+        guard let serving else { return nil }
+        let parts = serving.split(separator: " ")
+        guard let first = parts.first, let value = Double(first) else { return nil }
+        let unit = parts.dropFirst().joined(separator: " ").lowercased()
+        guard let multiplier = Self.servingUnits[unit] else { return nil }
+        return value * multiplier
+    }
+
+    /// Сахар на 100 г продукта, а не абсолютная цифра порции: банка 500 мл
+    /// и стакан 200 мл иначе сравнивались бы нечестно. `nil`, если сахар не
+    /// указан или вес порции не считается по её строке.
+    var sugarPer100g: Double? {
+        guard let sugar, let servingGrams, servingGrams > 0 else { return nil }
+        return sugar / servingGrams * 100
     }
 
     /// Газированный безалкогольный напиток — по названию, эвристика.

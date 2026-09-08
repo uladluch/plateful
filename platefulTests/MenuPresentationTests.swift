@@ -151,12 +151,13 @@ struct HighlightShelfTests {
     }
 
     private static func item(_ name: String, kcal: Double, protein: Double = 1,
-                              sugar: Double? = nil) -> [String: Any] {
+                              sugar: Double? = nil, serving: String? = nil) -> [String: Any] {
         var row: [String: Any] = [
             "chain": "McDonald's", "key": name.lowercased().replacingOccurrences(of: " ", with: "-"),
             "name": name, "kcal": kcal, "protein": protein, "carbs": 1, "fat": 1,
         ]
         if let sugar { row["sugar"] = sugar }
+        if let serving { row["serving"] = serving }
         return row
     }
 
@@ -178,17 +179,32 @@ struct HighlightShelfTests {
         #expect(shelf?.items.map(\.name) == ["Grilled Chicken", "Salad"])
     }
 
-    /// Позиция без сахара на этикетке не притворяется нулём — она просто
-    /// не участвует в подборке.
-    @Test("меньше сахара пропускает позиции без данных о сахаре")
+    /// Позиция без сахара на этикетке или без веса порции не притворяется
+    /// нулём — она просто не участвует в подборке.
+    @Test("меньше сахара пропускает позиции без сахара или без веса порции")
     func lessSugarSkipsUnknown() {
         let catalog = Self.catalog([
-            Self.item("Fries", kcal: 300),
-            Self.item("Apple Slices", kcal: 40, sugar: 8),
-            Self.item("Cookie", kcal: 250, sugar: 20),
+            Self.item("Fries", kcal: 300, serving: "100 g"),
+            Self.item("Apple Slices", kcal: 40, sugar: 8, serving: "200 g"),
+            Self.item("Mystery Cookie", kcal: 250, sugar: 20, serving: "1 Slice"),
         ])
         let shelf = catalog.highlightShelves(for: "McDonald's").first { $0.title == "Less Sugar" }
-        #expect(shelf?.items.map(\.name) == ["Apple Slices", "Cookie"])
+        #expect(shelf?.items.map(\.name) == ["Apple Slices"])
+    }
+
+    /// Порог — меньше 6 г сахара на 100 г продукта, а не абсолютная цифра
+    /// порции: банка на 500 мл не должна проигрывать стакану на 200 мл
+    /// только потому, что у неё больше сахара в граммах.
+    @Test("порог считается на 100 г, а не на порцию")
+    func lessSugarNormalizesPerHundredGrams() {
+        let catalog = Self.catalog([
+            // 40 г сахара на 500 г — 8 г/100 г, выше порога.
+            Self.item("Big Soda", kcal: 200, sugar: 40, serving: "16.9 fl oz"),
+            // 8 г сахара на 200 г — 4 г/100 г, ниже порога.
+            Self.item("Small Yogurt", kcal: 120, sugar: 8, serving: "200 g"),
+        ])
+        let shelf = catalog.highlightShelves(for: "McDonald's").first { $0.title == "Less Sugar" }
+        #expect(shelf?.items.map(\.name) == ["Small Yogurt"])
     }
 
     /// Газировка почти всегда самая низкокалорийная позиция в меню — и
