@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "version": 4,
-  "url": "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs/v4.deflate",
-  "sha256": "9616c38ec177d6ddbeab5aee63a0dbcd28677a509c381fa47a94db90b0bed982",
+  "version": 5,
+  "url": "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs/v5.deflate",
+  "sha256": "c673264fd7a69c717dfbeac2885c20f87ad2d75db9563c30438c2c2e583e3fb5",
   "itemCount": 25366,
   "releasedAt": "2026-09-08"
 }

@@ -56,13 +56,14 @@ struct ItemPhotoTests {
         }
     }
 
-    /// Реальный пак, опубликованный в Storage, должен нести снимки —
-    /// иначе выкладка прошла, а данные до приложения не доехали.
-    @Test("в паке v4 есть снимки блюд McDonald's")
+    /// Опубликованный пак должен нести снимки — иначе выкладка прошла,
+    /// а данные до приложения не доехали. Версия берётся из манифеста,
+    /// чтобы тест не устаревал с каждым релизом пака.
+    @Test("в опубликованном паке есть снимки блюд")
     func publishedPackHasPhotos() async throws {
-        let url = try #require(URL(
-            string: "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs/v4.deflate"))
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (manifestData, _) = try await URLSession.shared.data(from: PackUpdater.manifestURL)
+        let manifest = try PackManifest.decode(from: manifestData)
+        let (data, _) = try await URLSession.shared.data(from: manifest.url)
         let raw = try #require((data as NSData).decompressed(using: .zlib) as Data?)
         let pack = try MenuPack.decode(from: raw)
 

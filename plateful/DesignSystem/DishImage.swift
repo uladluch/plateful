@@ -9,6 +9,8 @@ struct DishImage: View {
 
     let item: MenuItem
     var size: CGFloat = 44
+    /// Во всю ширину и без скруглений — для шапки карточки блюда.
+    var isHero: Bool = false
 
     /// Префикс имён в каталоге ассетов: `dish-cheeseburger`, `dish-fries`…
     static let assetPrefix = "dish-"
@@ -33,9 +35,27 @@ struct DishImage: View {
                 archetypeImage
             }
         }
-        .frame(width: size, height: size)
-        .clipShape(.rect(cornerRadius: Tokens.Radius.image))
+        .modifier(Shape(size: size, isHero: isHero))
         .accessibilityHidden(true)
+    }
+
+    /// Шапка тянется по ширине списка, строка остаётся квадратной.
+    private struct Shape: ViewModifier {
+        let size: CGFloat
+        let isHero: Bool
+
+        func body(content: Content) -> some View {
+            if isHero {
+                content
+                    .frame(maxWidth: .infinity)
+                    .frame(height: size)
+                    .clipped()
+            } else {
+                content
+                    .frame(width: size, height: size)
+                    .clipShape(.rect(cornerRadius: Tokens.Radius.image))
+            }
+        }
     }
 
     @ViewBuilder

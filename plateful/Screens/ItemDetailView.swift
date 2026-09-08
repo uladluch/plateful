@@ -15,10 +15,12 @@ struct ItemDetailView: View {
     var body: some View {
         List {
             Section {
-                DishImage(item: item, size: 120)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .listRowInsets(EdgeInsets(top: Tokens.Spacing.m, leading: 0,
-                                              bottom: Tokens.Spacing.m, trailing: 0))
+                DishImage(item: item, size: 220, isHero: true)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+            }
+
+            Section {
                 calories
                 macro("Protein", value: item.proteinText, color: Tokens.Color.protein)
                 macro("Carbs", value: item.carbsText, color: Tokens.Color.carbs)
