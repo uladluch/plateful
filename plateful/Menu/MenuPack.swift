@@ -37,6 +37,11 @@ nonisolated struct MenuPack: Decodable, Sendable {
         let creator: String?
         let title: String?
         let page: URL?
+        /// `contain` — вписать целиком: у предметной съёмки на прозрачном
+        /// фоне обрезка отъедает края. Иначе кадрируем по заполнению.
+        let fit: String?
+
+        var fitsInside: Bool { fit == "contain" }
     }
 
     struct Chain: Decodable, Sendable {

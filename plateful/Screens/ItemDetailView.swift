@@ -18,6 +18,10 @@ struct ItemDetailView: View {
                 DishImage(item: item, size: 220, isHero: true)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
+            } footer: {
+                if let photo = item.photo {
+                    PhotoCaption(photo: photo)
+                }
             }
 
             Section {
@@ -89,6 +93,25 @@ struct ItemDetailView: View {
             // Сбой истории не должен мешать смотреть калории — это справочник,
             // а история лишь удобство.
             try? UserDataStore(context: context).recordView(of: item)
+        }
+    }
+
+    /// Кто владеет снимком и откуда он взят.
+    ///
+    /// Подпись — условие, на котором сеть разрешила использование, а не
+    /// замена разрешению. Поэтому она обязательна там, где снимок принадлежит
+    /// сети, и не показывается у свободных лицензий, где владельца нет.
+    private struct PhotoCaption: View {
+        let photo: MenuPack.Photo
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
+                Text(photo.license)
+                if let page = photo.page {
+                    Link(page.host() ?? page.absoluteString, destination: page)
+                }
+            }
+            .font(.caption2)
         }
     }
 

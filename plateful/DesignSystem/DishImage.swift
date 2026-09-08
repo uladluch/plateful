@@ -27,7 +27,14 @@ struct DishImage: View {
                 // Пока снимок блюда качается — показываем картинку по
                 // архетипу, а не пустоту: строка списка не должна прыгать.
                 AsyncImage(url: photo.url) { image in
-                    image.resizable().scaledToFill()
+                    if photo.fitsInside {
+                        image.resizable()
+                            .scaledToFit()
+                            .padding(size * 0.06)
+                            .background(Color(.secondarySystemGroupedBackground))
+                    } else {
+                        image.resizable().scaledToFill()
+                    }
                 } placeholder: {
                     archetypeImage
                 }

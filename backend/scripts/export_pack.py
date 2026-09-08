@@ -52,7 +52,12 @@ class Row:
         self.stale = bool(item.get("stale", False))
         # Снимок именно этого блюда, если он есть; иначе приложение покажет
         # картинку по архетипу.
-        self.photo = item.get("photo")
+        photo = item.get("photo")
+        # Прозрачная предметная съёмка вписывается целиком: обрезка съест
+        # края тарелки и стакан рядом с бургером.
+        if photo and str(photo.get("url", "")).endswith(".png"):
+            photo = {**photo, "fit": "contain"}
+        self.photo = photo
 
 
 def query(sql: str) -> list[dict]:
