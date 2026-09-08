@@ -24,6 +24,19 @@ struct ItemDetailView: View {
                 }
             }
 
+            if item.isOffMenu {
+                Section {
+                    Label {
+                        Text("No longer on the menu")
+                    } icon: {
+                        Image(systemName: Tokens.Symbol.stale)
+                    }
+                    .foregroundStyle(Tokens.Color.staleWarning)
+                } footer: {
+                    Text("This dish was on \(item.chain)'s menu when the data was collected, but is not listed today.")
+                }
+            }
+
             Section {
                 calories
                 macro("Protein", value: item.proteinText, color: Tokens.Color.protein)

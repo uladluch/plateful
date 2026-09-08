@@ -82,6 +82,8 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
         photo = getattr(item, "photo", None)
         if photo:
             row["photo"] = photo
+        if getattr(item, "off_menu", False):
+            row["offMenu"] = True
         encoded.append(row)
 
     # Даты релиза здесь нет намеренно: пак должен байт-в-байт совпадать при

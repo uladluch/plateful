@@ -32,6 +32,13 @@ nonisolated struct MenuItem: Identifiable, Hashable, Sendable {
     /// по архетипу — она есть всегда.
     let photo: MenuPack.Photo?
 
+    /// Блюда больше нет в меню сети.
+    ///
+    /// Не прячем: человек мог сохранить его в заказ или прийти по истории,
+    /// и «позиция исчезла» выглядело бы как поломка. Вместо этого говорим
+    /// прямо — конкурентов ругают именно за молчание об этом.
+    let isOffMenu: Bool
+
     /// Откуда цифра и на какую дату. Приложение обещает это показывать —
     /// конкурентов бьют именно за молчаливо устаревшие данные.
     let source: String
@@ -62,6 +69,7 @@ nonisolated extension MenuItem {
         self.fat = packItem.fat
         self.image = packItem.image
         self.photo = packItem.photo
+        self.isOffMenu = packItem.offMenu ?? false
         self.source = packItem.source ?? defaults.source
         self.observed = packItem.observed ?? defaults.observed
         self.isStale = packItem.stale ?? defaults.stale

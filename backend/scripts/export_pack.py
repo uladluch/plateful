@@ -34,7 +34,7 @@ class Row:
     """Утиный двойник menustat.Item — pack.build читает только эти поля."""
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
                  "kcal", "protein", "carbs", "fat", "source", "observed", "stale",
-                 "photo")
+                 "photo", "off_menu")
 
     def __init__(self, item: dict, key: str):
         self.chain = item["chain"]
@@ -58,6 +58,9 @@ class Row:
         if photo and str(photo.get("url", "")).endswith(".png"):
             photo = {**photo, "fit": "contain"}
         self.photo = photo
+        # Позиции больше нет в меню сети. Скрывать нельзя — человек мог
+        # сохранить её в заказ; но и молчать нельзя.
+        self.off_menu = bool(item.get("offMenu"))
 
 
 def query(sql: str) -> list[dict]:

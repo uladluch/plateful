@@ -67,6 +67,9 @@ nonisolated struct MenuPack: Decodable, Sendable {
         /// Снимок именно этого блюда, если он найден. Есть у немногих позиций.
         let photo: Photo?
 
+        /// Позиции больше нет в меню сети. Приходит только когда это правда.
+        let offMenu: Bool?
+
         let source: String?
         let observed: String?
         let stale: Bool?
