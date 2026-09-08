@@ -30,7 +30,7 @@ OUT = Path("/private/tmp/claude-501/-Users-uladluch-Developer-plateful/"
            "612631b9-7bde-474b-8bad-c3ec8cb8b36a/scratchpad/items")
 
 API = "https://commons.wikimedia.org/w/api.php"
-THUMB, CELL, LABEL, COLS, COUNT = 400, 150, 18, 6, 6
+THUMB, CELL, LABEL, COLS, COUNT = 400, 150, 18, 8, 16
 ALLOWED = ("cc0", "public domain", "cc by 2.0", "cc by 3.0", "cc by 4.0",
            "cc by-sa 2.0", "cc by-sa 3.0", "cc by-sa 4.0")
 FORBIDDEN = ("-nd", "noderiv", "non-commercial", "-nc")
@@ -44,7 +44,7 @@ def clean(text: str) -> str:
 
 def search(query: str) -> list[dict]:
     params = {"action": "query", "format": "json", "generator": "search",
-              "gsrsearch": f"filetype:bitmap {query}", "gsrlimit": 20,
+              "gsrsearch": f"filetype:bitmap {query}", "gsrlimit": 40,
               "gsrnamespace": 6, "prop": "imageinfo",
               "iiprop": "url|extmetadata|size", "iiurlwidth": THUMB}
     request = urllib.request.Request(f"{API}?{urllib.parse.urlencode(params)}",
