@@ -63,7 +63,11 @@ struct ChainsView: View {
                             Text(chain.itemCount.formatted())
                                 .monospacedDigit()
                         } label: {
-                            Label(chain.name, systemImage: Tokens.Symbol.chain)
+                            Label {
+                                Text(chain.name)
+                            } icon: {
+                                ChainMarkView(chain: chain.name)
+                            }
                         }
                     }
                 }

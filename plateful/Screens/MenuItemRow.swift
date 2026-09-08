@@ -22,12 +22,17 @@ struct MenuItemRow: View {
                     .monospacedDigit()
             }
         } label: {
-            VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
-                Text(item.name)
+            HStack(spacing: Tokens.Spacing.s) {
                 if showsChain {
-                    Text(item.chain)
-                        .font(.caption)
-                        .foregroundStyle(Tokens.Color.textSecondary)
+                    ChainMarkView(chain: item.chain, size: 26)
+                }
+                VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
+                    Text(item.name)
+                    if showsChain {
+                        Text(item.chain)
+                            .font(.caption)
+                            .foregroundStyle(Tokens.Color.textSecondary)
+                    }
                 }
             }
         }
