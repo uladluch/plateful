@@ -24,14 +24,25 @@ struct ChainMenuView: View {
                 if sections.isEmpty {
                     noMatches
                 } else {
-                    ForEach(sections) { section in
+                    // Архив — не карточки: список снятых с меню позиций
+                    // читается плотнее строками, а разница между текущим и
+                    // прошлым важнее, чем свайп по нему пальцем.
+                    ForEach(sections.filter { !$0.isArchive }) { section in
                         Section {
                             itemShelf(section.items)
                         } header: {
-                            Text(section.title)
-                        } footer: {
-                            if section.isArchive {
-                                Text("These were on the menu when the data was collected. \(chain.name) does not list them today.")
+                            sectionHeader(section.title)
+                        }
+                    }
+
+                    if let archive = sections.first(where: \.isArchive) {
+                        NavigationLink {
+                            ArchiveMenuView(chain: chain, items: archive.items)
+                        } label: {
+                            LabeledContent("Archive") {
+                                Text(archive.items.count.formatted())
+                                    .monospacedDigit()
+                                    .foregroundStyle(Tokens.Color.textSecondary)
                             }
                         }
                     }
@@ -77,6 +88,17 @@ struct ChainMenuView: View {
         .listRowInsets(EdgeInsets())
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
+    }
+
+    /// Заголовок раздела — не мелкий системный header, а Headline 3, жирным,
+    /// основным цветом текста: разделы здесь несут вес заголовков блюда, а
+    /// не служебную подпись над списком.
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.title3)
+            .fontWeight(.bold)
+            .foregroundStyle(Tokens.Color.textPrimary)
+            .textCase(nil)
     }
 
     /// Позиции раздела как лента карточек, вбок: их пролистывают пальцем,
