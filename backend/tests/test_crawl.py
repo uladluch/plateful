@@ -252,3 +252,51 @@ class DiffGuard(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RobotsRules(unittest.TestCase):
+    """robots.txt был правилом на словах: записан в скилле, не проверен кодом.
+
+    Один сайт можно посмотреть руками, девяносто шесть — нет.
+    """
+
+    class _Parser:
+        def __init__(self, allowed: bool, delay=None):
+            self.allowed, self.delay = allowed, delay
+
+        def can_fetch(self, agent, url):
+            return self.allowed
+
+        def crawl_delay(self, agent):
+            return self.delay
+
+    def _robots(self, parser):
+        from plateful_data.adapters.base import Robots
+        robots = Robots()
+        robots._parsers["https://example.com"] = parser
+        return robots
+
+    def test_запрет_соблюдается(self):
+        robots = self._robots(self._Parser(allowed=False))
+        self.assertFalse(robots.allows("https://example.com/menu"))
+
+    def test_нечитаемый_файл_не_запрещает_сайт(self):
+        """Так велит стандарт: упавший robots.txt иначе закрыл бы всё."""
+        robots = self._robots(None)
+        self.assertTrue(robots.allows("https://example.com/menu"))
+        self.assertIsNone(robots.crawl_delay("https://example.com/menu"))
+
+    def test_просьба_сайта_о_паузе_важнее_нашей(self):
+        from plateful_data.adapters.base import Fetcher
+        fetcher = Fetcher(delay=5.0)
+        fetcher.robots = self._robots(self._Parser(allowed=True, delay=20))
+        # get() выдержит паузу и уйдёт в сеть, поэтому проверяем сам расчёт
+        self.assertEqual(max(fetcher.delay,
+                             fetcher.robots.crawl_delay("https://example.com/x")), 20.0)
+
+    def test_запрещённый_адрес_не_ошибка_а_результат(self):
+        from plateful_data.adapters.base import Fetcher
+        fetcher = Fetcher()
+        fetcher.robots = self._robots(self._Parser(allowed=False))
+        self.assertIsNone(fetcher.get("https://example.com/menu"))
+        self.assertEqual(fetcher.forbidden, ["https://example.com/menu"])

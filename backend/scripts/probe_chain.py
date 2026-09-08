@@ -53,7 +53,7 @@ def fetch(url: str, fetcher: Fetcher) -> str | None:
     Часть сетей за Akamai не отвечает Python-у вовсе: там смотрят на
     отпечаток TLS-рукопожатия. Тот же адрес curl отдаёт нормально.
     """
-    return fetcher.get(url) or curl_get(url, BROWSER_HEADERS)
+    return fetcher.get(url) or curl_get(url, BROWSER_HEADERS, robots=fetcher.robots)
 
 
 def describe(url: str, html: str) -> str:

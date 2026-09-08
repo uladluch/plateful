@@ -151,7 +151,10 @@ def walk(menu_url: str, *, limit: int | None, browser: bool) -> list[Crawled]:
     где меню разбито по разделам.
     """
     fetcher = Fetcher()
-    get = ((lambda url: curl_get(url, BROWSER_HEADERS)) if browser else fetcher.get)
+    # И через curl спрашиваем robots.txt: браузерные заголовки нужны, чтобы
+    # сайт нам ответил, а не чтобы обойти то, что он попросил не трогать.
+    get = ((lambda url: curl_get(url, BROWSER_HEADERS, robots=fetcher.robots))
+           if browser else fetcher.get)
     host = urlparse(menu_url).netloc.removeprefix("www.")
 
     index = get(menu_url)
@@ -191,6 +194,8 @@ def walk(menu_url: str, *, limit: int | None, browser: bool) -> list[Crawled]:
             print(f"  просмотрено {visited}, снято {len(items)},"
                   f" в очереди {len(frontier)}")
     print(f"  просмотрено {visited} страниц, снято {len(items)}")
+    if fetcher.forbidden:
+        print(f"  robots.txt закрыл {len(fetcher.forbidden)} адресов")
     return items
 
 
