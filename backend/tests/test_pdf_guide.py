@@ -222,3 +222,36 @@ Broccoli Cheddar - Cup 1 Cup 420 280 31 19 2.5 90 1520 25 1 9 12 0
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PageFurniture(unittest.TestCase):
+    """Колонтитул неотличим от заголовка по виду — только по повторяемости."""
+
+    def _pages(self, n: int) -> list[str]:
+        # Заголовок раздела у каждой страницы свой — как в настоящем гиде,
+        # где содержание не повторяется, а колонтитул повторяется всегда.
+        return [f"© 2026 Panera Bread. All Rights Reserved.\n"
+                f"Effective: 6/17/2026 Edition: 1\n"
+                f"Page {i}\n"
+                f"Section {i}\n"
+                f"Soup {i} 1 Cup {200 + i} 100 10 5 0 30 800 20 2 5 8 0\n"
+                for i in range(n)]
+
+    def test_повторяющаяся_строка_не_заголовок(self):
+        text = pdf_guide.without_furniture(self._pages(10))
+        self.assertNotIn("Panera Bread. All Rights", text)
+        self.assertNotIn("Effective:", text)
+        self.assertIn("Section 3", text)
+
+    def test_на_коротком_гиде_ничего_не_режется(self):
+        """У Subway три страницы, и «Cheesesteaks» стоит на двух из них."""
+        text = pdf_guide.without_furniture(self._pages(3))
+        self.assertIn("Panera Bread. All Rights", text)
+
+    def test_номер_страницы_не_становится_категорией(self):
+        items = pdf_guide.parse(
+            "SOUPS\nCreamy soups\nPage 31\n"
+            "Broccoli 1 Cup 280 180 20 13 1.5 60 1010 17 1 6 8 0\n",
+            pdf_guide.PANERA)
+        self.assertEqual(items[0].category, "Creamy soups")
+        self.assertEqual(items[0].name, "Broccoli")

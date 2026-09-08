@@ -243,7 +243,10 @@ def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
     print(f"  {path.stat().st_size / 1024:.0f} КБ")
 
     with pdfplumber.open(path) as pdf:
-        text = "\n".join((page.extract_text() or "") for page in pdf.pages)
+        # Колонтитулы снимаем до разбора: они неотличимы от заголовка
+        # раздела по виду и становились то категорией, то именем блюда.
+        text = pdf_guide.without_furniture(
+            [(page.extract_text() or "") for page in pdf.pages])
 
     try:
         items = pdf_guide.read(text, layout=layout)

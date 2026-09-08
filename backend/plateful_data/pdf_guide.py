@@ -216,6 +216,8 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
         if not split:
             # Не позиция. Заголовок капсом меняет формат подачи, обычный —
             # группу блюд внутри него.
+            if _PAGE_MARKER.match(line.strip()):
+                continue
             pending = line.strip()
             if outer := _outer(line):
                 section = outer
@@ -281,6 +283,48 @@ def check_layout(items: list[GuideItem]) -> None:
         raise WrongGuide(
             f"макросы расходятся с калориями в среднем на {median:.0%} "
             f"({len(drift)} строк) — колонки прочитаны не в том порядке")
+
+
+#: Доля страниц, на которых должна встретиться строка, чтобы считаться
+#: колонтитулом. Название блюда не повторяется на трети гида, а «© 2026
+#: Panera Bread» и «Effective: 6/17/2026 Edition: 1» стоят на всех.
+FURNITURE_SHARE = 0.30
+
+#: Меньше — и повторяемость перестаёт что-либо значить.
+MIN_PAGES_FOR_FURNITURE = 8
+
+#: Номер страницы: «Page 31», «- 12 -», просто «7». Не заголовок и не имя
+#: блюда, но выглядит и тем и другим, и у Panera попадал в категорию.
+_PAGE_MARKER = re.compile(r"^(?:page\s*)?[-–—\s]*\d{1,3}[-–—\s]*$", re.I)
+
+
+def without_furniture(pages: list[str]) -> str:
+    """Страницы в один текст, без колонтитулов.
+
+    Колонтитул неотличим от заголовка раздела по виду — он такой же
+    короткий и с заглавной буквы, — и потому становился то категорией, то
+    перенесённым именем блюда. У Panera из-за этого пять позиций получали
+    в имя «Effective: 6/17/2026 Edition: 1» и переставали различаться.
+
+    Отличает его повторяемость: содержание на каждой странице разное.
+    """
+    # На коротком гиде повторяемость ничего не значит: у Subway три
+    # страницы, и настоящий заголовок «Cheesesteaks» стоит на двух из них.
+    # Колонтитул виден только там, где страниц много.
+    if len(pages) < MIN_PAGES_FOR_FURNITURE:
+        return "\n".join(pages)
+
+    seen: Counter = Counter()
+    for page in pages:
+        seen.update({line.strip() for line in page.splitlines() if line.strip()})
+
+    threshold = max(2, int(len(pages) * FURNITURE_SHARE))
+    furniture = {line for line, n in seen.items() if n >= threshold}
+
+    return "\n".join(
+        "\n".join(line for line in page.splitlines()
+                   if line.strip() not in furniture)
+        for page in pages)
 
 
 def dedupe(items: list[GuideItem]) -> list[GuideItem]:
