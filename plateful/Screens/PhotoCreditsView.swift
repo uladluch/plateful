@@ -7,9 +7,19 @@ import SwiftUI
 /// в списке не нужны и его не засоряют.
 struct PhotoCreditsView: View {
 
+    @Environment(MenuRepository.self) private var menu
     @State private var credits: [Credit] = []
 
     struct Credit: Decodable, Identifiable, Sendable {
+        init(subject: String, title: String?, creator: String?,
+             license: String?, page: String?) {
+            self.subject = subject
+            self.title = title
+            self.creator = creator
+            self.license = license
+            self.page = page
+        }
+
         let subject: String
         let title: String?
         let creator: String?
@@ -34,7 +44,7 @@ struct PhotoCreditsView: View {
         }
         .navigationTitle("Image credits")
         .navigationBarTitleDisplayMode(.inline)
-        .task { credits = Self.load() }
+        .task { credits = Self.load() + Self.fromCatalog(menu.catalog) }
     }
 
     @ViewBuilder
@@ -56,6 +66,19 @@ struct PhotoCreditsView: View {
             Link(destination: url) { content }
         } else {
             content
+        }
+    }
+
+    /// Снимки конкретных блюд приезжают в паке, а не лежат в бандле,
+    /// поэтому их авторы собираются из каталога на лету.
+    private static func fromCatalog(_ catalog: MenuCatalog?) -> [Credit] {
+        guard let catalog else { return [] }
+        var seen = Set<URL>()
+        return catalog.items.compactMap { item -> Credit? in
+            guard let photo = item.photo, seen.insert(photo.url).inserted else { return nil }
+            return Credit(subject: "\(item.chain): \(item.name)",
+                          title: photo.title, creator: photo.creator,
+                          license: photo.license, page: photo.page?.absoluteString)
         }
     }
 

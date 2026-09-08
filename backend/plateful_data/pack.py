@@ -79,6 +79,9 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
             row["observed"] = item_observed
         if item_stale != pack_stale:
             row["stale"] = item_stale
+        photo = getattr(item, "photo", None)
+        if photo:
+            row["photo"] = photo
         encoded.append(row)
 
     # Даты релиза здесь нет намеренно: пак должен байт-в-байт совпадать при

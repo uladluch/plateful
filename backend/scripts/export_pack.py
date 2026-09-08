@@ -33,7 +33,8 @@ PAGE = 5000
 class Row:
     """Утиный двойник menustat.Item — pack.build читает только эти поля."""
     __slots__ = ("chain", "ext_key", "name", "category", "serving",
-                 "kcal", "protein", "carbs", "fat", "source", "observed", "stale")
+                 "kcal", "protein", "carbs", "fat", "source", "observed", "stale",
+                 "photo")
 
     def __init__(self, item: dict, key: str):
         self.chain = item["chain"]
@@ -49,6 +50,9 @@ class Row:
         self.source = item.get("source")
         self.observed = item.get("observed")
         self.stale = bool(item.get("stale", False))
+        # Снимок именно этого блюда, если он есть; иначе приложение покажет
+        # картинку по архетипу.
+        self.photo = item.get("photo")
 
 
 def query(sql: str) -> list[dict]:

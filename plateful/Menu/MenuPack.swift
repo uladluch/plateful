@@ -26,6 +26,19 @@ nonisolated struct MenuPack: Decodable, Sendable {
     let chains: [Chain]
     let items: [Item]
 
+    /// Фотография блюда с обязательной атрибуцией.
+    ///
+    /// Лицензия и автор — не украшение: CC BY и BY-SA требуют их указать,
+    /// поэтому в модели они не опциональны рядом с самим снимком.
+    struct Photo: Decodable, Sendable, Hashable {
+        let url: URL
+        let license: String
+        let licenseUrl: URL?
+        let creator: String?
+        let title: String?
+        let page: URL?
+    }
+
     struct Chain: Decodable, Sendable {
         let name: String
         let itemCount: Int
@@ -45,6 +58,9 @@ nonisolated struct MenuPack: Decodable, Sendable {
         /// Архетип блюда: по нему подбирается снимок. Необязательный —
         /// паки, выпущенные до появления картинок, его не несут.
         let image: String?
+
+        /// Снимок именно этого блюда, если он найден. Есть у немногих позиций.
+        let photo: Photo?
 
         let source: String?
         let observed: String?

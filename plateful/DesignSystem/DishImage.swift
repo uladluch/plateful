@@ -20,13 +20,30 @@ struct DishImage: View {
     }
 
     var body: some View {
+        Group {
+            if let photo = item.photo {
+                // Пока снимок блюда качается — показываем картинку по
+                // архетипу, а не пустоту: строка списка не должна прыгать.
+                AsyncImage(url: photo.url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    archetypeImage
+                }
+            } else {
+                archetypeImage
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(.rect(cornerRadius: Tokens.Radius.image))
+        .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var archetypeImage: some View {
         if let assetName {
-            Image(assetName)
-                .resizable()
-                .scaledToFill()
-                .frame(width: size, height: size)
-                .clipShape(.rect(cornerRadius: Tokens.Radius.image))
-                .accessibilityHidden(true)
+            Image(assetName).resizable().scaledToFill()
+        } else {
+            Color(.secondarySystemFill)
         }
     }
 }
