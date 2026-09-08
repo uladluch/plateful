@@ -1,7 +1,6 @@
-import SwiftData
 import SwiftUI
 
-/// Корневой экран: список сетей и последние просмотры.
+/// Корневой экран: список сетей.
 ///
 /// Первое, что видит человек, — уже полезно: ни онбординга, ни аккаунта,
 /// ни пейволла. Это и есть позиционирование против всей категории. Поиск
@@ -9,11 +8,6 @@ import SwiftUI
 struct ChainsView: View {
 
     @Environment(MenuRepository.self) private var menu
-
-    /// Последние просмотры. Бесплатны и лежат локально; через iCloud
-    /// подхватятся на другом устройстве, когда включим entitlement.
-    @Query(sort: \ViewedItem.viewedAt, order: .reverse)
-    private var recent: [ViewedItem]
 
     var body: some View {
         NavigationStack {
@@ -50,21 +44,9 @@ struct ChainsView: View {
 
     private var chainList: some View {
         List {
-            if !recentItems.isEmpty {
-                Section("Recent") {
-                    ForEach(recentItems) { item in
-                        NavigationLink(value: item) {
-                            MenuItemRow(item: item, showsChain: true)
-                        }
-                    }
-                }
-            }
-
-            Section(recentItems.isEmpty ? "" : "Chains") {
-                ForEach(menu.chains) { chain in
-                    NavigationLink(value: chain) {
-                        ChainRow(chain: chain)
-                    }
+            ForEach(menu.chains) { chain in
+                NavigationLink(value: chain) {
+                    ChainRow(chain: chain)
                 }
             }
         }
@@ -73,14 +55,6 @@ struct ChainsView: View {
         // Проверка обновлений сама идёт при запуске; жест нужен тем, кто
         // увидел устаревшее число и хочет проверить прямо сейчас.
         .refreshable { await menu.checkForUpdate() }
-    }
-
-    /// Просмотренные позиции, которые ещё есть в текущем каталоге.
-    ///
-    /// Исчезнувшие из меню в истории не показываем: история — это ярлык
-    /// «открыть снова», и вести он должен на живую карточку.
-    private var recentItems: [MenuItem] {
-        recent.prefix(10).compactMap { menu.item($0.reference) }
     }
 }
 
