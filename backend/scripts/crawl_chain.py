@@ -1,0 +1,375 @@
+#!/usr/bin/env python3
+"""Кроул одной сети: обойти меню, сверить с каталогом, записать новую версию.
+
+    python3 backend/scripts/crawl_chain.py chick-fil-a --menu https://www.chick-fil-a.com/menu
+    python3 backend/scripts/crawl_chain.py chick-fil-a           # адрес уже в chains
+    python3 backend/scripts/crawl_chain.py chick-fil-a --apply   # записать в базу
+
+Без `--apply` не пишется ничего — ни в базу, ни на диск, кроме отчёта.
+Так и задумано: человек сначала смотрит, что кроул собрался сделать.
+
+Отличие от `audit_chain.py`: тот пишет ручные правки в `overrides`, точечно
+и навсегда. Этот заводит новую версию позиции в `items` — закрывает старую
+`valid_to` и вставляет свежую со своим источником и датой. Правки из
+`overrides` при этом остаются сверху: они на то и отдельная таблица.
+
+Ходим по правилам `adapters/base.py`: пауза между запросами, честный
+User-Agent с адресом проекта, только домен сети, никаких обходов защиты.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import tempfile
+from dataclasses import dataclass
+from datetime import date
+from pathlib import Path
+from urllib.parse import urlparse
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from plateful_data import crawl, validate
+from plateful_data.adapters import site
+from plateful_data.adapters.base import Fetcher, curl_get
+from plateful_data.slug import slugify
+
+ROOT = Path(__file__).resolve().parents[2]
+DATA = ROOT / "backend" / "data"
+
+# Часть сетей за Akamai не отвечает Python-у: там смотрят на отпечаток TLS.
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+
+
+@dataclass(frozen=True)
+class Crawled:
+    """Позиция, снятая со страницы. Утиный двойник menustat.Item."""
+    chain: str
+    ext_key: str
+    name: str
+    source: str
+    source_url: str
+    kcal: float | None = None
+    protein: float | None = None
+    carbs: float | None = None
+    fat: float | None = None
+    sugar: float | None = None
+    sat_fat: float | None = None
+    trans_fat: float | None = None
+    cholesterol: float | None = None
+    sodium: float | None = None
+    fiber: float | None = None
+
+
+def query(sql: str) -> list[dict]:
+    with tempfile.NamedTemporaryFile("w", suffix=".sql", delete=False) as fh:
+        fh.write(sql)
+        path = fh.name
+    try:
+        proc = subprocess.run(
+            ["supabase", "db", "query", "--linked", "--agent=no", "-o", "json", "-f", path],
+            capture_output=True, text=True, check=True)
+    except subprocess.CalledProcessError as exc:
+        raise SystemExit(f"supabase db query упал:\n{exc.stderr}")
+    finally:
+        Path(path).unlink(missing_ok=True)
+    start = proc.stdout.find("[")
+    return json.loads(proc.stdout[start:]) if start >= 0 else []
+
+
+def sql_text(value) -> str:
+    return "null" if value in (None, "") else "'" + str(value).replace("'", "''") + "'"
+
+
+def sql_number(value) -> str:
+    return "null" if value is None else repr(float(value))
+
+
+def chain_row(slug: str) -> dict:
+    rows = query("select id, name, slug, source_url from chains "
+                 f"where slug = {sql_text(slug)};")
+    if not rows:
+        raise SystemExit(f"сети {slug} нет в chains")
+    return rows[0]
+
+
+def previous_crawl(chain_id: int, source: str) -> dict[str, dict]:
+    """Что видел прошлый кроул этой сети: строки, которые он же и записал.
+
+    Пусто на первом кроуле — тогда дифф-проверке не с чем сравнивать, и
+    она честно пропускает. Защита в этот момент держится на остальном:
+    в базу едут только сопоставленные позиции с полной этикеткой, прошедшие
+    Атуотера и не отличающиеся от каталога слишком сильно.
+    """
+    rows = query(
+        "select ext_key, kcal, protein, carbs, fat from items"
+        f" where chain_id = {chain_id} and valid_to is null"
+        f" and source = {sql_text(source)};")
+    return {r["ext_key"]: {k: float(v) for k, v in r.items()
+                           if k != "ext_key" and v is not None}
+            for r in rows}
+
+
+def catalog(chain_id: int) -> dict[str, dict]:
+    """Текущие позиции сети из базы, а не из пака.
+
+    Пак — снимок; писать мы будем в базу, и сравнивать надо с ней же,
+    иначе кроул увидит расхождение там, где его уже поправили.
+    """
+    rows = query(
+        "select ext_key, name, kcal, protein, carbs, fat, sugar, sat_fat,"
+        " trans_fat, cholesterol, sodium, fiber"
+        f" from items where chain_id = {chain_id} and valid_to is null;")
+    out = {}
+    for row in rows:
+        record = {"ext_key": row["ext_key"], "name": row["name"]}
+        for key, value in row.items():
+            if key not in ("ext_key", "name") and value is not None:
+                record[key] = float(value)
+        out[row["ext_key"]] = record
+    return out
+
+
+# Меню сети — обычно два уровня: страница меню ведёт на разделы, а разделы
+# на блюда. Глубже не ходим: третий уровень у сетей — это уже аллергены,
+# кастомизация и карточки заведений, то есть чужие страницы.
+MAX_DEPTH = 2
+
+
+def walk(menu_url: str, *, limit: int | None, browser: bool) -> list[Crawled]:
+    """Обходит меню вширь и читает каждую страницу общим извлекателем.
+
+    Страница, на которой нашлась этикетка, — блюдо. Страница без этикетки,
+    но со ссылками внутрь меню, — раздел, и мы спускаемся в него. Так одна
+    и та же функция работает и там, где блюда лежат прямо в меню, и там,
+    где меню разбито по разделам.
+    """
+    fetcher = Fetcher()
+    get = ((lambda url: curl_get(url, BROWSER_HEADERS)) if browser else fetcher.get)
+    host = urlparse(menu_url).netloc.removeprefix("www.")
+
+    index = get(menu_url)
+    if not index:
+        raise SystemExit(f"меню не открылось: {menu_url}")
+
+    seen: set[str] = {menu_url.rstrip("/")}
+    frontier = [(url, 1) for url in site.item_links(index, menu_url)]
+    items: list[Crawled] = []
+    visited = 0
+
+    while frontier:
+        if limit and len(items) >= limit:
+            break
+        url, depth = frontier.pop(0)
+        if url in seen:
+            continue
+        seen.add(url)
+
+        page = get(url)
+        visited += 1
+        if not page:
+            continue
+
+        facts = site.read_page(page)
+        if facts.name and facts.has_nutrition:
+            items.append(Crawled(
+                chain="", ext_key=slugify(facts.name), name=facts.name,
+                source=host, source_url=url,
+                **{name: getattr(facts, name) for name in site.NUTRIENTS}))
+        elif depth < MAX_DEPTH:
+            # Не блюдо, а раздел: забираем его ссылки и идём дальше.
+            frontier += [(link, depth + 1) for link in site.item_links(page, menu_url)
+                         if link not in seen]
+
+        if visited % 20 == 0:
+            print(f"  просмотрено {visited}, снято {len(items)},"
+                  f" в очереди {len(frontier)}")
+    print(f"  просмотрено {visited} страниц, снято {len(items)}")
+    return items
+
+
+def report(plan: crawl.Plan) -> None:
+    broken = len({(p.chain, p.name) for p in validate.errors(plan.problems)})
+    print(f"\nСнято со страниц: {plan.crawled}")
+    print(f"  сошлись с каталогом: {plan.agreed}")
+    print(f"  расходятся:          {len(plan.updates)}")
+    print(f"  без пары в каталоге: {len(plan.unmatched)}")
+    print(f"  неполная этикетка:   {len(plan.partial)}")
+    print(f"  слишком непохоже:    {len(plan.suspicious)}")
+    print(f"  не сходятся с собой: {broken}")
+    print(f"  каталог не увидел:   {len(plan.unseen)} из {len(plan.unseen) + plan.seen}")
+
+    errors = validate.errors(plan.problems)
+    if errors:
+        print(f"\n  НЕ СХОДЯТСЯ САМИ С СОБОЙ: {len(errors)} — в базу не поедут")
+        for problem in errors[:5]:
+            print(f"    {problem.name}: {problem.detail}")
+
+    for update in plan.updates[:20]:
+        print(f"  · {update.name}: {update.summary}")
+    if len(plan.updates) > 20:
+        print(f"  … ещё {len(plan.updates) - 20}")
+
+    if plan.suspicious:
+        print("\n  Слишком непохоже на дрейф рецептуры — человеку, не в базу:")
+        for update in plan.suspicious[:10]:
+            print(f"    {update.name}: {update.summary}")
+
+    if plan.unmatched:
+        print("\n  Без пары (лучшее сходство):")
+        for name, score in plan.unmatched[:10]:
+            print(f"    {name} — {score}")
+
+
+def crawl_record(plan: crawl.Plan, chain_id: int) -> str:
+    """Строка в `crawls`: сколько нашли, сколько поменяли, чем кончилось."""
+    notes = (plan.held or
+             f"{plan.agreed} сошлись, {len(plan.unmatched)} без пары, "
+             f"{len(plan.suspicious)} слишком непохожи")
+    return (
+        "insert into crawls (chain_id, finished_at, found, changed, dropped,"
+        " status, notes)\n"
+        f"values ({chain_id}, now(), {plan.crawled}, {len(plan.updates)},"
+        f" {len(plan.unseen)}, {sql_text('held' if plan.held else 'ok')},"
+        f" {sql_text(notes)});")
+
+
+def record_only(plan: crawl.Plan, chain_id: int, observed: str) -> None:
+    """Записывает факт кроула, не трогая позиции."""
+    path = DATA / "crawls" / f"{plan.chain}-{observed}-record.sql"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(crawl_record(plan, chain_id) + "\n", encoding="utf-8")
+    subprocess.run(["supabase", "db", "query", "--linked", "--agent=no",
+                    "-f", str(path)], capture_output=True, text=True)
+
+
+def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
+    """Новая версия позиции: старую закрываем, свежую вставляем.
+
+    Строка не переписывается: `valid_to` у прежней и новая строка рядом.
+    Так у позиции остаётся история, а `items_export` берёт текущую.
+    """
+    lines = [f"-- Кроул {plan.chain}, {observed}. Сгенерировано crawl_chain.py.",
+             "begin;", ""]
+    # Название, категорию, раздел и пометки несём из закрываемой строки:
+    # кроул уточняет числа, а не переписывает позицию. Название вдобавок —
+    # ключ, по которому её ищет человек и цепляются варианты.
+    CARRIED = ("name", "category", "serving_text", "section", "flags")
+    COLUMNS = ("chain_id", "ext_key", *CARRIED, *crawl.NUTRIENTS,
+               "source", "source_url", "observed_at", "stale", "confidence")
+
+    for update in plan.updates:
+        numbers = ", ".join(sql_number(update.values.get(name))
+                            for name in crawl.NUTRIENTS)
+        # Закрытие и вставка — одним оператором. Порознь нельзя: на
+        # (chain_id, ext_key) при valid_to is null стоит уникальный индекс,
+        # и вставка до закрытия упала бы на первой же позиции, а закрытие
+        # до вставки оставило бы нечего копировать.
+        lines.append(
+            f"with closed as (\n"
+            f"  update items set valid_to = now()\n"
+            f"  where chain_id = {chain_id}"
+            f" and ext_key = {sql_text(update.ext_key)} and valid_to is null\n"
+            f"  returning chain_id, ext_key, {', '.join(CARRIED)}\n"
+            f")\n"
+            f"insert into items ({', '.join(COLUMNS)})\n"
+            f"select chain_id, ext_key, {', '.join(CARRIED)},\n"
+            f"       {numbers},\n"
+            f"       {sql_text(plan.source)}, {sql_text(update.source_url)},"
+            f" date {sql_text(observed)}, false, 1.00\n"
+            f"from closed;\n")
+
+    lines.append(f"update chains set last_crawl_at = now(), source_url = "
+                 f"{sql_text(plan.menu_url)}, source_kind = 'json_in_html'"
+                 f" where id = {chain_id};")
+    lines.append(crawl_record(plan, chain_id))
+    lines.append("commit;")
+    return "\n".join(lines)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("chain", help="slug сети в chains")
+    parser.add_argument("--menu", help="адрес меню; иначе берётся chains.source_url")
+    parser.add_argument("--apply", action="store_true", help="записать в базу")
+    parser.add_argument("--limit", type=int, help="взять только первые N страниц")
+    parser.add_argument("--browser", action="store_true",
+                        help="ходить через curl с браузерными заголовками")
+    parser.add_argument("--observed", default=date.today().isoformat())
+    parser.add_argument("--cache", type=Path, help="снятое класть сюда и брать отсюда")
+    args = parser.parse_args()
+
+    row = chain_row(args.chain)
+    row_id = row["id"]
+    menu_url = args.menu or row.get("source_url")
+    if not menu_url:
+        raise SystemExit("адрес меню неизвестен: укажите --menu (он запомнится в chains)")
+
+    print(f"── {row['name']} ── {menu_url}")
+
+    if args.cache and args.cache.exists():
+        print(f"  из кэша {args.cache}")
+        live = [Crawled(**item) for item in json.loads(args.cache.read_text())]
+    else:
+        live = walk(menu_url, limit=args.limit, browser=args.browser)
+        if args.cache and live:
+            args.cache.parent.mkdir(parents=True, exist_ok=True)
+            args.cache.write_text(json.dumps([vars(i) for i in live], ensure_ascii=False,
+                                             indent=1), encoding="utf-8")
+
+    if not live:
+        print("ничего не снято", file=sys.stderr)
+        return 1
+
+    live = [Crawled(**{**vars(item), "chain": row["name"]}) for item in live]
+    stored = catalog(row["id"])
+    print(f"  в каталоге: {len(stored)} позиций")
+
+    plan = crawl.build(row["name"], live, stored,
+                       previous=previous_crawl(row_id, live[0].source),
+                       source=live[0].source, menu_url=menu_url)
+    report(plan)
+
+    if plan.held:
+        print(f"\nДЕРЖИМ: {plan.held}", file=sys.stderr)
+        print("Релиз не собирать. Похоже на поломку обхода, а не на новое меню.",
+              file=sys.stderr)
+
+    if not args.apply:
+        print("\nНичего не записано. Повторите с --apply, если план верен.")
+        return 0
+
+    if plan.held:
+        # Позиции не трогаем, но запись о кроуле нужна: иначе крон
+        # молча уходит ни с чем и следующий запуск ничего не знает.
+        record_only(plan, row_id, args.observed)
+        print("С held в базу пишем только запись о кроуле.", file=sys.stderr)
+        return 1
+    if not plan.updates:
+        print("\nОбновлять нечего.")
+        record_only(plan, row_id, args.observed)
+        return 0
+
+    path = DATA / "crawls" / f"{args.chain}-{args.observed}.sql"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(sql_for(plan, row["id"], args.observed), encoding="utf-8")
+    print(f"\nSQL: {path.relative_to(ROOT)}")
+
+    result = subprocess.run(
+        ["supabase", "db", "query", "--linked", "--agent=no", "-f", str(path)],
+        capture_output=True, text=True)
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        return 1
+    print(f"Записано: {len(plan.updates)} позиций обновлено")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
