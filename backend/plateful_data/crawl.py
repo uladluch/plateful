@@ -19,6 +19,7 @@ crawl_chain.py`, пишет в базу он же; сюда приходят у�
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass, field
 
 from . import validate
@@ -279,10 +280,19 @@ def build(chain: str, live, stored: dict[str, dict], *,
         # потерялись 48 позиций из 162 — гид перечисляет «Steak Philly»
         # трижды, обёрткой, салатом и боулом. Разводить их — дело
         # `pdf_guide.qualify`; здесь мы только отказываемся, если не развели.
-        taken_keys = {a.ext_key for a in plan.adopted}
-        if len(taken_keys) != len(plan.adopted) or taken_keys & set(stored):
-            plan.held = ("новые позиции сталкиваются ключами с каталогом или "
-                         "друг с другом — заводить нельзя, потеряем часть")
+        counted = Counter(a.ext_key for a in plan.adopted)
+        twins = sorted(key for key, n in counted.items() if n > 1)
+        clashes = sorted(set(counted) & set(stored))
+        if twins or clashes:
+            # Держим — и называем ключи: человеку, который будет это
+            # разбирать, «сталкиваются» без списка не говорит ничего.
+            what = []
+            if twins:
+                what.append(f"друг с другом: {', '.join(twins[:6])}")
+            if clashes:
+                what.append(f"с каталогом: {', '.join(clashes[:6])}")
+            plan.held = ("новые позиции сталкиваются ключами — заводить нельзя, "
+                         "потеряем часть. " + "; ".join(what))
             plan.adopted = []
             return plan
         # Чего сеть не назвала в своём же гиде, того она больше не подаёт.
