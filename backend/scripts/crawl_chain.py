@@ -5,6 +5,7 @@
     python3 backend/scripts/crawl_chain.py chick-fil-a           # адрес уже в chains
     python3 backend/scripts/crawl_chain.py chick-fil-a --apply   # записать в базу
     python3 backend/scripts/crawl_chain.py subway --guide URL    # гид в PDF вместо обхода
+    python3 backend/scripts/crawl_chain.py burger-king --sanity  # контент-база сети (RBI)
 
 Без `--apply` не пишется ничего — ни в базу, ни на диск, кроме отчёта.
 Так и задумано: человек сначала смотрит, что кроул собрался сделать.
@@ -38,7 +39,7 @@ from urllib.parse import urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import crawl, pdf_guide, validate
-from plateful_data.adapters import site
+from plateful_data.adapters import sanity_rbi, site
 from plateful_data.adapters.base import Fetcher, curl_get
 from plateful_data.slug import slugify
 
@@ -210,6 +211,29 @@ def walk(menu_url: str, *, limit: int | None, browser: bool) -> list[Crawled]:
     if fetcher.forbidden:
         print(f"  robots.txt закрыл {len(fetcher.forbidden)} адресов")
     return items
+
+
+def from_sanity(slug: str) -> list[Crawled]:
+    """Позиции из Sanity CMS сети — для брендов RBI.
+
+    Это не обход и не гид, а прямое чтение той базы, откуда сайт берёт
+    меню. Один запрос — всё живое меню с этикеткой и картинками; тесты и
+    заглушки отсеивает адаптер, обходом живого меню.
+    """
+    brand = sanity_rbi.BRANDS.get(slug)
+    if brand is None:
+        raise SystemExit(f"{slug} не описан в sanity_rbi.BRANDS — это бренд RBI?")
+    print(f"  sanity: {brand.project}/{brand.dataset}, меню {brand.menu_id}")
+    items = sanity_rbi.fetch(brand)
+    print(f"  живое меню: {len(items)} позиций,"
+          f" с картинкой {sum(1 for i in items if i.image_url)}")
+    return [Crawled(chain=item.chain, ext_key=item.ext_key, name=item.name,
+                    source=item.source, source_url=item.source_url,
+                    category=item.category,
+                    **{f: getattr(item, f) for f in
+                       ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
+                        "trans_fat", "cholesterol", "sodium", "fiber")})
+            for item in items]
 
 
 def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
@@ -414,7 +438,9 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
             "on conflict (chain_id, ext_key) do update set on_menu = excluded.on_menu,"
             " source = excluded.source, checked_at = excluded.checked_at;\n")
 
-    kind = "pdf" if plan.menu_url.endswith(".pdf") else "json_in_html"
+    kind = ("pdf" if plan.menu_url.endswith(".pdf")
+            else "json_api" if plan.source in {b.domain for b in sanity_rbi.BRANDS.values()}
+            else "json_in_html")
     lines.append(f"update chains set last_crawl_at = now(), source_url = "
                  f"{sql_text(plan.menu_url)}, source_kind = {sql_text(kind)}"
                  f" where id = {chain_id};")
@@ -429,6 +455,8 @@ def main() -> int:
     parser.add_argument("--menu", help="адрес меню; иначе берётся chains.source_url")
     parser.add_argument("--guide", metavar="URL",
                         help="взять позиции из PDF-гида сети вместо обхода сайта")
+    parser.add_argument("--sanity", action="store_true",
+                        help="читать контент-базу сети напрямую (бренды RBI)")
     parser.add_argument("--apply", action="store_true", help="записать в базу")
     parser.add_argument("--replace", action="store_true",
                         help="замена меню: завести новые позиции и увести в "
@@ -444,12 +472,17 @@ def main() -> int:
     row = chain_row(args.chain)
     row_id = row["id"]
     menu_url = args.guide or args.menu or row.get("source_url")
+    if args.sanity:
+        brand = sanity_rbi.BRANDS.get(args.chain)
+        menu_url = f"https://www.{brand.domain}/menu" if brand else None
     if not menu_url:
         raise SystemExit("адрес меню неизвестен: укажите --menu (он запомнится в chains)")
 
     print(f"── {row['name']} ── {menu_url}")
 
-    if args.guide:
+    if args.sanity:
+        live = from_sanity(args.chain)
+    elif args.guide:
         live = from_guide(args.guide, row["name"], args.chain)
     elif args.cache and args.cache.exists():
         print(f"  из кэша {args.cache}")
@@ -469,10 +502,10 @@ def main() -> int:
     stored = catalog(row["id"])
     print(f"  в каталоге: {len(stored)} позиций")
 
-    if args.replace and not args.guide:
+    if args.replace and not (args.guide or args.sanity):
         raise SystemExit(
-            "--replace только с --guide: обход сайта неполон по природе, и "
-            "«мы не дошли до страницы» неотличимо от «блюда нет»")
+            "--replace только с --guide или --sanity: обход сайта неполон по "
+            "природе, и «мы не дошли до страницы» неотличимо от «блюда нет»")
 
     plan = crawl.build(row["name"], live, stored,
                        previous=previous_crawl(row_id, live[0].source),

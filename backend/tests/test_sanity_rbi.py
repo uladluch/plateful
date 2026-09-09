@@ -1,0 +1,111 @@
+"""Sanity-адаптер RBI: разбор без сети.
+
+Сеть подменяется целиком: `fetch` и `on_menu_ids` ходят через `query`,
+а `query` здесь возвращает заготовленные документы. Ответы настоящие —
+сняты с `prod_bk_us` 2026-09-09 и урезаны до полей, которые мы читаем.
+"""
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from plateful_data.adapters import sanity_rbi as s
+
+COOKIE = {
+    "_id": "604676c0", "name": "Two Chocolate Chip Cookies", "region": "US",
+    "dummy": None, "L2": "DESSERTS", "L3": "COOKIES",
+    "image": "image-9532a9347bdd321b0f4ef1d2a08ca68c9ac2eceb-1333x1333-png",
+    "nutrition": {"calories": 320, "carbohydrates": 46, "cholesterol": 20,
+                  "fat": 15, "fiber": 2, "proteins": 4, "saturatedFat": 8,
+                  "sodium": 220, "sugar": 28, "transFat": 0, "salt": None},
+    "allergens": {"milk": 1, "wheat": 1, "eggs": 0, "soy": 1, "gluten": 0},
+}
+TEST_ITEM = {**COOKIE, "_id": "t1", "name": "16 Pc. Chicken Nuggets - PDP Test"}
+DUMMY = {**COOKIE, "_id": "d1", "name": "Dummy Item for Coupon", "dummy": True}
+CANADA = {**COOKIE, "_id": "c1", "name": "Poutine", "region": "CA"}
+TWIN = {**COOKIE, "_id": "twin", "name": "Two Chocolate Chip Cookies"}
+RETIRED = {**COOKIE, "_id": "old1", "name": "Ch'King Sandwich"}
+
+MENU = {"sections": [
+    {"name": "Sweets", "opts": [
+        {"_type": "item", "_id": "604676c0"},
+        {"_type": "picker", "_id": "p1", "opts": [
+            {"_type": "item", "_id": "twin"},
+            {"_type": "combo", "_id": "combo1", "opts": [
+                {"t": "item", "id": "t1"}]}]}]},
+    {"name": "Empty", "opts": None},
+]}
+
+
+def fake_query(brand, groq, params=None):
+    if "_id == $menu" in groq:
+        return MENU
+    return [COOKIE, TEST_ITEM, DUMMY, CANADA, TWIN, RETIRED]
+
+
+class ImageUrl(unittest.TestCase):
+
+    def test_ссылка_на_ассет_превращается_в_адрес_cdn(self):
+        url = s.image_url("kjfd81ul", "prod_bk_us", COOKIE["image"])
+        self.assertTrue(url.startswith(
+            "https://cdn.sanity.io/images/kjfd81ul/prod_bk_us/"
+            "9532a9347bdd321b0f4ef1d2a08ca68c9ac2eceb-1333x1333.png"))
+        # CDN режет под нас: исходный PNG весит 400 КБ, webp — 30.
+        self.assertIn("fm=webp", url)
+
+    def test_нет_ссылки_нет_адреса(self):
+        self.assertIsNone(s.image_url("p", "d", None))
+        self.assertIsNone(s.image_url("p", "d", "garbage"))
+
+
+@mock.patch.object(s, "query", side_effect=fake_query)
+class Fetch(unittest.TestCase):
+
+    def test_живое_меню_обходится_на_всю_глубину(self, _):
+        """Раздел → пикер → комбо → позиция. Пикер прячет варианты в
+        `option`, поэтому на последнем уровне поля зовутся иначе."""
+        self.assertEqual(s.on_menu_ids(s.BURGER_KING), {"604676c0", "twin", "t1"})
+
+    def test_берётся_только_то_что_в_меню(self, _):
+        names = {i.name for i in s.fetch(s.BURGER_KING)}
+        self.assertNotIn("Ch'King Sandwich", names)
+
+    def test_тест_и_заглушка_отсеиваются(self, _):
+        """Датасет хранит всё, что сеть когда-либо вводила."""
+        names = {i.name for i in s.fetch(s.BURGER_KING)}
+        self.assertNotIn("16 Pc. Chicken Nuggets - PDP Test", names)
+        self.assertNotIn("Dummy Item for Coupon", names)
+
+    def test_чужой_регион_отсеивается(self, _):
+        names = {i.name for i in s.fetch(s.BURGER_KING, only_on_menu=False)}
+        self.assertNotIn("Poutine", names)
+
+    def test_двойник_для_другой_кассы_не_дублируется(self, _):
+        """Один бургер лежит под двумя документами — для разных касс."""
+        items = s.fetch(s.BURGER_KING)
+        self.assertEqual([i.name for i in items], ["Two Chocolate Chip Cookies"])
+
+    def test_этикетка_в_наших_терминах(self, _):
+        [cookie] = s.fetch(s.BURGER_KING)
+        self.assertEqual(cookie.kcal, 320)
+        self.assertEqual(cookie.protein, 4)
+        self.assertEqual(cookie.sat_fat, 8)
+        self.assertEqual(cookie.trans_fat, 0)
+        self.assertEqual(cookie.cholesterol, 20)
+
+    def test_аллергены_только_отмеченные(self, _):
+        [cookie] = s.fetch(s.BURGER_KING)
+        self.assertEqual(cookie.allergens, ("milk", "wheat", "soy"))
+
+    def test_категория_из_иерархии_продукта(self, _):
+        [cookie] = s.fetch(s.BURGER_KING)
+        self.assertEqual(cookie.category, "Desserts")
+        self.assertEqual(cookie.ext_key, "two-chocolate-chip-cookies")
+
+
+if __name__ == "__main__":
+    unittest.main()
