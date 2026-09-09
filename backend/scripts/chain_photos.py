@@ -35,7 +35,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from PIL import Image
+from PIL import Image, PngImagePlugin
+
+# Пресс-снимки несут в себе целые абзацы метаданных: у Subway в медиатеке
+# это подпись, права и история правок, и Pillow отказывается их читать,
+# считая раздутый текстовый блок попыткой его положить. Файлы наши,
+# скачаны с домена сети, и разбирать их безопасно.
+PngImagePlugin.MAX_TEXT_CHUNK = 32 * 1024 * 1024
 
 from plateful_data import matching
 from plateful_data.adapters import (collected, gotofoods, jersey_mikes, mcdonalds,

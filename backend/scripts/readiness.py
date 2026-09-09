@@ -21,19 +21,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import pack
 
+#: Строки живого меню. В карточки их группирует `pack.readiness` — тем же
+#: правилом, что и порог в сборке пака.
 SQL = """
 select c.name as chain, c.slug,
-  count(*) as items,
-  count(*) filter (where exists (select 1 from item_photos f
-      where f.chain_id = i.chain_id and f.ext_key = i.ext_key)) as photos,
-  count(*) filter (where not i.stale) as fresh
+  coalesce(i.variant_group, c.slug || ':' || i.ext_key) as card,
+  (exists (select 1 from item_photos f
+     where f.chain_id = i.chain_id and f.ext_key = i.ext_key)) as photo,
+  (not i.stale) as fresh
 from items i join chains c on c.id = i.chain_id
 where i.valid_to is null and i.kcal is not null and i.protein is not null
   and i.carbs is not null and i.fat is not null
   and not exists (select 1 from menu_presence p
                   where p.chain_id = i.chain_id and p.ext_key = i.ext_key
-                    and p.on_menu is false)
-group by c.name, c.slug;
+                    and p.on_menu is false);
 """
 
 
