@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Не пускает в main то, что не собирается или не проходит тесты.
+#
+# Ставится один раз: git config core.hooksPath .githooks
+# Живёт в репозитории, а не в .git/hooks, чтобы пережить свежий клон.
+#
+# Работаем прямо в main без ревью, и до этого хука единственной проверкой
+# был CI — то есть узнавали о поломке уже после пуша. Тесты идут секунды,
+# ждать их дешевле, чем чинить main.
+#
+# Обойти: git push --no-verify. Это осознанное действие, а не случайное.
+set -uo pipefail
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+
+# Что меняется этим пушем — по нему решаем, что гонять.
+range=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+changed=$(git diff --name-only "${range:-HEAD~1}"..HEAD 2>/dev/null || git diff --name-only HEAD~1..HEAD)
+
+fail() { printf '\n\033[31m✗ %s\033[0m\nПуш отменён. Обойти: git push --no-verify\n' "$1"; exit 1; }
+
+if grep -qE '^backend/' <<<"$changed"; then
+    printf '→ тесты бэкенда… '
+    python3 -m unittest discover -s backend/tests -q >/tmp/plateful-backend-tests.log 2>&1 \
+        || { tail -20 /tmp/plateful-backend-tests.log; fail "тесты бэкенда"; }
+    printf 'ок\n'
+fi
+
+if grep -qE '^(plateful/|platefulTests/|plateful\.xcodeproj/)' <<<"$changed"; then
+    printf '→ тесты iOS… '
+    xcodebuild test -project plateful.xcodeproj -scheme plateful \
+        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet \
+        >/tmp/plateful-ios-tests.log 2>&1 \
+        || { grep -E 'error:|Failing tests:|^\s+[A-Za-z]+Tests\.' /tmp/plateful-ios-tests.log \
+               | head -20; fail "тесты iOS"; }
+    printf 'ок\n'
+fi
+
+# Сид-пак в бандле обязан совпадать с пересборкой: он детерминирован, и
+# расхождение значит, что правило конвейера поменяли, а пак не пересобрали.
+if grep -qE '^backend/plateful_data/' <<<"$changed"; then
+    printf '→ сид-пак актуален… '
+    before=$(shasum -a 256 plateful/Resources/seed-pack.json | cut -d' ' -f1)
+    python3 backend/scripts/build_seed.py >/tmp/plateful-seed.log 2>&1 || fail "сборка сид-пака"
+    after=$(shasum -a 256 plateful/Resources/seed-pack.json | cut -d' ' -f1)
+    [ "$before" = "$after" ] || fail "сид-пак в бандле устарел — пересоберите и закоммитьте"
+    printf 'ок\n'
+fi
+
+exit 0
