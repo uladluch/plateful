@@ -10,7 +10,6 @@ struct ChainMenuView: View {
     @Environment(MenuRepository.self) private var menu
     @Query private var goals: [UserGoals]
 
-    @State private var query = ""
     @State private var filter = MenuFilter.none
     @State private var tab = Tab.fullMenu
 
@@ -31,12 +30,12 @@ struct ChainMenuView: View {
 
     var body: some View {
         Group {
-            // Поиск и фильтр по целям имеют смысл только у полного меню:
-            // на пустой пока «Best for you» и на списке заведений искать
-            // блюдо нечем.
+            // Фильтр по целям имеет смысл только у полного меню: на пустой
+            // пока «Best for you» и на списке заведений фильтровать нечего.
+            // Поиск по сети убран — пока временно, глобальный поиск остаётся
+            // на «Discovery».
             if tab == .fullMenu {
                 list
-                    .searchable(text: $query, prompt: "Search \(chain.name)")
                     .toolbar {
                         MenuFilterMenu(filter: $filter, goals: goals.first)
                     }
@@ -60,10 +59,6 @@ struct ChainMenuView: View {
                 restaurantsRows
             }
         }
-        // Строки поиска ленивы: без очереди снимок начинают качать в тот
-        // момент, когда строка уже показалась. Ленты разделов не ленивы и
-        // просят своё сами.
-        .prefetchesDishPhotos(searchResults, size: MenuItemRow.imageSize)
         // Без этого List рисует каждую Section как сгруппированную карточку
         // — тогда карточкой читается вся категория, а не позиция внутри неё.
         // .plain убирает этот фон и оставляет карточкой только ItemCard.
@@ -73,12 +68,6 @@ struct ChainMenuView: View {
         // всё равно оставляет системную кнопку «Назад».
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private var searchResults: [MenuItem] {
-        guard !query.isEmpty else { return [] }
-        return menu.collapsingVariants(
-            filter.apply(to: menu.search(query, in: chain.name, limit: 200)))
     }
 
     /// Марка сети сверху, название под ней — первое, что видно на экране
@@ -123,59 +112,46 @@ struct ChainMenuView: View {
 
     @ViewBuilder
     private var fullMenuRows: some View {
-        if query.isEmpty {
-            // Витрина живёт над обычными категориями и не зависит от
-            // фильтра по целям — это готовые подборки, а не то, что
-            // человек сам сузил. Скрывается, как только он это сделал:
-            // иначе на экране одновременно два разных «лучшее по цифре».
-            if filter == .none {
-                ForEach(menu.highlightShelves(for: chain.name)) { section in
-                    Section {
-                        itemShelf(section.items)
-                    } header: {
-                        sectionHeader(section.title)
-                    }
+        // Витрина живёт над обычными категориями и не зависит от фильтра по
+        // целям — это готовые подборки, а не то, что человек сам сузил.
+        // Скрывается, как только он это сделал: иначе на экране одновременно
+        // два разных «лучшее по цифре».
+        if filter == .none {
+            ForEach(menu.highlightShelves(for: chain.name)) { section in
+                Section {
+                    itemShelf(section.items)
+                } header: {
+                    sectionHeader(section.title)
                 }
             }
+        }
 
-            // Свёртка размеров — последней: фильтр по целям должен
-            // видеть все размеры, иначе группа пропадёт из-за среднего.
-            let sections = menu.collapsingVariants(
-                filter.apply(to: menu.sections(for: chain.name)))
-            if sections.isEmpty {
-                noMatches
-            } else {
-                // Архив — не карточки: список снятых с меню позиций
-                // читается плотнее строками, а разница между текущим и
-                // прошлым важнее, чем свайп по нему пальцем.
-                ForEach(sections.filter { !$0.isArchive }) { section in
-                    Section {
-                        itemShelf(section.items)
-                    } header: {
-                        sectionHeader(section.title)
-                    }
-                }
-
-                if let archive = sections.first(where: \.isArchive) {
-                    NavigationLink {
-                        ArchiveMenuView(chain: chain, items: archive.items)
-                    } label: {
-                        LabeledContent("Archive") {
-                            Text(archive.items.count.formatted())
-                                .monospacedDigit()
-                                .foregroundStyle(Tokens.Color.textSecondary)
-                        }
-                    }
-                }
-            }
+        // Свёртка размеров — последней: фильтр по целям должен видеть все
+        // размеры, иначе группа пропадёт из-за среднего.
+        let sections = menu.collapsingVariants(
+            filter.apply(to: menu.sections(for: chain.name)))
+        if sections.isEmpty {
+            noMatches
         } else {
-            if searchResults.isEmpty {
-                ContentUnavailableView.search(text: query)
-            } else {
-                ForEach(searchResults) { item in
-                    NavigationLink(value: item) {
-                        MenuItemRow(item: item, showsChain: false,
-                                    variants: menu.variants(of: item))
+            // Архив — не карточки: список снятых с меню позиций читается
+            // плотнее строками, а разница между текущим и прошлым важнее,
+            // чем свайп по нему пальцем.
+            ForEach(sections.filter { !$0.isArchive }) { section in
+                Section {
+                    itemShelf(section.items)
+                } header: {
+                    sectionHeader(section.title)
+                }
+            }
+
+            if let archive = sections.first(where: \.isArchive) {
+                NavigationLink {
+                    ArchiveMenuView(chain: chain, items: archive.items)
+                } label: {
+                    LabeledContent("Archive") {
+                        Text(archive.items.count.formatted())
+                            .monospacedDigit()
+                            .foregroundStyle(Tokens.Color.textSecondary)
                     }
                 }
             }
@@ -242,7 +218,7 @@ struct ChainMenuView: View {
             if nearby.venues.isEmpty {
                 restaurantsEmpty
             } else {
-                venueShelf(Array(nearby.venues.prefix(5)), showsDistance: true)
+                venueList(Array(nearby.venues.prefix(5)), showsDistance: true)
             }
 
         case .denied, .failed:
@@ -250,7 +226,7 @@ struct ChainMenuView: View {
                 if fallbackVenues.isEmpty {
                     restaurantsEmpty
                 } else {
-                    venueShelf(fallbackVenues, showsDistance: false)
+                    venueList(fallbackVenues, showsDistance: false)
                 }
             } else {
                 restaurantsLoading
@@ -284,32 +260,27 @@ struct ChainMenuView: View {
             .listRowSeparator(.hidden)
     }
 
-    private func venueShelf(_ venues: [Venue], showsDistance: Bool) -> some View {
-        VStack(alignment: .leading, spacing: Tokens.Spacing.s) {
-            Text(showsDistance ? "Closest to you" : "Locations")
-                .font(.subheadline)
-                .foregroundStyle(Tokens.Color.textSecondary)
-                .padding(.horizontal, Tokens.Spacing.m)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: Tokens.Spacing.m) {
-                    ForEach(venues) { venue in
-                        NavigationLink {
-                            VenueDetailView(venue: venue,
-                                            mapItem: nearby.mapItem(for: venue),
-                                            priceBand: chain.priceBand,
-                                            menuChain: chain)
-                        } label: {
-                            VenueCard(venue: venue, showsDistance: showsDistance)
-                        }
-                        .buttonStyle(.plain)
-                    }
+    /// Список, а не лента: заведения читаются друг под другом, строка на
+    /// всю ширину — так же, как «Chains around you» на вкладке «Nearby».
+    /// Карточкой остаётся сама строка, а не контейнер вокруг неё.
+    private func venueList(_ venues: [Venue], showsDistance: Bool) -> some View {
+        Section {
+            ForEach(venues) { venue in
+                NavigationLink {
+                    VenueDetailView(venue: venue,
+                                    mapItem: nearby.mapItem(for: venue),
+                                    priceBand: chain.priceBand,
+                                    menuChain: chain)
+                } label: {
+                    VenueCard(venue: venue, showsDistance: showsDistance, layout: .row)
                 }
-                .padding(.horizontal, Tokens.Spacing.m)
+                .listRowInsets(EdgeInsets(top: Tokens.Spacing.xs, leading: Tokens.Spacing.m,
+                                          bottom: Tokens.Spacing.xs, trailing: Tokens.Spacing.m))
+                .listRowSeparator(.hidden)
             }
+        } header: {
+            sectionHeader(showsDistance ? "Closest to you" : "Locations")
         }
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
     }
 
     /// Без геопозиции спросить «рядом» нечем, но саму сеть карта может
