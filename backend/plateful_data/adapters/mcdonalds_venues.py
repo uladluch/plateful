@@ -17,7 +17,7 @@ import math
 import time
 from dataclasses import dataclass
 
-from .base import BROWSER_HEADERS, curl_get
+from .base import BROWSER_HEADERS, Robots, curl_get
 from .rbi_venues import Venue
 
 LOCATOR = "https://www.mcdonalds.com/googleappsv2/geolocation"
@@ -183,13 +183,18 @@ def venue(feature: dict) -> Venue | None:
     )
 
 
-def ask(cell: Cell) -> list[dict] | None:
-    """Один запрос локатора по центру клетки. `None` — сеть не ответила."""
+def ask(cell: Cell, robots: Robots | None = None) -> list[dict] | None:
+    """Один запрос локатора по центру клетки. `None` — сеть не ответила.
+
+    `robots` передаётся всегда, кроме тестов: обход бот-защиты по отпечатку
+    TLS не отменяет правил сайта, а проверять их глазами один раз — ровно
+    та привычка, из-за которой правило и переехало в код.
+    """
     lat, lng = cell.center
     url = (f"{LOCATOR}?latitude={lat:.4f}&longitude={lng:.4f}"
            f"&radius={max(int(cell.radius_km), 1)}&maxResults={CAP}"
            f"&country=us&language=en-us")
-    body = curl_get(url, BROWSER_HEADERS, robots=None)
+    body = curl_get(url, BROWSER_HEADERS, robots=robots)
     if not body:
         return None
     try:
@@ -206,6 +211,7 @@ def sweep(boxes=BOXES, *, log=print) -> list[Venue]:
     что в ней есть.
     """
     found: dict[str, Venue] = {}
+    robots = Robots()
     # Стартовая сетка в два градуса: над плотными штатами она разделится
     # сама, над пустыми останется одной клеткой.
     queue: list[Cell] = []
@@ -221,7 +227,7 @@ def sweep(boxes=BOXES, *, log=print) -> list[Venue]:
     asked = 0
     while queue:
         cell = queue.pop()
-        features = ask(cell)
+        features = ask(cell, robots)
         asked += 1
         time.sleep(DELAY)
         if features is None:
