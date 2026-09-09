@@ -24,7 +24,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plateful_data.adapters import rbi_venues, sanity_rbi
+from plateful_data.adapters import mcdonalds_venues, rbi_venues, sanity_rbi
 from plateful_data.adapters.rbi_venues import Venue
 
 #: Ниже этой доли от того, что уже лежит в базе, выгрузка считается
@@ -134,27 +134,42 @@ delete from venues v
 """
 
 
+#: Сети, у которых мы умеем брать точки. RBI отдаёт четыре сразу одним
+#: датасетом, McDonald's — своим локатором.
+KNOWN = list(sanity_rbi.BRANDS) + ["mcdonald-s"]
+
+
+def fetch(slug: str) -> list[Venue]:
+    if slug == "mcdonald-s":
+        return mcdonalds_venues.sweep()
+    return rbi_venues.fetch(sanity_rbi.BRANDS[slug])
+
+
+def title(slug: str) -> str:
+    brand = sanity_rbi.BRANDS.get(slug)
+    return brand.name if brand else "McDonald's"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("chains", nargs="*", default=[],
-                        help="слаги сетей; без аргументов — все сети RBI")
+                        help="слаги сетей; без аргументов — все, что умеем")
     parser.add_argument("--dry-run", action="store_true",
                         help="не писать в базу, только показать, что нашлось")
     args = parser.parse_args()
 
-    slugs = args.chains or list(sanity_rbi.BRANDS)
-    unknown = [s for s in slugs if s not in sanity_rbi.BRANDS]
+    slugs = args.chains or KNOWN
+    unknown = [s for s in slugs if s not in KNOWN]
     if unknown:
         print(f"Не знаю таких сетей: {', '.join(unknown)}. "
-              f"Есть: {', '.join(sanity_rbi.BRANDS)}", file=sys.stderr)
+              f"Есть: {', '.join(KNOWN)}", file=sys.stderr)
         return 2
 
     total = 0
     for slug in slugs:
-        brand = sanity_rbi.BRANDS[slug]
-        venues = rbi_venues.fetch(brand)
+        venues = fetch(slug)
         with_hours = sum(1 for v in venues if v.hours)
-        print(f"{brand.name}: {len(venues)} точек, "
+        print(f"{title(slug)}: {len(venues)} точек, "
               f"часы у {with_hours} ({100 * with_hours // max(len(venues), 1)}%)")
 
         if args.dry_run or not venues:
