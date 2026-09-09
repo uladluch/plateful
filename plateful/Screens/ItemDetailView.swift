@@ -242,21 +242,24 @@ struct ItemDetailView: View {
     /// Системное кольцо-индикатор — то же, чем виджеты показывают заряд
     /// или прогресс кольца активности, здесь применено к одному макросу.
     private func macroRing(title: String, value: String, share: Double, color: Color) -> some View {
-        VStack(spacing: Tokens.Spacing.xs) {
+        VStack(spacing: Tokens.Spacing.s) {
             Gauge(value: share) {
                 EmptyView()
             } currentValueLabel: {
                 Text(value)
-                    .font(.caption2)
+                    .font(.caption)
                     .fontWeight(.semibold)
                     .monospacedDigit()
             }
             .gaugeStyle(.accessoryCircularCapacity)
             .tint(color)
 
+            // Название — тем же весом, что и заголовок секции: не служебная
+            // подпись под кольцом, а часть того, что человек хочет прочитать
+            // первым делом.
             Text(title)
-                .font(.caption)
-                .foregroundStyle(Tokens.Color.textSecondary)
+                .font(.footnote)
+                .foregroundStyle(Tokens.Color.textPrimary)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
