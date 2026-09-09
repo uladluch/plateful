@@ -104,6 +104,26 @@ class CellTest(unittest.TestCase):
         height_km = 2 * mv.KM_PER_DEGREE
         self.assertGreater(cell.radius_km, height_km / 2)
 
+    def test_grid_cells_fit_inside_the_query(self):
+        # Главный инвариант обхода: круг запроса накрывает клетку целиком.
+        # Когда он был меньше клетки, обход собрал 2795 точек вместо
+        # тринадцати тысяч — и молча, потому что каждый запрос отвечал
+        # успехом.
+        for cell in mv.grid():
+            self.assertLessEqual(round(cell.radius_km, 3), mv.REACH_KM)
+
+    def test_grid_covers_every_box(self):
+        cells = mv.grid()
+        for south, west, north, east in mv.BOXES:
+            inside = [c for c in cells
+                      if c.south >= south - 1e-9 and c.north <= north + 1e-9
+                      and c.west >= west - 1e-9 and c.east <= east + 1e-9]
+            self.assertTrue(inside, (south, west))
+            self.assertAlmostEqual(min(c.south for c in inside), south, places=6)
+            self.assertAlmostEqual(max(c.north for c in inside), north, places=6)
+            self.assertAlmostEqual(min(c.west for c in inside), west, places=6)
+            self.assertAlmostEqual(max(c.east for c in inside), east, places=6)
+
     def test_quarters_shrink(self):
         cell = mv.Cell(40.0, -74.0, 42.0, -72.0)
         self.assertEqual(cell.span, 2.0)

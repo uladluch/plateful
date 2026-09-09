@@ -102,7 +102,13 @@ class Robots:
                 return None            # файла нет — ходить можно
             raise                      # 5xx — сервер нездоров
         except (urllib.error.URLError, TimeoutError, OSError):
-            body = curl_get(url, {"User-Agent": self.user_agent}, timeout=20)
+            # Тем же клиентом, каким ходим за данными. У McDonald's бот-защита
+            # смотрит на отпечаток TLS и обрывает всё, что не браузер, —
+            # включая запрос самого `robots.txt`. Обрыв тогда читается как
+            # «сервер нездоров», то есть полный запрет, и сеть становится
+            # недоступной из-за файла, который на самом деле нас пускает.
+            # Читать правила надо так же, как читаем страницы.
+            body = curl_get(url, BROWSER_HEADERS, timeout=20)
             if body is None:
                 raise
         # За CDN на месте robots.txt нередко лежит HTML: страница-заглушка,

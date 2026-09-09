@@ -32,10 +32,26 @@ CAP = 300
 #: оказалось ровно в 25.0 км.
 KM_PER_DEGREE = 111.32
 
-#: Пауза между запросами. Правило проекта — не быстрее секунды.
-DELAY = 1.5
+#: Дальше этого локатор не смотрит, сколько ни проси. Измерено: в Салине
+#: (Канзас) запросы с радиусом 50, 100 и 150 возвращают одни и те же пять
+#: точек, дальняя из них в 36.0 км, хотя следующий ресторан стоит в сотне.
+#:
+#: Из-за этого первый обход и недобрал: клетки были по два градуса, то есть
+#: по 220 км, а накрывал запрос круг в 36 км вокруг центра — пятую часть
+#: клетки. Вышло 2795 точек вместо примерно тринадцати тысяч.
+REACH_KM = 35.0
 
-#: Клетка мельче этого не дробится. Полградуса — это уже около полусотни
+#: Шаг сетки. Круги радиуса R, расставленные по квадратной сетке, покрывают
+#: плоскость без дыр, пока шаг не больше R·√2 — иначе остаются просветы
+#: между четырьмя соседними кругами.
+STEP_KM = REACH_KM * math.sqrt(2)
+
+#: Пауза между запросами — ровно правило проекта, не быстрее секунды.
+#: Сетка на семь тысяч клеток идёт около двух часов; полторы секунды
+#: растянули бы её за три, а месячный крон и так ходит по ночам.
+DELAY = 1.0
+
+#: Клетка мельче этого не дробится. Пять сотых градуса — около пяти
 #: километров; если и там триста заведений, лишние потеряются, но такой
 #: плотности McDonald's нигде не даёт.
 MIN_SPAN = 0.05
@@ -56,9 +72,13 @@ FILTERS = {"WIFI": "wifi", "DRIVETHRU": "drive_thru", "MCDELIVERY": "delivery",
            "OUTDOORPLAYGROUND": "playground", "PlayPlacePresence": "playground"}
 
 #: Штаты США вместе с Аляской, Гавайями и Пуэрто-Рико.
+#:
+#: Аляска обрезана до обжитой южной части: рестораны там стоят в Анкоридже,
+#: Фэрбенксе, Джуно, Кетчикане и на трассе между ними, а сетка по всему
+#: штату — это тысячи запросов над тундрой ради трёх десятков точек.
 BOXES = (
     (24.4, -125.0, 49.4, -66.9),    # континентальные штаты
-    (51.0, -179.9, 71.5, -129.0),   # Аляска
+    (55.0, -166.0, 65.5, -130.0),   # Аляска, обжитая часть
     (18.8, -160.4, 22.4, -154.7),   # Гавайи
     (17.8, -67.4, 18.6, -65.2),     # Пуэрто-Рико
 )
@@ -77,10 +97,17 @@ class Cell:
 
     @property
     def radius_km(self) -> float:
-        """Радиус круга, накрывающего клетку целиком, — по её диагонали."""
-        lat, _ = self.center
+        """Радиус круга, накрывающего клетку целиком, — по её диагонали.
+
+        Ширина берётся по тому краю клетки, что ближе к экватору: там
+        градус долготы длиннее всего, и клетка шире всего. Взять ширину по
+        середине или по дальнему краю значит посчитать круг меньше клетки
+        и оставить её углы неопрошенными.
+        """
+        equatorward = min(abs(self.south), abs(self.north))
         height = (self.north - self.south) * KM_PER_DEGREE
-        width = (self.east - self.west) * KM_PER_DEGREE * math.cos(math.radians(lat))
+        width = ((self.east - self.west) * KM_PER_DEGREE
+                 * math.cos(math.radians(equatorward)))
         return math.hypot(height, width) / 2
 
     def quarters(self) -> list["Cell"]:
@@ -191,8 +218,10 @@ def ask(cell: Cell, robots: Robots | None = None) -> list[dict] | None:
     та привычка, из-за которой правило и переехало в код.
     """
     lat, lng = cell.center
+    # Просим предел локатора, а не диагональ клетки: больший радиус он
+    # молча урезает, а меньший оставил бы углы клетки неопрошенными.
     url = (f"{LOCATOR}?latitude={lat:.4f}&longitude={lng:.4f}"
-           f"&radius={max(int(cell.radius_km), 1)}&maxResults={CAP}"
+           f"&radius={int(REACH_KM)}&maxResults={CAP}"
            f"&country=us&language=en-us")
     body = curl_get(url, BROWSER_HEADERS, robots=robots)
     if not body:
@@ -201,6 +230,32 @@ def ask(cell: Cell, robots: Robots | None = None) -> list[dict] | None:
         return json.loads(body).get("features") or []
     except json.JSONDecodeError:
         return None
+
+
+def grid(boxes=BOXES) -> list[Cell]:
+    """Клетки, каждая из которых целиком помещается в круг запроса.
+
+    Шаг считается в километрах, а не в градусах: градус долготы в Техасе
+    короче, чем в Монтане, и одинаковый шаг в градусах оставил бы на севере
+    просветы между кругами.
+    """
+    cells: list[Cell] = []
+    for south, west, north, east in boxes:
+        lat = south
+        while lat < north:
+            top = min(lat + STEP_KM / KM_PER_DEGREE, north)
+            # Долготный шаг — по тому краю полосы, где градус длиннее, то
+            # есть ближе к экватору: иначе клетка окажется шире шага в
+            # километрах у противоположного края, и круг её не накроет.
+            equatorward = min(abs(lat), abs(top))
+            step_lng = STEP_KM / (KM_PER_DEGREE
+                                  * max(math.cos(math.radians(equatorward)), 0.05))
+            lng = west
+            while lng < east:
+                cells.append(Cell(lat, lng, top, min(lng + step_lng, east)))
+                lng += step_lng
+            lat = top
+    return cells
 
 
 def sweep(boxes=BOXES, *, log=print) -> list[Venue]:
@@ -212,17 +267,7 @@ def sweep(boxes=BOXES, *, log=print) -> list[Venue]:
     """
     found: dict[str, Venue] = {}
     robots = Robots()
-    # Стартовая сетка в два градуса: над плотными штатами она разделится
-    # сама, над пустыми останется одной клеткой.
-    queue: list[Cell] = []
-    for south, west, north, east in boxes:
-        lat = south
-        while lat < north:
-            lng = west
-            while lng < east:
-                queue.append(Cell(lat, lng, min(lat + 2, north), min(lng + 2, east)))
-                lng += 2
-            lat += 2
+    queue: list[Cell] = list(grid(boxes))
 
     asked = 0
     while queue:

@@ -20,6 +20,7 @@ import json
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -37,32 +38,57 @@ KEEP_RATIO = 0.95
 BATCH = 500
 
 
+#: Сколько раз повторить запрос к базе и с какой паузой.
+#:
+#: CLI на каждый вызов заводит временную роль, и подряд идущие вызовы —
+#: свои ли, из соседней сессии ли — упирают пулер в предохранитель: «too
+#: many authentication failures». Это проходит само за десяток секунд.
+#: Обход McDonald's идёт два часа, и уронить его на последнем шаге из-за
+#: такого — обиднее всего, что тут может случиться.
+ATTEMPTS = 5
+BACKOFF = 15.0
+
+
 def run_sql(sql: str) -> list[dict]:
+    if not sql.strip():
+        return []
     with tempfile.NamedTemporaryFile("w", suffix=".sql", delete=False) as fh:
         fh.write(sql)
         path = fh.name
     try:
-        proc = subprocess.run(
-            ["supabase", "db", "query", "--linked", "--agent=no", "-o", "json",
-             "-f", path],
-            capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as exc:
-        raise SystemExit(f"supabase db query упал:\n{exc.stderr}")
+        for attempt in range(1, ATTEMPTS + 1):
+            proc = subprocess.run(
+                ["supabase", "db", "query", "--linked", "--agent=no", "-o", "json",
+                 "-f", path],
+                capture_output=True, text=True)
+            if proc.returncode == 0:
+                start = proc.stdout.find("[")
+                return json.loads(proc.stdout[start:]) if start >= 0 else []
+            if attempt == ATTEMPTS:
+                raise SystemExit(f"supabase db query упал:\n{proc.stderr}")
+            print(f"  · база не ответила (попытка {attempt}), жду {BACKOFF:.0f} с")
+            time.sleep(BACKOFF * attempt)
     finally:
         Path(path).unlink(missing_ok=True)
-    start = proc.stdout.find("[")
-    return json.loads(proc.stdout[start:]) if start >= 0 else []
+    return []
 
 
 def text(value: object) -> str:
     if value in (None, ""):
-        return "null"
+        return "null::text"
     return "'" + str(value).replace("'", "''") + "'"
 
 
 def jsonb(value: object) -> str:
+    """Тип пишем даже у пустого значения.
+
+    Без него `values` из одних `null` в колонке получает тип `text`, и
+    вставка падает на несовпадении с `jsonb`. У сетей RBI хоть у одной
+    точки драйв-тру был заполнен, и тип выводился правильно; у McDonald's
+    этой колонки нет ни у кого — и весь обход не записался.
+    """
     if not value:
-        return "null"
+        return "null::jsonb"
     return text(json.dumps(value, ensure_ascii=False, sort_keys=True)) + "::jsonb"
 
 
@@ -87,6 +113,8 @@ def upsert_sql(batch: list[Venue]) -> str:
     `observed_at` обновляется всегда: по нему потом видно, какие точки сеть
     в этот раз не показала, и они удаляются отдельным шагом.
     """
+    if not batch:
+        return ""
     values = ",\n    ".join(row_sql(v) for v in batch)
     return f"""
 insert into venues (chain_id, ext_key, latitude, longitude, address1, city,
