@@ -225,7 +225,7 @@ class Fetcher:
 
 
 def curl_get(url: str, headers: dict[str, str], timeout: int = 45,
-             robots: "Robots | None" = None) -> str | None:
+             robots: "Robots | None" = None, binary: bool = False):
     """Забирает страницу через curl.
 
     Часть сетей за Akamai не отвечает Python-у вовсе: там смотрят на отпечаток
@@ -243,8 +243,13 @@ def curl_get(url: str, headers: dict[str, str], timeout: int = 45,
     for key, value in headers.items():
         command += ["-H", f"{key}: {value}"]
     command.append(url)
-    result = subprocess.run(command, capture_output=True, text=True)
-    return result.stdout if result.returncode == 0 and result.stdout else None
+    # `binary` — для файлов: у PDF по первым байтам видно, файл это или
+    # страница «404», отданная с кодом 200. В текстовом режиме такая
+    # проверка невозможна, декодирование её уже испортило.
+    result = subprocess.run(command, capture_output=True, text=not binary)
+    if result.returncode != 0 or not result.stdout:
+        return None
+    return result.stdout
 
 
 def to_number(value) -> float | None:
