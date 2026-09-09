@@ -28,8 +28,18 @@ MATCH_THRESHOLD = 0.82
 _PAGE_SUFFIX = re.compile(r"\s*nutrition and ingredients\s*$")
 _BRAND_WORDS = re.compile(r"\b(chick fil a|chickfila|mcdonalds)\b")
 
-# Размер — не украшение названия, а другая позиция.
-_SIZE_WORDS = {"small", "medium", "large", "kids", "jr"}
+# Размер — не украшение названия, а другая позиция. Слова здесь работают
+# в обе стороны: `portion` требует их точного совпадения (значит «Giant» и
+# «Mini» друг с другом не спутать), а `comparable` их выбрасывает из
+# сравнения имён (значит «#1 BLT» и «BLT, Giant» — одно блюдо).
+_SIZE_WORDS = {"small", "medium", "large", "kids", "jr", "giant", "mini"}
+
+# Подача — не размер, но для **снимка** такая же мелочь: сеть снимает
+# блюдо один раз, а не отдельно в обёртке и в миске. Отбрасываем только
+# при сопоставлении снимков: для цифр обёртка и миска — разные позиции с
+# разной этикеткой.
+_SERVING_SHAPES = {"regular", "wrap", "bowl", "tub", "sub", "half", "whole",
+                   "single", "double", "combo"}
 
 # Единица счёта. Блюдо отличает число, а не слово при нём: «8 ct Nuggets»
 # и «8 Nuggets» — одно и то же, и пока «ct» попадало в размер, сайт и
@@ -89,12 +99,20 @@ _SERVING_WORDS = re.compile(
 
 
 def dish(name: str) -> str:
-    """Имя блюда без мер и подачи — то, что видно на фотографии."""
+    """Имя блюда без мер, подачи и размера — то, что видно на фотографии.
+
+    Этикетка перечисляет каждое сочетание хлеба и размера — у Jersey
+    Mike's это тысяча сто строк, — а снимков сеть выкладывает сто
+    двадцать пять: по одному на блюдо и форму подачи. Значит для снимка
+    и то и другое надо убрать, иначе «#1 BLT, Seeded Italian Bread,
+    Giant» и «BLT, Giant» не сойдутся.
+    """
     text = _MEASURE.sub(" ", name)
     text = _SERVING_WORDS.sub(" ", text)
     # Пустые скобки и повисшие разделители после вычистки.
     text = re.sub(r"\(\s*\)|\s+-\s+$|,\s*$", " ", text)
-    return comparable(text)
+    words = [w for w in comparable(text).split() if w not in _SERVING_SHAPES]
+    return " ".join(sorted(words))
 
 
 #: Сходство, ниже которого не смотрим даже при полном вхождении слов.
@@ -117,6 +135,24 @@ def _covers(short: str, long: str) -> bool:
     return bool(left) and left <= right
 
 
+#: Уточнение подачи в имени: «#1 BLT **on White** Regular», «Turkey Sub
+#: **on Wheat**». Хлеб — не блюдо, и сеть его отдельно не снимает.
+_ON_QUALIFIER = re.compile(r"\s+on\s+.*$", re.I)
+
+
+def shortenings(name: str) -> list[str]:
+    """Имя блюда, от полного к самому короткому.
+
+    Этикетка перечисляет каждое сочетание блюда, хлеба и размера, а сеть
+    снимает блюдо один раз. Поэтому пробуем сначала имя целиком, потом
+    без уточнений — до первой запятой и до «on». Годится первое, что
+    совпало **точно**: укороченное имя легко спутать с чужим блюдом.
+    """
+    forms = [name, name.split(",", 1)[0], _ON_QUALIFIER.sub("", name),
+             _ON_QUALIFIER.sub("", name.split(",", 1)[0])]
+    return list(dict.fromkeys(d for form in forms if (d := dish(form))))
+
+
 def photo_pairs(shots, stored: dict[str, dict], *,
                 threshold: float = MATCH_THRESHOLD) -> dict[str, object]:
     """Ключ строки каталога → снимок, который ей подходит.
@@ -130,21 +166,20 @@ def photo_pairs(shots, stored: dict[str, dict], *,
 
     chosen: dict[str, object] = {}
     for key, record in stored.items():
-        # Гид уточняет имя разделом и подачей: «Carbonara, Chicken Subs,
-        # Small Sub». Снимку это лишнее — он у блюда один на все подачи,
-        # поэтому пробуем и голову имени, до первой запятой.
-        head = record["name"].split(",", 1)[0]
-        for wanted in dict.fromkeys((dish(record["name"]), dish(head))):
-            if not wanted:
-                continue
+        for wanted in shortenings(record["name"]):
+            # Только точное совпадение: укороченное имя рискует совпасть
+            # с чужим блюдом, и нестрогое сравнение тут ошибётся молча.
             if exact := by_dish.get(wanted):
                 chosen[key] = exact[0]
                 break
         if key in chosen:
             continue
-        wanted = dish(record["name"].split(",", 1)[0]) or dish(record["name"])
-        if not wanted:
+        # Точного совпадения нет — ищем ближайшее, и по самому короткому
+        # имени: у длинного лишние слова про хлеб и размер только мешают.
+        forms = shortenings(record["name"])
+        if not forms:
             continue
+        wanted = forms[-1]
         best_shot, best_ratio, best_name = None, 0.0, ""
         for name, group in by_dish.items():
             ratio = difflib.SequenceMatcher(None, wanted, name).ratio()

@@ -7,6 +7,7 @@
     python3 backend/scripts/crawl_chain.py subway --guide URL    # гид в PDF вместо обхода
     python3 backend/scripts/crawl_chain.py burger-king --sanity  # контент-база сети (RBI)
     python3 backend/scripts/crawl_chain.py mcdonald-s --snapshot # снимок, снятый браузером
+    python3 backend/scripts/crawl_chain.py subway --nutritionix # этикетка у поставщика сети
 
 Без `--apply` не пишется ничего — ни в базу, ни на диск, кроме отчёта.
 Так и задумано: человек сначала смотрит, что кроул собрался сделать.
@@ -40,7 +41,7 @@ from urllib.parse import urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import crawl, pdf_guide, validate
-from plateful_data.adapters import mcdonalds, sanity_rbi, site
+from plateful_data.adapters import mcdonalds, nutritionix, sanity_rbi, site
 from plateful_data.adapters.base import Fetcher, curl_get
 from plateful_data.slug import slugify
 
@@ -231,6 +232,26 @@ def from_sanity(slug: str) -> list[Crawled]:
     return [Crawled(chain=item.chain, ext_key=item.ext_key, name=item.name,
                     source=item.source, source_url=item.source_url,
                     category=item.category,
+                    **{f: getattr(item, f) for f in
+                       ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
+                        "trans_fat", "cholesterol", "sodium", "fiber")})
+            for item in items]
+
+
+def from_nutritionix(slug: str, chain: str) -> list[Crawled]:
+    """Этикетка со страницы поставщика данных о питании сети.
+
+    Сеть публикует её там по закону о маркировке меню, и это те же цифры,
+    что стоят на её собственном сайте, — только собранные в одну таблицу
+    со всеми разделами и размерами. Для нас это полный перечень меню,
+    поэтому `--replace` законен.
+    """
+    items = nutritionix.fetch(slug, chain)
+    print(f"  этикетка: {len(items)} позиций,"
+          f" разделов {len({i.category for i in items})}")
+    return [Crawled(chain=item.chain, ext_key=item.ext_key, name=item.name,
+                    source=item.source, source_url=item.source_url,
+                    category=item.category, serving=item.serving,
                     **{f: getattr(item, f) for f in
                        ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
                         "trans_fat", "cholesterol", "sodium", "fiber")})
@@ -514,6 +535,7 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
     kind = ("pdf" if plan.menu_url.endswith(".pdf")
             else "json_api" if plan.source in {b.domain for b in sanity_rbi.BRANDS.values()}
             else "json_api" if plan.source == mcdonalds.DOMAIN
+            else "label_provider" if plan.source == nutritionix.DOMAIN
             else "json_in_html")
     lines.append(f"update chains set last_crawl_at = now(), source_url = "
                  f"{sql_text(plan.menu_url)}, source_kind = {sql_text(kind)}"
@@ -533,6 +555,8 @@ def main() -> int:
                         help="читать контент-базу сети напрямую (бренды RBI)")
     parser.add_argument("--snapshot", action="store_true",
                         help="взять меню из снимка, снятого браузером")
+    parser.add_argument("--nutritionix", action="store_true",
+                        help="взять этикетку со страницы поставщика сети")
     parser.add_argument("--apply", action="store_true", help="записать в базу")
     parser.add_argument("--replace", action="store_true",
                         help="замена меню: завести новые позиции и увести в "
@@ -553,6 +577,9 @@ def main() -> int:
         menu_url = f"https://www.{brand.domain}/menu" if brand else None
     if args.snapshot:
         menu_url = mcdonalds.MENU_URL
+    if args.nutritionix:
+        menu_url = nutritionix.MENU_URL.format(
+            slug=nutritionix.SLUGS.get(args.chain, args.chain))
     if not menu_url:
         raise SystemExit("адрес меню неизвестен: укажите --menu (он запомнится в chains)")
 
@@ -560,6 +587,8 @@ def main() -> int:
 
     if args.sanity:
         live = from_sanity(args.chain)
+    elif args.nutritionix:
+        live = from_nutritionix(args.chain, row["name"])
     elif args.snapshot:
         live = from_snapshot(args.chain)
     elif args.guide:
@@ -582,16 +611,18 @@ def main() -> int:
     stored = catalog(row["id"])
     print(f"  в каталоге: {len(stored)} позиций")
 
-    if args.replace and not (args.guide or args.sanity or args.snapshot):
+    if args.replace and not (args.guide or args.sanity or args.snapshot
+                             or args.nutritionix):
         raise SystemExit(
-            "--replace только с --guide, --sanity или --snapshot: обход сайта "
-            "неполон по природе, и «мы не дошли до страницы» неотличимо от "
-            "«блюда нет»")
+            "--replace только с полным источником меню (--guide, --sanity, "
+            "--snapshot, --nutritionix): обход сайта неполон по природе, и "
+            "«мы не дошли до страницы» неотличимо от «блюда нет»")
 
     plan = crawl.build(row["name"], live, stored,
                        previous=previous_crawl(row_id, live[0].source),
                        adopt=args.replace,
-                       structured=bool(args.sanity or args.snapshot),
+                       structured=bool(args.sanity or args.snapshot
+                                       or args.nutritionix),
                        source=live[0].source, menu_url=menu_url)
     report(plan)
 

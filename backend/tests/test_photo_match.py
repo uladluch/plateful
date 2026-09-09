@@ -166,5 +166,37 @@ class NearMiss(unittest.TestCase):
         self.assertEqual(found, {})
 
 
+
+
+class Shortenings(unittest.TestCase):
+    """Этикетка перечисляет хлеб и размер, снимок — нет."""
+
+    def test_имя_укорачивается_от_полного_к_блюду(self):
+        forms = matching.shortenings("#1 BLT, Seeded Italian Bread, Giant")
+        self.assertEqual(forms[0], "blt bread italian seeded")
+        self.assertIn("blt", forms)
+
+    def test_хлеб_после_on_отбрасывается(self):
+        """MenuStat писал «#1 BLT on White Regular» — хлеб в имени."""
+        self.assertIn("blt", matching.shortenings("#1 BLT on White Regular"))
+
+    def test_снимок_блюда_годится_всем_его_размерам(self):
+        catalog = {
+            "giant": {"ext_key": "giant", "name": "#1 BLT, Wheat Bread, Giant"},
+            "mini": {"ext_key": "mini", "name": "#1 BLT, White Bread, Mini"},
+            "other": {"ext_key": "other", "name": "Chicken Salad, Regular"},
+        }
+        class Shot:
+            ext_key, name = "blt", "BLT, Giant"
+        found = matching.photo_pairs([Shot()], catalog)
+        self.assertEqual(set(found), {"giant", "mini"})
+
+    def test_чужому_блюду_укороченное_имя_не_помогает(self):
+        catalog = {"club": {"ext_key": "club", "name": "California Club on Wheat Giant"}}
+        class Shot:
+            ext_key, name = "blt", "BLT, Giant"
+        self.assertEqual(matching.photo_pairs([Shot()], catalog), {})
+
+
 if __name__ == "__main__":
     unittest.main()
