@@ -36,8 +36,12 @@ struct VenueDetailView: View {
                 if let phone = venue.phone {
                     LabeledContent("Phone", value: phone)
                 }
-                LabeledContent("Distance",
-                               value: NearbyView.distance(venue.distance))
+                // Ноль — это «неизвестно», а не «вплотную»: карточки без
+                // геопозиции человека получают заведение без расстояния.
+                if venue.distance > 0 {
+                    LabeledContent("Distance",
+                                   value: NearbyView.distance(venue.distance))
+                }
                 if let priceBand {
                     LabeledContent("Prices", value: priceBand)
                 }
