@@ -72,7 +72,11 @@ struct ItemDetailView: View {
                 macro("Carbs", value: shown.carbsText, color: Tokens.Color.carbs)
                 macro("Fat", value: shown.fatText, color: Tokens.Color.fat)
             } header: {
-                Text(item.chain)
+                // Заголовок страницы переехал сюда: имя без размера, тот же
+                // повод, что был у navigationTitle — «L» и так виден в
+                // переключателе, а у одинокого блюда без вариантов размер
+                // остаётся частью имени, отрезать его нечестно.
+                Text(variants.count > 1 ? item.baseName : item.name)
             }
 
             label
@@ -100,11 +104,10 @@ struct ItemDetailView: View {
                 }
             }
         }
-        // Заголовок без размера: он не должен прыгать при переключении
-        // сегмента — размер и так виден в переключателе. Но только там, где
-        // переключатель есть: у одинокой «Apple Slices, 1 Package» размер —
-        // часть названия, и отрезать его нечестно.
-        .navigationTitle(variants.count > 1 ? item.baseName : item.name)
+        // Заголовка в навбаре больше нет — имя блюда переехало в шапку
+        // раздела с калориями. Пустая строка оставляет системную кнопку
+        // «Назад», не дублируя название.
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
