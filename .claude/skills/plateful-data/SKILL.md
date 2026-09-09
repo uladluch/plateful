@@ -33,6 +33,11 @@ Service key — только в GitHub Secrets / локальном `.env`, ни
 ```
 сайты сетей → адаптеры → нормализация → валидация → Postgres (истина)
                                                       ↓ экспорт
+сеть попадает в приложение целиком или не попадает вовсе:
+`export_pack.py` берёт только те, у кого снимки ≥90% и свежие цифры ≥90%
+живого меню (`plateful_data.pack.readiness`). Полный каталог конвейера —
+`backend/data/catalog.json`, в бандл едет опубликованный пак.
+
 приложение ← Storage: packs/v{N}.deflate (0.56 MB) + manifest.json
 ```
 Клиент читает только `manifest.json` и пак. Пишет только `search_events` (anon key, RLS INSERT-only).

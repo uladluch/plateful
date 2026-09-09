@@ -38,7 +38,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "backend" / "data" / "official-photos"
 BUCKET_URL = "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos"
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 SIDE = 1000
 SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
 

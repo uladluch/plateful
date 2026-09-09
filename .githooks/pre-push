@@ -36,14 +36,14 @@ if grep -qE '^(plateful/|platefulTests/|plateful\.xcodeproj/)' <<<"$changed"; th
     printf 'ок\n'
 fi
 
-# Сид-пак в бандле обязан совпадать с пересборкой: он детерминирован, и
-# расхождение значит, что правило конвейера поменяли, а пак не пересобрали.
+# Каталог конвейера обязан совпадать с пересборкой: он детерминирован, и
+# расхождение значит, что правило поменяли, а каталог не пересобрали.
 if grep -qE '^backend/plateful_data/' <<<"$changed"; then
-    printf '→ сид-пак актуален… '
-    before=$(shasum -a 256 plateful/Resources/seed-pack.json | cut -d' ' -f1)
-    python3 backend/scripts/build_seed.py >/tmp/plateful-seed.log 2>&1 || fail "сборка сид-пака"
-    after=$(shasum -a 256 plateful/Resources/seed-pack.json | cut -d' ' -f1)
-    [ "$before" = "$after" ] || fail "сид-пак в бандле устарел — пересоберите и закоммитьте"
+    printf '→ каталог конвейера актуален… '
+    before=$(shasum -a 256 backend/data/catalog.json | cut -d' ' -f1)
+    python3 backend/scripts/build_seed.py >/tmp/plateful-seed.log 2>&1 || fail "сборка каталога"
+    after=$(shasum -a 256 backend/data/catalog.json | cut -d' ' -f1)
+    [ "$before" = "$after" ] || fail "backend/data/catalog.json устарел — пересоберите и закоммитьте"
     printf 'ок\n'
 fi
 

@@ -29,7 +29,7 @@ from plateful_data.adapters import chick_fil_a, mcdonalds
 from plateful_data.adapters.base import BROWSER_HEADERS, Fetcher, curl_get
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 
 # Порог намеренно мягкий: ошибочно пометить живое блюдо снятым хуже, чем
 # оставить снятое непомеченным. Сомнение — в пользу того, что блюдо есть.

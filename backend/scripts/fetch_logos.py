@@ -30,7 +30,7 @@ from plateful_data.adapters.base import USER_AGENT, Fetcher
 from plateful_data.slug import slugify
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 ASSETS = ROOT / "plateful" / "Assets.xcassets" / "Logos"
 REPORT = ROOT / "backend" / "data" / "logos.json"
 

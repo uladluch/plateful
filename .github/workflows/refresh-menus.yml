@@ -51,6 +51,6 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, collections, pathlib
-          pack = json.loads(pathlib.Path("plateful/Resources/seed-pack.json").read_text())
+          pack = json.loads(pathlib.Path("backend/data/catalog.json").read_text())
           print(f"позиций в сиде: {len(pack['items'])}")
           PY

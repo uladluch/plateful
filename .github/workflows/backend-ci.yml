@@ -35,7 +35,7 @@ jobs:
 
       # Пак в бандле обязан совпадать с тем, что собирается из исходника.
       - name: Пак в репозитории актуален
-        run: git diff --exit-code -- plateful/Resources/seed-pack.json
+        run: git diff --exit-code -- backend/data/catalog.json
 
       - uses: actions/upload-artifact@v5
         with:

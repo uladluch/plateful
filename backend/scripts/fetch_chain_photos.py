@@ -36,7 +36,7 @@ from plateful_data.adapters import chick_fil_a
 from plateful_data.adapters.base import USER_AGENT, Fetcher
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 BUCKET_URL = "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos"
 SIDE = 1000
 MATCH_THRESHOLD = 0.82

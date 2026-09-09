@@ -116,6 +116,20 @@ def fetch_all() -> list[Row]:
 MAX_LOSS = 0.05
 
 
+def ready(rows: list[Row]) -> tuple[list[Row], list[str]]:
+    """Позиции готовых сетей и отчёт по всем — строкой на сеть.
+
+    Правило одно на пак и на бандл и живёт в `plateful_data.pack`.
+    """
+    scored = pack.readiness(
+        (r.chain, bool(r.photo), not r.stale, r.off_menu) for r in rows)
+    passed = {chain for chain, score in scored.items() if score.ok}
+    lines = [f"  {'✓' if chain in passed else '×'} {chain[:26]:26} {score}"
+             for chain, score in sorted(scored.items(),
+                                        key=lambda kv: (-kv[1].photos, -kv[1].fresh))]
+    return [r for r in rows if r.chain in passed], lines
+
+
 def previous_items(version: int) -> list[dict] | None:
     """Позиции прошлого пака — с диска, а если его там нет, из Storage.
 
@@ -175,6 +189,18 @@ def main() -> int:
     if not rows:
         print("База пуста — сначала load_seed.py", file=sys.stderr)
         return 1
+
+    rows, report = ready(rows)
+    print(f"\n── Готовность сетей ── порог: снимки {pack.PHOTO_SHARE:.0%},"
+          f" свежих {pack.FRESH_SHARE:.0%}")
+    for line in report[:12]:
+        print(line)
+    if len(report) > 12:
+        print(f"  … ещё {len(report) - 12} сетей ниже порога")
+    if not rows:
+        print("Ни одна сеть не готова — публиковать нечего.", file=sys.stderr)
+        return 1
+
     rows.sort(key=lambda r: (r.chain, r.name))
 
     built = pack.build(rows, version=args.version, source="", observed="")

@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 OUT = Path("/private/tmp/claude-501/-Users-uladluch-Developer-plateful/"
            "612631b9-7bde-474b-8bad-c3ec8cb8b36a/scratchpad/items")
 

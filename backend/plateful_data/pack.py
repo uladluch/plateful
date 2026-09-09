@@ -38,6 +38,7 @@ import hashlib
 import json
 import zlib
 from collections import Counter
+from dataclasses import dataclass
 
 from .archetype import classify
 from .taxonomy import SECTION_ORDER, section
@@ -55,6 +56,70 @@ def _mode(values, fallback):
     """Самое частое значение — оно и станет умолчанием пака."""
     counted = Counter(values)
     return counted.most_common(1)[0][0] if counted else fallback
+
+
+# ── Готовность сети ────────────────────────────────────────────────────
+#
+# Сеть попадает в приложение целиком или не попадает вовсе. Наполовину
+# собранная выглядит хуже, чем отсутствующая: человек открывает меню,
+# видит блюда без снимков и цифры пятилетней давности вперемешку со
+# свежими — и перестаёт верить и тем, и другим. Отсутствие сети он
+# объясняет себе сам, а битую карточку объясняет качеством приложения.
+#
+# Порог не «всё до последней позиции»: у сети всегда найдётся напиток,
+# который она сама нигде не сфотографировала. Десятая часть — это то, что
+# не бросается в глаза при листании.
+PHOTO_SHARE = 0.90
+FRESH_SHARE = 0.90
+
+
+@dataclass(frozen=True)
+class Readiness:
+    """Насколько сеть готова показаться человеку."""
+    items: int
+    photos: float
+    fresh: float
+
+    @property
+    def ok(self) -> bool:
+        return self.photos >= PHOTO_SHARE and self.fresh >= FRESH_SHARE
+
+    def __str__(self) -> str:
+        return f"{self.items:>5} поз.  снимки {self.photos:5.0%}  свежих {self.fresh:5.0%}"
+
+
+def readiness(rows) -> dict[str, Readiness]:
+    """Готовность каждой сети. `rows` — (сеть, есть снимок, свежая, снята с меню).
+
+    Архивные позиции в счёт не идут: у снятого с меню блюда снимка нет и
+    не будет, а дата у него старая по определению. Судить по ним готовность
+    сети — значит наказывать её за то, что мы честно храним её прошлое.
+    """
+    counts: dict[str, list[int]] = {}
+    for chain, has_photo, fresh, off_menu in rows:
+        if off_menu:
+            continue
+        bucket = counts.setdefault(chain, [0, 0, 0])
+        bucket[0] += 1
+        bucket[1] += bool(has_photo)
+        bucket[2] += bool(fresh)
+    return {chain: Readiness(n, photos / n, fresh / n)
+            for chain, (n, photos, fresh) in counts.items() if n}
+
+
+def pack_rows(built: dict):
+    """Строки готовности из собранного пака — он несёт всё нужное сам."""
+    default_stale = bool(built.get("stale", True))
+    for item in built["items"]:
+        yield (item["chain"], bool(item.get("photo")),
+               not bool(item.get("stale", default_stale)),
+               bool(item.get("offMenu")))
+
+
+def unready(built: dict) -> dict[str, Readiness]:
+    """Сети собранного пака, которые показывать нельзя."""
+    return {chain: score for chain, score in readiness(pack_rows(built)).items()
+            if not score.ok}
 
 
 def build(items, *, version: int, source: str, observed: str) -> dict:

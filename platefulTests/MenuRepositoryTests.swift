@@ -9,11 +9,16 @@ struct MenuRepositoryTests {
 
     /// Настоящий сид из бандла приложения — заодно проверка, что конвейер
     /// действительно положил файл туда, откуда его ждёт PackStore.
-    @Test("сид из бандла грузится и содержит ключевые сети")
+    ///
+    /// В бандле лежит **опубликованный** пак, а не весь каталог: сеть едет
+    /// в приложение целиком или не едет вовсе, и отбор делает
+    /// `export_pack.py`. Поэтому сетей здесь единицы, а не девяносто шесть,
+    /// и проверять надо не их число, а что каждая пришла не пустой.
+    @Test("сид из бандла грузится и каждая его сеть непуста")
     func loadsBundledSeed() async throws {
         let seedURL = try #require(
             Bundle.main.url(forResource: PackStore.seedResource, withExtension: "json"),
-            "seed-pack.json нет в бандле — проверьте build_seed.py")
+            "seed-pack.json нет в бандле — кладёт его publish_pack.sh")
 
         let directory = FileManager.default.temporaryDirectory
             .appending(path: "repo-\(UUID().uuidString)", directoryHint: .isDirectory)
@@ -27,13 +32,16 @@ struct MenuRepositoryTests {
         await repository.load()
 
         let catalog = try #require(repository.catalog, "каталог не загрузился")
-        #expect(catalog.items.count > 20_000)
-        #expect(catalog.chains.count == 96)
+        #expect(catalog.items.count > 1_000)
+        #expect(!catalog.chains.isEmpty)
 
-        for chain in ["McDonald's", "Chick-Fil-A", "Starbucks", "Subway",
-                      "Chipotle", "Panera Bread", "Taco Bell", "Wendy's"] {
-            #expect(!repository.items(in: chain).isEmpty, "нет позиций у \(chain)")
+        // Сеть, объявленная в паке, обязана иметь позиции: пустая строка в
+        // списке — это дыра в отборе, а не «сеть без блюд».
+        for chain in catalog.chains {
+            #expect(!repository.items(in: chain.name).isEmpty,
+                    "нет позиций у \(chain.name)")
         }
+        #expect(repository.items(in: "McDonald's").count > 100)
     }
 
     @Test("поиск через репозиторий находит ожидаемое")
@@ -41,7 +49,7 @@ struct MenuRepositoryTests {
         let repository = try await loadedRepository()
         #expect(repository.search("big mac").first?.name == "Big Mac")
         #expect(repository.search("mcdonalds big mac").first?.chain == "McDonald's")
-        #expect(repository.search("baconator").first?.chain == "Wendy's")
+        #expect(repository.search("whopper").first?.chain == "Burger King")
     }
 
     @Test("позиция достаётся по устойчивой ссылке")
@@ -94,7 +102,7 @@ struct MenuRepositoryTests {
         for attempt in attempts { await attempt.value }
 
         let catalog = try #require(repository.catalog)
-        #expect(catalog.items.count > 20_000)
+        #expect(catalog.items.count > 1_000)
         guard case .ready = repository.state else {
             Issue.record("после гонки состояние должно быть .ready, а не \(repository.state)")
             return

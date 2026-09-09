@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
-"""Собирает seed-пак из MenuStat 2018.
+"""Собирает каталог конвейера из MenuStat 2018.
 
   python3 scripts/build_seed.py [--cache PATH]
 
 На выходе:
-  plateful/Resources/seed-pack.json   — едет в бандле приложения
-  backend/data/seed-pack.deflate      — то же, сжатое (для Storage)
-  backend/data/manifest.json
+  backend/data/catalog.json           — полный каталог: из него живёт
+                                        конвейер (load_seed, аудит, поиск
+                                        снимков) и его сверяет CI
+  backend/data/seed-pack-v1.deflate   — то же, сжатое
   backend/data/problems.csv           — что не прошло валидацию
+
+**В бандл приложения этот файл не едет.** Там лежит опубликованный пак,
+и кладёт его туда `publish_pack.sh`: приложение показывает только сети,
+собранные целиком, а конвейеру нужны все девяносто шесть — иначе
+`load_seed.py` затрёт базу тем, что осталось после отбора.
+
+Детерминирован: пересборка из того же исходника даёт тот же байт, и на
+этом держится проверка «каталог не устарел» в CI и в pre-push.
 """
 from __future__ import annotations
 
@@ -22,9 +31,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from plateful_data import menustat, pack, validate
 
 ROOT = Path(__file__).resolve().parents[2]
-BUNDLE_JSON = ROOT / "plateful" / "Resources" / "seed-pack.json"
+CATALOG_JSON = ROOT / "backend" / "data" / "catalog.json"
 DATA = ROOT / "backend" / "data"
-STORAGE_URL = "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs/v{v}.deflate"
 
 
 def main() -> int:
@@ -80,16 +88,12 @@ def main() -> int:
 
     built = pack.build(cleaned, version=args.version,
                        source=menustat.SOURCE, observed=menustat.OBSERVED_AT)
-    meta = pack.write(built, json_path=BUNDLE_JSON,
+    meta = pack.write(built, json_path=CATALOG_JSON,
                       deflate_path=DATA / f"seed-pack-v{args.version}.deflate")
 
-    (DATA / "manifest.json").write_text(
-        json.dumps(pack.manifest(meta, url=STORAGE_URL.format(v=args.version)),
-                   ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    print(f"\nПак v{meta['version']}: {meta['itemCount']:,} позиций")
-    print(f"  bundle {meta['bytes']/1e6:.2f} MB → deflate {meta['compressedBytes']/1e6:.2f} MB")
-    print(f"  {BUNDLE_JSON.relative_to(ROOT)}")
+    print(f"\nКаталог конвейера v{meta['version']}: {meta['itemCount']:,} позиций")
+    print(f"  {meta['bytes']/1e6:.2f} MB → deflate {meta['compressedBytes']/1e6:.2f} MB")
+    print(f"  {CATALOG_JSON.relative_to(ROOT)}")
     return 0
 
 

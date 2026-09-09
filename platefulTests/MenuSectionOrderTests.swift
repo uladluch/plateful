@@ -87,7 +87,9 @@ struct MenuSectionOrderTests {
         // Рыба и курица завтраком не стали.
         #expect(!names.contains("Filet O Fish"))
         #expect(!names.contains("McChicken"))
-        // Напитки остались напитками.
-        #expect(sections.last { !$0.isArchive }?.title == "Toppings & Ingredients")
+        // Напитки остались напитками, а не уехали в завтрак.
+        let drinks = try #require(sections.first { $0.title == "Beverages" })
+        #expect(drinks.items.contains { $0.name.contains("Coffee") })
+        #expect(!names.contains { $0.contains("Coffee") })
     }
 }

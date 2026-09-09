@@ -43,7 +43,7 @@ def search_name(name: str) -> str:
     return " ".join(cleaned.split())
 
 ROOT = Path(__file__).resolve().parents[2]
-PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
+PACK = ROOT / "backend" / "data" / "catalog.json"
 OUT = ROOT / "backend" / "data" / "photo-candidates"
 
 API = "https://api.openverse.org/v1/images/"

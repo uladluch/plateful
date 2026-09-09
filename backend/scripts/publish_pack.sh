@@ -2,16 +2,22 @@
 # Публикация пака: база → файл → Storage → запись о релизе.
 #
 #   ./backend/scripts/publish_pack.sh 3
+#   ./backend/scripts/publish_pack.sh 3 --allow-loss   # пак беднее намеренно
 #
 # Пароль базы и service-ключ не нужны: всё делает supabase CLI по своему
 # access-токену. Один раз локально: supabase login && supabase link.
 set -euo pipefail
 
 VERSION="${1:?Укажите версию: publish_pack.sh 3}"
+shift
+# Остальные флаги уходят сборщику: --allow-loss нужен, когда пак
+# беднеет намеренно — например, когда порог готовности отсекает сети.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 DEFLATE="backend/data/pack-v${VERSION}.deflate"
+PACK_JSON="backend/data/pack-v${VERSION}.json"
+BUNDLE="plateful/Resources/seed-pack.json"
 MANIFEST="backend/data/manifest.json"
 BASE_URL="https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/packs"
 
@@ -21,7 +27,7 @@ echo "── Разделы и варианты → база ──"
 python3 backend/scripts/sync_taxonomy.py
 
 echo "── Сборка пака из базы ──"
-python3 backend/scripts/export_pack.py --version "$VERSION"
+python3 backend/scripts/export_pack.py --version "$VERSION" "$@"
 
 echo "── Загрузка в Storage ──"
 # Версии пака кэшируются как неизменяемые, поэтому подменять уже выложенный
@@ -82,5 +88,13 @@ on conflict (version) do update set pack_url = excluded.pack_url,
 PY
 supabase db query --linked -f /tmp/release.sql >/dev/null
 rm -f /tmp/release.sql
+
+# Бандл приложения несёт тот же пак, что и Storage: до первой загрузки —
+# и вообще без сети — человек должен видеть тот же отобранный каталог, а
+# не всё, что есть в базе. Полный каталог конвейера живёт отдельно, в
+# backend/data/catalog.json, и в бандл не попадает.
+echo "── Пак → бандл приложения ──"
+cp "$PACK_JSON" "$BUNDLE"
+du -h "$BUNDLE" | sed "s/^/  /"
 
 echo "Пак v${VERSION} опубликован."
