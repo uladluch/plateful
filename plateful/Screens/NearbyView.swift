@@ -102,7 +102,7 @@ struct NearbyView: View {
                     .listRowInsets(EdgeInsets())
             }
 
-            Section("Restaurants around you") {
+            Section {
                 ForEach(nearby.venues) { venue in
                     NavigationLink {
                         VenueDetailView(venue: venue,
@@ -113,9 +113,11 @@ struct NearbyView: View {
                         venueRow(venue)
                     }
                 }
+            } header: {
+                SectionTitle("Restaurants around you")
             }
 
-            Section("Chains around you") {
+            Section {
                 ForEach(chains) { found in
                     NavigationLink {
                         ChainMenuView(chain: chain(named: found.chain))
@@ -123,6 +125,8 @@ struct NearbyView: View {
                         row(found)
                     }
                 }
+            } header: {
+                SectionTitle("Chains around you")
             }
 
             if filter.isNarrowing {
@@ -210,7 +214,7 @@ struct NearbyView: View {
             menu.catalog?.items(in: $0.chain) ?? []
         })
 
-        Section("Fits your goals nearby") {
+        Section {
             if items.isEmpty {
                 Text("Nothing on these menus fits.")
                     .foregroundStyle(Tokens.Color.textSecondary)
@@ -223,6 +227,8 @@ struct NearbyView: View {
                     }
                 }
             }
+        } header: {
+            SectionTitle("Fits your goals nearby")
         }
     }
 

@@ -24,7 +24,7 @@ struct OrderView: View {
             Section {
                 TotalsRow(totals: order.totals)
             } header: {
-                Text("Total")
+                SectionTitle("Total")
             } footer: {
                 Text(footnote)
             }
@@ -43,7 +43,7 @@ struct OrderView: View {
                     isPickingItem = true
                 }
             } header: {
-                Text("Items")
+                SectionTitle("Items")
             }
         }
         .navigationTitle(order.chain)

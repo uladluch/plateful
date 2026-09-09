@@ -25,7 +25,7 @@ struct ComparisonView: View {
                     NutrientRow(row: row)
                 }
             } header: {
-                Text("Difference is right minus left")
+                SectionTitle("Difference is right minus left")
             }
 
             if let fit = comparison.meetsGoals(goals.first?.filter ?? .none) {
@@ -33,7 +33,7 @@ struct ComparisonView: View {
                     goalFit(comparison.left, meets: fit.left)
                     goalFit(comparison.right, meets: fit.right)
                 } header: {
-                    Text("Your goals")
+                    SectionTitle("Your goals")
                 } footer: {
                     Text("Whether each dish fits the goals you set. Which one is better is your call, not ours.")
                 }

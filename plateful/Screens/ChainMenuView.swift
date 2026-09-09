@@ -116,7 +116,7 @@ struct ChainMenuView: View {
                 Section {
                     itemShelf(section.items)
                 } header: {
-                    sectionHeader(section.title)
+                    SectionTitle(section.title)
                 }
             }
         }
@@ -140,7 +140,7 @@ struct ChainMenuView: View {
                 Section {
                     itemShelf(section.items)
                 } header: {
-                    sectionHeader(section.title)
+                    SectionTitle(section.title)
                 }
             }
 
@@ -156,17 +156,6 @@ struct ChainMenuView: View {
                 }
             }
         }
-    }
-
-    /// Заголовок раздела — не мелкий системный header, а Headline 3, жирным,
-    /// основным цветом текста: разделы здесь несут вес заголовков блюда, а
-    /// не служебную подпись над списком.
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.title3)
-            .fontWeight(.bold)
-            .foregroundStyle(Tokens.Color.textPrimary)
-            .textCase(nil)
     }
 
     /// Позиции раздела как лента карточек, вбок: их пролистывают пальцем,
@@ -279,7 +268,7 @@ struct ChainMenuView: View {
                 .listRowSeparator(.hidden)
             }
         } header: {
-            sectionHeader(showsDistance ? "Closest to you" : "Locations")
+            SectionTitle(showsDistance ? "Closest to you" : "Locations")
         }
     }
 

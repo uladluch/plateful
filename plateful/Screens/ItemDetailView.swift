@@ -76,7 +76,7 @@ struct ItemDetailView: View {
                 // повод, что был у navigationTitle — «L» и так виден в
                 // переключателе, а у одинокого блюда без вариантов размер
                 // остаётся частью имени, отрезать его нечестно.
-                Text(variants.count > 1 ? item.baseName : item.name)
+                SectionTitle(variants.count > 1 ? item.baseName : item.name)
             }
 
             label
@@ -235,7 +235,7 @@ struct ItemDetailView: View {
                     }
                 }
             } header: {
-                Text("Label")
+                SectionTitle("Label")
             }
         }
     }

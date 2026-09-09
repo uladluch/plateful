@@ -37,7 +37,7 @@ struct PhotoCreditsView: View {
                     row(credit)
                 }
             } header: {
-                Text("\(credits.count) images")
+                SectionTitle("\(credits.count) images")
             } footer: {
                 Text("Photographs and logos used under Creative Commons licences. Images in the public domain or under CC0 are not listed, as they require no credit.")
             }

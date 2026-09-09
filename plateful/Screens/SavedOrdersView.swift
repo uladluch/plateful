@@ -83,7 +83,7 @@ private struct SavedOrderDetailView: View {
             if let catalog = menu.catalog {
                 let resolved = ResolvedOrder(saved: saved, catalog: catalog)
                 List {
-                    Section("Total") {
+                    Section {
                         LabeledContent("Calories") {
                             Text(resolved.order.totals.kcal
                                 .formatted(.number.precision(.fractionLength(0))))
@@ -98,9 +98,11 @@ private struct SavedOrderDetailView: View {
                         LabeledContent("Fat") {
                             Text(MenuItem.grams(resolved.order.totals.fat)).monospacedDigit()
                         }
+                    } header: {
+                        SectionTitle("Total")
                     }
 
-                    Section("Items") {
+                    Section {
                         ForEach(resolved.order.lines) { line in
                             NavigationLink(value: line.item) {
                                 LabeledContent {
@@ -110,6 +112,8 @@ private struct SavedOrderDetailView: View {
                                 }
                             }
                         }
+                    } header: {
+                        SectionTitle("Items")
                     }
 
                     // Блюдо ещё в каталоге, но сеть его больше не продаёт.
@@ -121,7 +125,7 @@ private struct SavedOrderDetailView: View {
                                     .foregroundStyle(Tokens.Color.staleWarning)
                             }
                         } header: {
-                            Text("No longer on the menu")
+                            SectionTitle("No longer on the menu")
                         } footer: {
                             Text("Still counted in the total, but you may not be able to order them.")
                         }
@@ -136,7 +140,7 @@ private struct SavedOrderDetailView: View {
                                     .foregroundStyle(Tokens.Color.staleWarning)
                             }
                         } header: {
-                            Text("No longer on the menu")
+                            SectionTitle("No longer on the menu")
                         } footer: {
                             Text("These are not counted in the total.")
                         }

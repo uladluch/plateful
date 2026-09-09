@@ -155,7 +155,8 @@ struct ChainsView: View {
 
     private func nearbyShelf(_ chains: [NearbyChain]) -> some View {
         VStack(alignment: .leading, spacing: Tokens.Spacing.s) {
-            sectionHeader("Restaurants Near Me")
+            SectionTitle("Restaurants Near Me")
+                .padding(.horizontal, Tokens.Spacing.m)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: Tokens.Spacing.m) {
@@ -171,16 +172,6 @@ struct ChainsView: View {
                 .padding(.horizontal, Tokens.Spacing.m)
             }
         }
-    }
-
-    /// Тот же вес заголовка, что у разделов меню сети: обе витрины —
-    /// разрез одного каталога, и должны читаться одной системой.
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.title3)
-            .fontWeight(.bold)
-            .foregroundStyle(Tokens.Color.textPrimary)
-            .padding(.horizontal, Tokens.Spacing.m)
     }
 
     /// Спрашивать заново нельзя — только подхватить решение, которое уже

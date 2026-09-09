@@ -25,7 +25,7 @@ struct ProfileView: View {
                     goalPicker("Protein floor", selection: $proteinFloor,
                                options: Self.proteinOptions) { MenuItem.grams(Double($0)) }
                 } header: {
-                    Text("Goals")
+                    SectionTitle("Goals")
                 } footer: {
                     Text("Used to filter menus. Leave them off and nothing is hidden.")
                 }
