@@ -325,11 +325,11 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
             # группу блюд внутри него.
             if _PAGE_MARKER.match(line.strip()):
                 continue
-            pending = line.strip()
+            pending = _PAGE_IN_HEADING.sub("", line.strip())
             if outer := _outer(line):
                 section = outer
             elif heading := _heading(line):
-                previous_category, category = category, heading
+                previous_category, category = category, _PAGE_IN_HEADING.sub("", heading)
             continue
         name, cells = split
         serving = pulled
@@ -415,6 +415,11 @@ MIN_PAGES_FOR_FURNITURE = 8
 #: Номер страницы: «Page 31», «- 12 -», просто «7». Не заголовок и не имя
 #: блюда, но выглядит и тем и другим, и у Panera попадал в категорию.
 _PAGE_MARKER = re.compile(r"^(?:page\s*)?[-–—\s]*\d{1,3}[-–—\s]*$", re.I)
+
+#: Номер страницы, приклеенный к заголовку раздела: «Chicken Subs (Page 1
+#: of 9)». В гиде это колонтитул, а у нас он уезжал в имя блюда и
+#: доезжал до карточки: «Carbonara, Chicken Subs (Page 1 of 9), Small Sub».
+_PAGE_IN_HEADING = re.compile(r"\s*\(\s*page\s+\d+\s+of\s+\d+\s*\)\s*$", re.I)
 
 
 def without_furniture(pages: list[str]) -> str:

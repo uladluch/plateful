@@ -110,11 +110,20 @@ def photo_pairs(shots, stored: dict[str, dict], *,
 
     chosen: dict[str, object] = {}
     for key, record in stored.items():
-        wanted = dish(record["name"])
-        if not wanted:
+        # Гид уточняет имя разделом и подачей: «Carbonara, Chicken Subs,
+        # Small Sub». Снимку это лишнее — он у блюда один на все подачи,
+        # поэтому пробуем и голову имени, до первой запятой.
+        head = record["name"].split(",", 1)[0]
+        for wanted in dict.fromkeys((dish(record["name"]), dish(head))):
+            if not wanted:
+                continue
+            if exact := by_dish.get(wanted):
+                chosen[key] = exact[0]
+                break
+        if key in chosen:
             continue
-        if exact := by_dish.get(wanted):
-            chosen[key] = exact[0]
+        wanted = dish(record["name"].split(",", 1)[0]) or dish(record["name"])
+        if not wanted:
             continue
         best_shot, best_ratio = None, 0.0
         for name, group in by_dish.items():

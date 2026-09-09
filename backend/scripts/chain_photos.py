@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PIL import Image
 
 from plateful_data import matching
-from plateful_data.adapters import gotofoods, mcdonalds, panera, sanity_rbi
+from plateful_data.adapters import gotofoods, mcdonalds, panera, quiznos, sanity_rbi
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,6 +59,8 @@ RIGHTS = {
                      "Source: mcdonalds.com", mcdonalds.MENU_URL),
     panera.SLUG: ("© Panera Bread. Used with permission. Source: panerabread.com",
                   panera.MENU_URL),
+    quiznos.SLUG: ("© Quiznos. Used with permission. Source: quiznos.com",
+                   quiznos.MENU_URL),
     **{b.slug: (f"© {b.name}. Used with permission. Source: {b.domain}",
                 f"https://www.{b.domain}/menu")
        for b in gotofoods.BRANDS.values()},
@@ -71,6 +73,8 @@ def shots(slug: str) -> tuple[str, list]:
         return mcdonalds.CHAIN, [i for i in mcdonalds.load() if i.image_url]
     if slug == panera.SLUG:
         return panera.CHAIN, panera.catalog()
+    if slug == quiznos.SLUG:
+        return quiznos.CHAIN, quiznos.catalog()
     if brand := gotofoods.BRANDS.get(slug):
         return brand.name, [i for i in gotofoods.catalog(brand) if i.image_url]
     brand = sanity_rbi.BRANDS[slug]
@@ -101,9 +105,14 @@ def catalog_keys(slug: str) -> tuple[int, dict[str, dict], set[str]]:
     if not rows:
         raise SystemExit(f"сети {slug} нет в chains")
     chain_id = rows[0]["id"]
+    # Только живое меню: снятому с меню блюду снимок не нужен, а в
+    # сопоставлении оно мешает — у Quiznos архивные строки 2018 года
+    # разбирали снимки вместо нынешних сабов.
     catalog = {r["ext_key"]: r for r in query(
-        f"select ext_key, name from items where chain_id = {chain_id}"
-        " and valid_to is null;")}
+        f"select i.ext_key, i.name from items i where i.chain_id = {chain_id}"
+        " and i.valid_to is null and not exists ("
+        "  select 1 from menu_presence p where p.chain_id = i.chain_id"
+        "   and p.ext_key = i.ext_key and p.on_menu is false);")}
     have = {r["ext_key"] for r in query(
         f"select ext_key from item_photos where chain_id = {chain_id};")}
     return chain_id, catalog, have
