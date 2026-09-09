@@ -13,15 +13,24 @@ struct VenueDetailView: View {
     /// `$$` — полоса по сети, а не чек этого ресторана. Разницу проговаривает
     /// подпись под разделом, иначе цифру прочтут как обещание.
     var priceBand: String?
+    /// Сеть каталога — чтобы отсюда открывалось её меню. `nil`, если сети
+    /// в паке нет: так бывает на запасном пути, когда точки нашла карта.
+    var menuChain: MenuChain?
 
-    @Environment(\.dismiss) private var dismiss
     @State private var mapItem: MKMapItem?
     @State private var showsMapCard = false
     @State private var lookingUp = false
 
     var body: some View {
-        NavigationStack {
-            List {
+        List {
+                Section {
+                    // Как это выглядит: вид с улицы или спутник. Ради того,
+                    // чтобы этот ресторан отличался от следующего.
+                    VenueImage(venue: venue, chain: venue.chain, side: 220)
+                        .frame(maxWidth: .infinity)
+                        .listRowInsets(EdgeInsets())
+                }
+
                 Section {
                     LabeledContent("Address", value: venue.address)
                     if let phone = venue.phone {
@@ -50,6 +59,16 @@ struct VenueDetailView: View {
                     }
                 }
 
+                if let menuChain {
+                    Section {
+                        NavigationLink {
+                            ChainMenuView(chain: menuChain)
+                        } label: {
+                            Label("See the menu", systemImage: Tokens.Symbol.chain)
+                        }
+                    }
+                }
+
                 Section {
                     Button {
                         openInMaps()
@@ -70,16 +89,10 @@ struct VenueDetailView: View {
                     }
                     .disabled(lookingUp)
                 }
-            }
-            .navigationTitle(venue.chain)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .mapItemDetailSheet(isPresented: $showsMapCard, item: mapItem)
         }
+        .navigationTitle(venue.chain)
+        .navigationBarTitleDisplayMode(.inline)
+        .mapItemDetailSheet(isPresented: $showsMapCard, item: mapItem)
     }
 
     @ViewBuilder
@@ -183,6 +196,32 @@ struct VenueDetailView: View {
         case "parking": "parkingsign"
         case "playground": "figure.play"
         default: "checkmark.circle"
+        }
+    }
+}
+
+
+/// Та же карточка, открытая с карты.
+///
+/// С булавки она приходит шитом, из списка — пушем в тот же стек, поэтому
+/// навигационную обвязку добавляет обёртка, а не сама карточка: иначе
+/// пуш вкладывал бы один `NavigationStack` в другой.
+struct VenueDetailSheet: View {
+
+    let venue: Venue
+    var priceBand: String?
+    var menuChain: MenuChain?
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VenueDetailView(venue: venue, priceBand: priceBand, menuChain: menuChain)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
+                }
         }
     }
 }

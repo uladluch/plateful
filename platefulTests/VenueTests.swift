@@ -209,6 +209,28 @@ struct VenueTests {
         #expect(chain.itemCount == 169)
     }
 
+    // MARK: - Снимок заведения
+
+    /// Кадр строки и кадр шапки — разные картинки, и общий ключ подсунул
+    /// бы карточке растянутый кадр строки.
+    @Test("размер входит в ключ кадра")
+    func snapshotKeyIncludesSize() {
+        let venue = Self.venue("Popeyes", 100, key: "12345")
+
+        #expect(VenueSnapshot.key(venue, side: 168) == "Popeyes#12345@168")
+        #expect(VenueSnapshot.key(venue, side: 168)
+                != VenueSnapshot.key(venue, side: 660))
+    }
+
+    @Test("две точки одной сети — разные кадры")
+    func snapshotKeySeparatesVenues() {
+        let near = Self.venue("McDonald's", 120, key: "39147")
+        let next = Self.venue("McDonald's", 800, key: "10074")
+
+        #expect(VenueSnapshot.key(near, side: 168)
+                != VenueSnapshot.key(next, side: 168))
+    }
+
     @Test("неделя в карточке начинается с сегодняшнего дня")
     func weekStartsToday() {
         let week = VenueDetailView.weekFromToday(now: Self.moment(day: 10, hour: 12),

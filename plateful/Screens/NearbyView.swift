@@ -30,8 +30,9 @@ struct NearbyView: View {
                     }
                 }
                 .sheet(item: $selected) { venue in
-                    VenueDetailView(venue: venue,
-                                    priceBand: chain(named: venue.chain).priceBand)
+                    VenueDetailSheet(venue: venue,
+                                     priceBand: chain(named: venue.chain).priceBand,
+                                     menuChain: menuChain(for: venue))
                 }
         }
         .task { find() }
@@ -87,6 +88,13 @@ struct NearbyView: View {
             ?? MenuChain(name: name, itemCount: 0)
     }
 
+    /// Сеть, чьё меню можно открыть из карточки заведения. На запасном
+    /// пути точки находит карта, и её сети в паке может не быть вовсе —
+    /// тогда ссылки на меню не будет, а не будет пустого экрана.
+    private func menuChain(for venue: Venue) -> MenuChain? {
+        menu.catalog?.chains.first { $0.name == venue.chain }
+    }
+
     private func list(_ chains: [NearbyChain]) -> some View {
         List {
             Section {
@@ -99,6 +107,18 @@ struct NearbyView: View {
                 // 22:00», читалась бы как «закрыто».
                 if nearby.source == .map {
                     Text("Showing map results — opening hours are unavailable right now.")
+                }
+            }
+
+            Section("Restaurants around you") {
+                ForEach(nearby.venues) { venue in
+                    NavigationLink {
+                        VenueDetailView(venue: venue,
+                                        priceBand: chain(named: venue.chain).priceBand,
+                                        menuChain: menuChain(for: venue))
+                    } label: {
+                        venueRow(venue)
+                    }
                 }
             }
 
@@ -133,6 +153,37 @@ struct NearbyView: View {
             }
         }
         .mapControls { MapUserLocationButton() }
+    }
+
+    /// Строка заведения. Снимок слева — единственное, чем два McDonald's
+    /// в четырёх кварталах друг от друга различаются с одного взгляда:
+    /// имя у них одно, а расстояние читается цифрой, а не узнаётся.
+    private func venueRow(_ venue: Venue) -> some View {
+        LabeledContent {
+            Text(Self.distance(venue.distance))
+                .monospacedDigit()
+                .foregroundStyle(Tokens.Color.textSecondary)
+        } label: {
+            HStack(spacing: Tokens.Spacing.s) {
+                VenueImage(venue: venue, chain: venue.chain)
+                VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
+                    Text(venue.chain)
+                    if !venue.address.isEmpty {
+                        Text(venue.address)
+                            .font(.caption)
+                            .foregroundStyle(Tokens.Color.textSecondary)
+                    }
+                    if let hours = venue.hours {
+                        let status = hours.status(at: .now)
+                        if let text = Self.statusText(status) {
+                            Text(text)
+                                .font(.caption)
+                                .foregroundStyle(Self.statusColor(status))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private func row(_ found: NearbyChain) -> some View {
