@@ -220,6 +220,32 @@ Broccoli Cheddar - Cup 1 Cup 420 280 31 19 2.5 90 1520 25 1 9 12 0
         self.assertEqual(len(items), 2)
 
 
+
+class Description(unittest.TestCase):
+    """Состав блюда в хвосте названия — не часть названия."""
+
+    def test_состав_после_тире_отрезается(self):
+        """Quiznos пишет «Classic Italian - with capicola, salami, ham…»,
+        и без этого в имя уезжала половина состава: позиция становилась
+        неузнаваемой, и весь каталог сети уходил в архив как непойманный."""
+        self.assertEqual(
+            pdf_guide.without_description(
+                "Classic Italian - with capicola, salami, ham, provolone cheese."),
+            "Classic Italian")
+
+    def test_имя_с_тире_целое(self):
+        """Отличаем состав от имени по регистру: имя сеть пишет с
+        прописной. Иначе «Bacon - Egg & Cheese» теряет половину."""
+        for name in ("Bacon - Egg & Cheese", "Chick-fil-A® Nuggets",
+                     "Turkey Ranch & Swiss"):
+            self.assertEqual(pdf_guide.without_description(name), name)
+
+    def test_скобка_со_строчной_тоже_состав(self):
+        self.assertEqual(
+            pdf_guide.without_description(
+                "Broccoli Cheese - (not available at all locations)"),
+            "Broccoli Cheese")
+
 if __name__ == "__main__":
     unittest.main()
 

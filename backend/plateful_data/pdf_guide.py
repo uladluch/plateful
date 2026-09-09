@@ -227,6 +227,20 @@ def _heading(line: str) -> str | None:
     return text
 
 
+#: Описание блюда в хвосте названия. Quiznos пишет «Classic Italian - with
+#: capicola, salami, ham…»: до тире имя, после — состав. Отличаем состав от
+#: части названия по регистру: имя блюда сеть пишет с прописной, состав со
+#: строчной. Поэтому «Chick-fil-A® Nuggets» и «Bacon - Egg & Cheese» целы,
+#: а полстроки состава в имя не уезжает.
+_DESCRIPTION = re.compile(r"^(.+?)\s+[-–—]\s+([a-z(].*)$", re.S)
+
+
+def without_description(name: str) -> str:
+    """Имя блюда без хвоста-состава."""
+    match = _DESCRIPTION.match(name)
+    return match.group(1).strip() if match else name
+
+
 def parse(text: str, layout: Layout) -> list[GuideItem]:
     items: list[GuideItem] = []
     category: str | None = None
@@ -268,6 +282,7 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
             # что стояла до неё.
             if category == pending:
                 category = previous_category
+        name = without_description(name)
         values = {field: _number(cell)
                   for field, cell in zip(layout.columns, cells)
                   if field is not None}
