@@ -55,6 +55,10 @@ _GENERIC = ("subs", "restaurant", "restaurants", "brewhouse", "grill", "grille",
             "pizza", "cafe", "coffee", "kitchen", "donuts", "bakery", "bar",
             "house", "shack", "express", "company", "co")
 
+#: Меньше этого страница не бывает: отказ бот-защиты весит десятки байт,
+#: настоящая страница — десятки килобайт.
+MIN_PAGE = 1024
+
 #: Страницы, где сеть держит питание. Порядок — по частоте.
 _MENU_PATHS = ("/menu", "/menu/", "/nutrition", "/our-menu", "/food",
                "/menu-nutrition", "/nutrition-information")
@@ -93,19 +97,32 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str]:
     request = urllib.request.Request(url, headers=BROWSER)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.status, response.read().decode("utf-8", errors="replace")
+            body = response.read().decode("utf-8", errors="replace")
+            if body:
+                return response.status, body
+            # Пустое тело с кодом 200 — бот-защита, только вежливая.
+            # Спрашиваем curl-ом, у которого другой отпечаток TLS.
+            fallback = curl_get(url, BROWSER, timeout=timeout) or ""
+            # «Not found» в десять байт — тоже отказ, просто не кодом.
+            # Без этой проверки olivegarden.com засчитывался как открытый
+            # 200, и сеть числилась «домен не найден по названию».
+            if len(fallback) >= MIN_PAGE:
+                return 200, fallback
+            return 403, ""
     except urllib.error.HTTPError as error:
         # 403 у Python и 200 у curl — обычное дело: сайт смотрит на
         # отпечаток TLS-рукопожатия, а не на заголовки. Половина сетей
         # объявлялась «закрытой», хотя curl их открывает.
         if error.code in (403, 429):
-            body = curl_get(url, BROWSER, timeout=timeout)
-            if body:
+            body = curl_get(url, BROWSER, timeout=timeout) or ""
+            if len(body) >= MIN_PAGE:
                 return 200, body
         return error.code, ""
     except Exception:
-        body = curl_get(url, BROWSER, timeout=timeout)
-        return (200, body) if body else (0, "")
+        body = curl_get(url, BROWSER, timeout=timeout) or ""
+        # Короткий ответ — не страница, а отказ: «Not found» весит десять
+        # байт и приходит с кодом 403, который curl в теле не показывает.
+        return (200, body) if len(body) >= MIN_PAGE else (403 if body else 0, "")
 
 
 def domain_candidates(name: str) -> list[str]:
@@ -114,7 +131,11 @@ def domain_candidates(name: str) -> list[str]:
     # Полное имя — первым кандидатом: «Round Table Pizza» это
     # roundtablepizza.com, а не roundtable.com, и «BJ's Restaurant &
     # Brewhouse» — bjsrestaurants.com, тогда как bjs.com оптовый клуб.
-    seen: list[str] = ["".join(words) + ".com", "".join(words) + "s.com"]
+    # Дефис в названии сеть чаще всего сохраняет: «In-N-Out Burger» это
+    # in-n-out.com, «7-Eleven» — 7-eleven.com. Слитная форма для них не
+    # существует, и без дефисного кандидата домен не найти вовсе.
+    seen: list[str] = ["".join(words) + ".com", "-".join(words) + ".com",
+                       "".join(words) + "s.com"]
     for trim in (0, 1, 2):
         core = words[:len(words) - trim] if trim else words
         if not core:
@@ -165,7 +186,9 @@ def find_domain(name: str) -> tuple[str | None, str]:
             status, html = fetch(prefix + host, timeout=20)
             if status == 200 and confirms(html, name):
                 return host, "ok"
-            if status in (403, 429) and blocked is None:
+            # 451 — сеть закрылась от нашего региона целиком: домен верный,
+            # но смотреть нам не дадут. Это не «не нашли», а «не пускают».
+            if status in (403, 429, 451) and blocked is None:
                 blocked = host
     return (blocked, "blocked") if blocked else (None, "")
 
