@@ -112,12 +112,24 @@ DEFAULT = "plated-meal"
 _COMPILED = [(name, re.compile(pattern)) for name, pattern in RULES]
 
 
+#: «Соус, для рёбрышек», «Сыр для боулов», «Заправка для Baja, 12 in» —
+#: позиция названа по блюду, к которому идёт, а не по себе. Классификатор
+#: же читает имя целиком и выдаёт архетип сопровождаемого блюда: «Honey BBQ
+#: Sauce, for Applebees Riblets Platter» получал кофе (от «coffee» в
+#: «Applebees»), а «Dressing for Baja, 12 in» — саб, потому что «12 in».
+#: Таких позиций в каталоге 2415, и у 1565 картинка была чужой.
+_ACCOMPANIES = re.compile(r",?\s+for\s+")
+
+
 def classify(name: str, category: str | None = None) -> str:
     """Архетип позиции. Всегда возвращает значение — пустых не бывает."""
-    text = name.lower()
-    for archetype, pattern in _COMPILED:
-        if pattern.search(text):
-            return archetype
+    # Сначала по тому, чем позиция является, и лишь потом — по имени целиком.
+    head = _ACCOMPANIES.split(name, maxsplit=1)[0]
+    for candidate in (head, name) if head != name else (name,):
+        text = candidate.lower()
+        for archetype, pattern in _COMPILED:
+            if pattern.search(text):
+                return archetype
     return CATEGORY_FALLBACK.get(category or "", DEFAULT)
 
 

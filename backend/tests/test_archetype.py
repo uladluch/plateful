@@ -50,3 +50,31 @@ class GuideNames(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Accompaniments(unittest.TestCase):
+    """«Соус, для рёбрышек» — это соус, а не рёбрышки.
+
+    Позиция названа по блюду, к которому идёт, и классификатор читал имя
+    целиком: «Honey BBQ Sauce, for Applebees Riblets Platter» получал
+    архетип кофе — от «coffee» внутри «Applebees». Таких в каталоге 2415.
+    """
+
+    def test_соус_к_блюду_остаётся_соусом(self):
+        self.assertEqual(classify("Classic Buffalo Sauce, for Boneless Wings"), "sauce")
+        self.assertEqual(classify("Honey BBQ Sauce, for Applebees Riblets Platter"), "sauce")
+
+    def test_заправка_с_размером_саба_не_саб(self):
+        """«12 in» в хвосте — размер саба, к которому идёт заправка."""
+        self.assertEqual(classify("Dressing for Baja, 12 in"), "sauce")
+
+    def test_сыр_для_боула_это_сыр(self):
+        self.assertEqual(classify("Fontina Cheese for Breakfast Bowls"), "cheese")
+
+    def test_имя_без_for_разбирается_как_прежде(self):
+        self.assertEqual(classify("Mesquite, 12 in"), "sub-sandwich")
+        self.assertEqual(classify("Big Mac"), "cheeseburger")
+
+    def test_если_начало_ничего_не_говорит_читаем_целиком(self):
+        """«Build Your Own, for Sampler» — начало пустое, смысл в хвосте."""
+        self.assertEqual(classify("Combo, for Pizza Sampler"), "pizza")
