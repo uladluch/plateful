@@ -1,15 +1,16 @@
 import SwiftUI
 
-/// Рестораны, сохранённое, профиль — и поиск отдельной вкладкой.
+/// Разведка каталога, сохранённое, профиль.
 ///
-/// Поиск живёт в табе с ролью `.search`: система кладёт его отдельно от
-/// остальных и сама решает, как показать, — тот же жест, что в Картах и
-/// App Store. «Рядом» из панели ушло в тулбар «Ресторанов»: это разрез того
-/// же справочника, а не отдельный раздел, и место в панели он занимал зря.
+/// Поиск раньше жил отдельной вкладкой с ролью `.search`; теперь он —
+/// `.searchable` поверх сеток «Discovery», как поиск был устроен изначально.
+/// Отдельная вкладка стоила места в панели ради жеста, который «Discovery»
+/// и так умеет. «Рядом» — в тулбаре «Discovery»: разрез того же справочника,
+/// а не отдельный раздел.
 struct RootView: View {
     var body: some View {
         TabView {
-            Tab("Restaurants", systemImage: Tokens.Symbol.chain) {
+            Tab("Discovery", systemImage: Tokens.Symbol.chain) {
                 ChainsView()
             }
             Tab("Saved", systemImage: "bookmark") {
@@ -17,9 +18,6 @@ struct RootView: View {
             }
             Tab("Profile", systemImage: "person.crop.circle") {
                 ProfileView()
-            }
-            Tab("Search", systemImage: "magnifyingglass", role: .search) {
-                SearchView()
             }
         }
     }

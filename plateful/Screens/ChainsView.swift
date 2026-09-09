@@ -1,18 +1,21 @@
 import SwiftUI
 
-/// Корневой экран: список сетей.
+/// Корневой экран: сетки сетей и поиск по всему каталогу.
 ///
 /// Первое, что видит человек, — уже полезно: ни онбординга, ни аккаунта,
-/// ни пейволла. Это и есть позиционирование против всей категории. Поиск
-/// живёт отдельной вкладкой панели; здесь — то, что видно без запроса.
+/// ни пейволла. Это и есть позиционирование против всей категории. Поиск —
+/// `.searchable` прямо здесь, а не отдельная вкладка: искать по каталогу
+/// и листать его — один и тот же режим экрана, а не два разных места.
 struct ChainsView: View {
 
     @Environment(MenuRepository.self) private var menu
+    @State private var query = ""
 
     var body: some View {
         NavigationStack {
             content
-                .navigationTitle("Restaurants")
+                .navigationTitle("Discovery")
+                .searchable(text: $query, prompt: "Search chains and dishes")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         NavigationLink {
@@ -38,7 +41,11 @@ struct ChainsView: View {
                 description: Text(message))
 
         case .ready:
-            chainList
+            if query.isEmpty {
+                chainList
+            } else {
+                searchResults
+            }
         }
     }
 
@@ -63,6 +70,23 @@ struct ChainsView: View {
         // Проверка обновлений сама идёт при запуске; жест нужен тем, кто
         // увидел устаревшее число и хочет проверить прямо сейчас.
         .refreshable { await menu.checkForUpdate() }
+    }
+
+    /// Запрос ищет сразу по всем сетям, а не по одной открытой.
+    @ViewBuilder
+    private var searchResults: some View {
+        let results = menu.collapsingVariants(menu.search(query))
+        if results.isEmpty {
+            ContentUnavailableView.search(text: query)
+        } else {
+            List(results) { item in
+                NavigationLink(value: item) {
+                    MenuItemRow(item: item, showsChain: true,
+                                variants: menu.variants(of: item))
+                }
+            }
+            .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
+        }
     }
 }
 
