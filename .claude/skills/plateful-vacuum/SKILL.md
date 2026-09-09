@@ -76,6 +76,24 @@ python3 backend/scripts/vacuum.py --crawl 2 --apply    # обойти 2 и за�
   двухсот страниц. Это основной путь для тех, кто рисует меню скриптом;
 * сети без гида и с рисованным меню — браузер, и только если сеть крупная.
 
+### Контент-база сети напрямую (RBI: Burger King, Popeyes, Firehouse Subs)
+
+```bash
+python3 backend/scripts/crawl_chain.py burger-king --sanity --replace --apply
+python3 backend/scripts/sync_taxonomy.py
+python3 backend/scripts/sanity_photos.py burger-king --apply
+```
+
+Сайты RBI рисуют меню скриптом, но берут его из Sanity CMS, к которой фронт
+ходит **публичным GROQ без ключа**. Один запрос отдаёт живое меню целиком —
+с этикеткой, аллергенами и **снимками**. Это самый дешёвый источник из всех:
+и цифры, и фотографии за один заход. Бренды и датасеты — в
+`adapters/sanity_rbi.BRANDS`; как найти project id для нового бренда RBI —
+в памяти `plateful-rbi-sanity`.
+
+Снимки перекладываются в наш бакет, а не хотлинкуются, и каждый несёт
+строку прав из `RIGHTS` в `sanity_photos.py`.
+
 ### Гид в PDF
 
 ```bash
