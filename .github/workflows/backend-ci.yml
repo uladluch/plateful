@@ -1,10 +1,13 @@
 name: backend-ci
 
+# Единственная автоматическая проверка после того, как iOS-тесты ушли
+# в pre-push: хук можно обойти или не поставить, а этот сработает всегда.
 on:
   push:
     paths: ["backend/**", ".github/workflows/backend-ci.yml"]
   pull_request:
     paths: ["backend/**"]
+  workflow_dispatch:
 
 jobs:
   build-seed:
