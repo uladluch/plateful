@@ -23,6 +23,7 @@ struct NearbyView: View {
         NavigationStack {
             content
                 .navigationTitle("Nearby")
+                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     if case .ready = nearby.state {
                         ToolbarItem(placement: .primaryAction) {

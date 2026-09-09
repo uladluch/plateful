@@ -15,6 +15,7 @@ struct ChainsView: View {
         NavigationStack {
             content
                 .navigationTitle("Discovery")
+                .navigationBarTitleDisplayMode(.inline)
                 .searchable(text: $query, prompt: "Search chains and dishes")
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {

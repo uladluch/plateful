@@ -50,6 +50,7 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear(perform: loadGoals)
             .onChange(of: calorieCeiling) { persist() }
             .onChange(of: proteinFloor) { persist() }

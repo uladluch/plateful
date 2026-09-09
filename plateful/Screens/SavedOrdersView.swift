@@ -33,6 +33,7 @@ struct SavedOrdersView: View {
                 }
             }
             .navigationTitle("Suggest Meal")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 

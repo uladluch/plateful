@@ -9,6 +9,7 @@ struct AnalyticsView: View {
                 systemImage: "chart.bar",
                 description: Text("Coming soon."))
                 .navigationTitle("Analytics")
+                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
