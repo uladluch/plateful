@@ -38,7 +38,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PIL import Image
 
 from plateful_data import matching
-from plateful_data.adapters import gotofoods, mcdonalds, panera, quiznos, sanity_rbi
+from plateful_data.adapters import (collected, gotofoods, mcdonalds, panera,
+                                    quiznos, sanity_rbi)
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -61,10 +62,16 @@ RIGHTS = {
                   panera.MENU_URL),
     quiznos.SLUG: ("© Quiznos. Used with permission. Source: quiznos.com",
                    quiznos.MENU_URL),
+    "white-castle": ("© White Castle System, Inc. Used with permission. "
+                     "Source: whitecastle.com", "https://www.whitecastle.com/menu"),
     **{b.slug: (f"© {b.name}. Used with permission. Source: {b.domain}",
                 f"https://www.{b.domain}/menu")
        for b in gotofoods.BRANDS.values()},
 }
+
+
+#: Как сеть называется в каталоге — для строки прав и подписи снимка.
+CHAIN_NAMES = {"white-castle": "White Castle"}
 
 
 def shots(slug: str) -> tuple[str, list]:
@@ -75,6 +82,9 @@ def shots(slug: str) -> tuple[str, list]:
         return panera.CHAIN, panera.catalog()
     if slug == quiznos.SLUG:
         return quiznos.CHAIN, quiznos.catalog()
+    if slug in collected.available():
+        name = CHAIN_NAMES.get(slug, slug)
+        return name, collected.catalog(slug, name, RIGHTS[slug][1])
     if brand := gotofoods.BRANDS.get(slug):
         return brand.name, [i for i in gotofoods.catalog(brand) if i.image_url]
     brand = sanity_rbi.BRANDS[slug]
