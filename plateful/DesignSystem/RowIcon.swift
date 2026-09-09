@@ -16,7 +16,10 @@ struct RowIcon: View {
 
     var body: some View {
         Image(systemName: symbol)
-            .font(.subheadline)
+            // Footnote — ровно на 2pt меньше subheadline, тем же текстовым
+            // стилем, а не числом: символ остаётся на своей ступени шкалы.
+            .font(.footnote)
+            .fontWeight(.bold)
             .foregroundStyle(Tokens.Color.rowIconGlyph)
             .frame(width: size, height: size)
             .background(tint, in: .rect(cornerRadius: size * 0.28))
