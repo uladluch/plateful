@@ -39,7 +39,8 @@ from PIL import Image
 
 from plateful_data import matching
 from plateful_data.adapters import (collected, gotofoods, jersey_mikes, mcdonalds,
-                                    panera, quiznos, sanity_rbi)
+                                    olo_menu, panera, quiznos, sanity_rbi,
+                                    starbucks)
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -64,6 +65,11 @@ RIGHTS = {
                    quiznos.MENU_URL),
     jersey_mikes.SLUG: ("© Jersey Mike's Franchise Systems, Inc. Used with "
                         "permission. Source: jerseymikes.com", jersey_mikes.MENU_URL),
+    starbucks.SLUG: ("© Starbucks Corporation. Used with permission. "
+                     "Source: starbucks.com", starbucks.MENU_URL),
+    **{b.slug: (f"© {b.name}. Used with permission. "
+                f"Source: {b.menu_url.split('/')[2].removeprefix('www.')}", b.menu_url)
+       for b in olo_menu.BRANDS.values()},
     "white-castle": ("© White Castle System, Inc. Used with permission. "
                      "Source: whitecastle.com", "https://www.whitecastle.com/menu"),
     **{b.slug: (f"© {b.name}. Used with permission. Source: {b.domain}",
@@ -86,6 +92,10 @@ def shots(slug: str) -> tuple[str, list]:
         return quiznos.CHAIN, quiznos.catalog()
     if slug == jersey_mikes.SLUG:
         return jersey_mikes.CHAIN, jersey_mikes.catalog()
+    if slug == starbucks.SLUG:
+        return starbucks.CHAIN, starbucks.catalog()
+    if brand := olo_menu.BRANDS.get(slug):
+        return brand.name, olo_menu.catalog(brand)
     if slug in collected.available():
         name = CHAIN_NAMES.get(slug, slug)
         return name, collected.catalog(slug, name, RIGHTS[slug][1])
@@ -188,11 +198,6 @@ def main() -> int:
         upload = subprocess.run(
             ["supabase", "storage", "cp", str(path), f"ss:///photos/{filename}",
              "--linked", "--experimental", "--content-type", "image/png",
-             # Флаг до Storage не долетает: CLI 2.95.4 его молча
-             # теряет, и объект отдаётся с `Cache-Control: no-cache`.
-             # Приложение это не задевает — оно ходит не за оригиналом,
-             # а за `/render/image/`, у которого заголовок свой и
-             # правильный. Флаг оставлен на день, когда починят.
              "--cache-control", "max-age=31536000, immutable"],
             capture_output=True, text=True)
         if upload.returncode != 0:

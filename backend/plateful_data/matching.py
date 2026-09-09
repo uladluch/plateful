@@ -32,7 +32,11 @@ _BRAND_WORDS = re.compile(r"\b(chick fil a|chickfila|mcdonalds)\b")
 # в обе стороны: `portion` требует их точного совпадения (значит «Giant» и
 # «Mini» друг с другом не спутать), а `comparable` их выбрасывает из
 # сравнения имён (значит «#1 BLT» и «BLT, Giant» — одно блюдо).
-_SIZE_WORDS = {"small", "medium", "large", "kids", "jr", "giant", "mini"}
+_SIZE_WORDS = {"small", "medium", "large", "kids", "jr", "giant", "mini",
+               # Размеры Starbucks: у него это единственное, чем «Latte,
+               # Tall» отличается от «Latte, Venti», и без них напиток
+               # четырежды считался бы одним и тем же блюдом.
+               "short", "tall", "grande", "venti", "trenta"}
 
 # Подача — не размер, но для **снимка** такая же мелочь: сеть снимает
 # блюдо один раз, а не отдельно в обёртке и в миске. Отбрасываем только
@@ -139,6 +143,11 @@ def _covers(short: str, long: str) -> bool:
 #: **on Wheat**». Хлеб — не блюдо, и сеть его отдельно не снимает.
 _ON_QUALIFIER = re.compile(r"\s+on\s+.*$", re.I)
 
+#: То же про добавку: «Latte **w/ 2% Milk**», «Green Tea Latte with Oat
+#: Milk». Для цифр молоко значимо — от него зависят калории, — а для
+#: снимка нет: сеть снимает латте один раз.
+_WITH_QUALIFIER = re.compile(r"\s+(?:w/|with)\s+.*$", re.I)
+
 
 def shortenings(name: str) -> list[str]:
     """Имя блюда, от полного к самому короткому.
@@ -148,8 +157,12 @@ def shortenings(name: str) -> list[str]:
     без уточнений — до первой запятой и до «on». Годится первое, что
     совпало **точно**: укороченное имя легко спутать с чужим блюдом.
     """
-    forms = [name, name.split(",", 1)[0], _ON_QUALIFIER.sub("", name),
-             _ON_QUALIFIER.sub("", name.split(",", 1)[0])]
+    head = name.split(",", 1)[0]
+    forms = [name, head]
+    for cut in (_ON_QUALIFIER, _WITH_QUALIFIER):
+        forms += [cut.sub("", name), cut.sub("", head)]
+    # И то и другое сразу: «Latte Macchiato w/ Whole Milk, Tall».
+    forms.append(_WITH_QUALIFIER.sub("", _ON_QUALIFIER.sub("", head)))
     return list(dict.fromkeys(d for form in forms if (d := dish(form))))
 
 

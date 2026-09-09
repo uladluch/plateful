@@ -11,6 +11,7 @@ import sys
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from plateful_data import matching
@@ -196,6 +197,31 @@ class Shortenings(unittest.TestCase):
         class Shot:
             ext_key, name = "blt", "BLT, Giant"
         self.assertEqual(matching.photo_pairs([Shot()], catalog), {})
+
+
+
+
+class StarbucksNames(unittest.TestCase):
+    """Этикетка называет напиток с молоком и размером, снимок — без."""
+
+    CATALOG = {
+        "green": {"ext_key": "green", "name": "Green Tea Latte w/ 2% Milk, Grande"},
+        "macch": {"ext_key": "macch", "name": "Latte Macchiato w/ Whole Milk, Tall"},
+    }
+
+    class Shot:
+        def __init__(self, name):
+            self.ext_key, self.name = name.lower(), name
+
+    def test_молоко_и_размер_снимку_не_важны(self):
+        found = matching.photo_pairs([self.Shot("Green Tea Latte")], self.CATALOG)
+        self.assertIn("green", found)
+        self.assertNotIn("macch", found)
+
+    def test_размеры_starbucks_различают_позиции_для_цифр(self):
+        """Для этикетки Tall и Venti — разные строки с разными калориями."""
+        self.assertNotEqual(matching.portion("Latte, Tall"),
+                            matching.portion("Latte, Venti"))
 
 
 if __name__ == "__main__":
