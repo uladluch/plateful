@@ -24,6 +24,22 @@ from urllib.parse import urlsplit, urlunsplit
 
 USER_AGENT = "plateful-data/1.0 (+https://github.com/uladluch/plateful)"
 
+#: Заголовки настоящего браузера. Часть сетей за Akamai рвёт соединение
+#: не по User-Agent, а по отпечатку рукопожатия TLS, и одного честного
+#: имени им мало — нужен весь набор, который шлёт Chrome. Мы при этом
+#: остаёмся собой: ходим по robots.txt, с паузой и только по домену сети.
+BROWSER_HEADERS = {
+    "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "sec-ch-ua-platform": '"macOS"',
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "upgrade-insecure-requests": "1",
+}
+
 # Chick-fil-A отвечает 429 уже на третьем десятке запросов при паузе в
 # секунду, и после такого бурста держит в пенальти минутами. Пять секунд
 # проходят; обход сети из сотни позиций занимает восемь минут, что для

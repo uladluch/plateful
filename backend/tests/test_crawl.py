@@ -157,6 +157,41 @@ class Planning(unittest.TestCase):
         [flagged] = plan.suspicious
         self.assertEqual(flagged.ext_key, "side-salad")
 
+    def test_первый_заход_структурного_источника_пишет_и_большие(self):
+        """Сравнивать не с чем: в каталоге срез 2018 года, и расхождение
+        с ним — это восемь лет, а не наша ошибка чтения. В отчёте позиция
+        всё равно остаётся на виду."""
+        plan = crawl.build("Chick-Fil-A", self._salad(), self._catalog(),
+                           adopt=True, structured=True)
+        self.assertEqual([u.ext_key for u in plan.updates], ["side-salad"])
+        self.assertEqual([u.ext_key for u in plan.suspicious], ["side-salad"])
+
+    def test_второй_заход_того_же_источника_большие_держит(self):
+        """Своей же прошлой записи источник противоречить не должен: у
+        Burger King так пришёл «Cheeseburger» с жиром 12→2.4."""
+        plan = crawl.build("Chick-Fil-A", self._salad(), self._catalog(),
+                           adopt=True, structured=True,
+                           previous={"side-salad": {"kcal": 160.0, "protein": 13.0,
+                                                    "carbs": 12.0, "fat": 11.0}})
+        self.assertEqual(plan.updates, [])
+        self.assertEqual(len(plan.suspicious), 1)
+
+    @staticmethod
+    def _salad():
+        return [Live(name="Side Salad", kcal=470.0, protein=13.0,
+                     carbs=14.0, fat=42.0)]
+
+    @staticmethod
+    def _catalog():
+        return stored(ext_key="side-salad", name="Side Salad",
+                      kcal=160.0, protein=13.0, carbs=12.0, fat=11.0)
+
+    def test_разбор_гида_даже_на_первом_заходе_держит_большие(self):
+        """У PDF колонка съезжает — там проверка нужна с самого начала."""
+        plan = crawl.build("Chick-Fil-A", self._salad(), self._catalog(), adopt=True)
+        self.assertEqual(plan.updates, [])
+        self.assertEqual(len(plan.suspicious), 1)
+
     def test_доля_на_маленьком_основании_не_подозрительна(self):
         """Сахар 1 → 4 г — это +300% и при этом три грамма. Ручная сверка
         такую правку приняла."""
@@ -449,3 +484,15 @@ class MenuReplacement(unittest.TestCase):
 
         self.assertEqual(plan.adopted, [])
         self.assertFalse(plan.ok)
+
+    def test_совпадение_подтверждает_свежесть(self):
+        """Сеть публикует ровно эти числа сегодня — значит строка не
+        «данные 2018 года». Пока это не записывалось, у Burger King
+        23 позиции в меню оставались устаревшими при нулевых расхождениях."""
+        plan = crawl.build("Chick-Fil-A",
+                           [Live(name="Chicken Sandwich", kcal=440.0, protein=28.0,
+                                 carbs=40.0, fat=19.0)],
+                           stored())
+        self.assertEqual(plan.updates, [])
+        self.assertEqual(plan.agreed, 1)
+        self.assertEqual(plan.confirmed, ["chicken-sandwich"])

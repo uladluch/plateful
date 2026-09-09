@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from PIL import Image
 
-from plateful_data.adapters import chick_fil_a, mcdonalds
+from plateful_data.adapters import chick_fil_a
 from plateful_data.adapters.base import USER_AGENT, Fetcher
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -44,7 +44,10 @@ MATCH_THRESHOLD = 0.82
 # именно название блюда.
 PHOTO_THRESHOLD = 0.86
 
-ADAPTERS = {"chick-fil-a": chick_fil_a, "mcdonalds": mcdonalds}
+# McDonald's тут больше нет: его снимки берёт chain_photos.py из
+# снимка калькулятора, где у картинки есть имя блюда, а не только
+# имя файла, по которому это имя приходилось угадывать.
+ADAPTERS = {"chick-fil-a": chick_fil_a}
 
 _OG_IMAGE = re.compile(r'property="og:image"[^>]*content="([^"]+)"')
 _SIZE_WORDS = {"small", "medium", "large", "kids", "kid", "ct", "count", "jr"}

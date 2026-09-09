@@ -44,3 +44,6 @@ backend/data/pack-v*.json
 # Гид скачивается заново по адресу из chains.source_url.
 backend/data/guides/
 backend/data/crawls/
+# Снимки меню, снятые браузером: их приносит не скрипт, а руки,
+# и весят они как гиды — рядом с гидами им и место.
+backend/cache/

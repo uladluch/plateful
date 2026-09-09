@@ -1,78 +1,187 @@
-"""McDonald's: студийные снимки блюд со страницы калькулятора питания.
+"""McDonald's — снимок калькулятора питания, снятый браузером.
 
-Страница позиции — пустая оболочка, товар подгружается скриптом, а
-внутренние JSON-эндпоинты закрыты. Зато страница калькулятора отдаёт разом
-все плитки блюд: PNG с прозрачным фоном на Adobe Scene7, 1564×1564.
+Сайт сети рисует меню скриптом, но всё нужное лежит на одной странице —
+`about-our-food/nutrition-calculator.html`. В её разметке есть атрибут
+`data-product-data`: 190 КБ JSON с разделами меню, продуктами, их
+размерами и адресами снимков на Scene7. Этикетку каждой позиции отдаёт
+`/dnaapp/itemDetails?country=US&language=en&item=<id>` — полная девятка
+FDA плюс клетчатка, сахар, транс-жиры и холестерин.
 
-Обычный запрос сеть отвергает (обрыв TLS). С полным набором браузерных
-заголовков отвечает нормально — Playwright для этого не нужен.
+Почему снимок, а не кроул. На эти адреса `curl` и Python получают HTTP
+000 — соединение рвётся на рукопожатии TLS, сеть смотрит на отпечаток
+клиента, а не на заголовки. Обойти это можно только настоящим браузером,
+и мы его не подделываем: страницу открывает человек (или встроенный
+браузер агента), скрипт `backend/data/collect/mcdonalds.js` снимает меню
+и кладёт файл на диск. Дальше — обычный кроул, который сверяет снимок с
+каталогом и версионирует, как всякий другой источник.
 
-Название блюда зашито в имя файла в CamelCase:
-    DC_202201_0007-005_QuarterPounderwithCheese_1564x1564-1
-        → «Quarter Pounder with Cheese»
+Две ловушки, на которых снимок теряет позиции:
+
+* однопорционные блюда — Big Mac, Egg McMuffin, McChicken — не имеют
+  массива `sizes`, и `itemId` у них равен ключу самого продукта. Пока
+  сборщик читал только размеры, все бургеры проходили мимо: 185 позиций
+  вместо 252;
+* разделы в `categoryList` идут не по важности: первыми лежат витрины
+  вроде «McValue®» и «Spicy Chicken McNuggets®». Если брать первый
+  попавшийся, у Big Mac разделом окажется акция. Настоящие разделы
+  перечислены в `SECTIONS`, витрины годятся лишь как последнее средство.
+
+Комбо-наборы («… Meal») сборщик не приносит: их этикетка зависит от
+выбранных стороны и напитка, и `itemDetails` отдаёт пустой список
+нутриентов. Позицию без цифр в каталог не заводим.
 """
 
 from __future__ import annotations
 
-import re
-
-from .base import curl_get
+import json
+import urllib.parse
+from dataclasses import dataclass
+from pathlib import Path
 
 CHAIN = "McDonald's"
-SOURCE = "mcdonalds.com"
-CALCULATOR_URL = "https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html"
+SLUG = "mcdonald-s"
+DOMAIN = "mcdonalds.com"
+MENU_URL = "https://www.mcdonalds.com/us/en-us/about-our-food/nutrition-calculator.html"
 
-# Сеть смотрит не только на User-Agent: без остальных заголовков рвёт TLS.
-BROWSER_HEADERS = {
-    "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "sec-ch-ua-platform": '"macOS"',
-    "sec-fetch-dest": "document",
-    "sec-fetch-mode": "navigate",
-    "sec-fetch-site": "none",
-    "upgrade-insecure-requests": "1",
+BACKEND = Path(__file__).resolve().parents[2]
+SNAPSHOT = BACKEND / "cache" / "mcdonalds.json"
+SECTIONS_FILE = BACKEND / "cache" / "mcdonalds-sections.json"
+
+#: Разделы меню сети → наш словарь категорий (тот же, что у menustat).
+#: Порядок значим: он же задаёт, какой раздел выигрывает, когда позиция
+#: лежит в нескольких. Витрины и акции сюда не входят намеренно.
+SECTIONS = (
+    ("Burgers", "Burgers"),
+    ("Chicken & Fish Sandwiches", "Sandwiches"),
+    ("Snack Wrap®", "Sandwiches"),
+    ("McNuggets® & McCrispy® Strips", "Entrees"),
+    ("Breakfast", "Entrees"),
+    ("Fries & Sides", "Appetizers & Sides"),
+    ("Sweets & Treats", "Desserts"),
+    ("McCafé®", "Beverages"),
+    ("Drinks", "Beverages"),
+)
+
+#: Витрины: раздел настоящий, но собран по цене или новинке, а не по еде.
+#: Категорию по ним не выдаём — пусть лучше её не будет вовсе.
+SHOWCASES = ("McValue®", "Spicy Chicken McNuggets®")
+
+NUTRIENTS = ("kcal", "protein", "carbs", "fat", "sat_fat", "trans_fat",
+             "cholesterol", "sodium", "sugar", "fiber")
+
+#: Снимки лежат на Scene7, и без параметров он отдаёт своё умолчание —
+#: 400 пикселей JPEG на белом фоне. Исходник квадратный, 1564, с
+#: прозрачностью; просим его в нашем размере и с альфой, чтобы блюдо
+#: легло на карточку любого фона.
+IMAGE_SIZE = "?wid=1000&fmt=png-alpha"
+
+#: Сеть пишет аллергены прозой («Wheat, Milk.», «Fish (pollock).»).
+#: Приводим к девятке FDA; чего нет в словаре, то не выдумываем.
+ALLERGENS = {
+    "milk": "milk", "egg": "eggs", "eggs": "eggs", "wheat": "wheat",
+    "soy": "soy", "sesame": "sesame", "peanut": "peanuts",
+    "peanuts": "peanuts", "tree nuts": "treeNuts", "fish": "fish",
+    "fish (pollock)": "fish", "shellfish": "shellfish",
 }
 
-_TILE = re.compile(r'https://s7d1\.scene7\.com/is/image/mcdonalds/[^"\s\\&]+')
-# Мусор в имени файла: даты, коды артикулов, ракурсы, размеры.
-_JUNK = re.compile(
-    r"^(DC|MCD|US)$|^\d+$|^\d{4}XX$|^r\d+$|^\d+x\d+.*$|^[A-Z]\d$"
-    r"|^(HR|Light|Alt|Glass|WithCan|Bag|Box|Cup|Broken)$", re.I)
-_WORDS = re.compile(r"[A-Z][a-z]+|[A-Z]+(?![a-z])|\d+|[a-z]+")
-# Пресет в конце пути, а не двоеточие после «https».
-_PRESET = re.compile(r":[A-Za-z0-9\-]+$")
+
+@dataclass(frozen=True)
+class Item:
+    """Позиция из снимка — уже в наших терминах."""
+    chain: str
+    ext_key: str
+    name: str
+    category: str | None
+    serving: str | None
+    source: str
+    source_url: str
+    image_url: str | None
+    allergens: tuple[str, ...]
+    kcal: float | None = None
+    protein: float | None = None
+    carbs: float | None = None
+    fat: float | None = None
+    sat_fat: float | None = None
+    trans_fat: float | None = None
+    cholesterol: float | None = None
+    sodium: float | None = None
+    sugar: float | None = None
+    fiber: float | None = None
 
 
-def item_name(url: str) -> str | None:
-    """Читаемое название из имени файла."""
-    try:
-        stem = url.split("/mcdonalds/")[1].split(":")[0]
-    except IndexError:
+def category_of(item_id: str, sections: dict[str, list[str]],
+                fallback: str | None = None) -> str | None:
+    """Раздел меню в нашем словаре — по первому настоящему разделу.
+
+    Запасной вариант — раздел, который сеть назвала главным у самой
+    позиции. Витрину он подсовывает так же охотно, как `categoryList`,
+    поэтому её отсеиваем и здесь.
+    """
+    for title, ours in SECTIONS:
+        if item_id in sections.get(title, ()):
+            return ours
+    return None if fallback in SHOWCASES else fallback
+
+
+def _image(raw: str | None) -> str | None:
+    """Адрес снимка, годный для запроса.
+
+    Имена ассетов сеть заводит руками, и в них попадают пробелы:
+    «…1564x1564 (1)-1». Такой адрес не откроет ни urllib, ни бакет —
+    экранируем путь, оставив разделители на месте.
+    """
+    if not raw:
         return None
-    parts = [p for p in re.split(r"[_\-]", stem) if p and not _JUNK.match(p)]
-    words: list[str] = []
-    for part in parts:
-        words.extend(_WORDS.findall(part))
-    name = " ".join(words)
-    return name if len(name) > 3 else None
+    return urllib.parse.quote(raw, safe=":/") + IMAGE_SIZE
 
 
-def photo_pairs(fetcher) -> list[tuple[str, str, str]]:
-    """(название, ссылка на снимок, страница-источник)."""
-    page = curl_get(CALCULATOR_URL, BROWSER_HEADERS)
-    if not page:
-        return []
+def _allergens(names: list[str]) -> tuple[str, ...]:
+    found = []
+    for raw in names:
+        ours = ALLERGENS.get(raw.strip().lower())
+        if ours and ours not in found:
+            found.append(ours)
+    return tuple(found)
 
-    pairs = []
-    for url in sorted({u for u in _TILE.findall(page)
-                       if "nutrition-calculator-tile" in u and "menu-category" not in u}):
-        name = item_name(url)
-        if not name:
+
+def load(path: Path | None = None,
+         sections_path: Path | None = None) -> list[Item]:
+    """Снимок с диска — списком позиций.
+
+    Снимок сырой: имена, разделы и аллергены сеть пишет по-своему, а
+    разбирает их этот модуль. Так снятое можно перечитать другими
+    правилами, не поднимая браузер заново.
+    """
+    from ..slug import slugify
+
+    path = path or SNAPSHOT
+    if not path.exists():
+        raise SystemExit(
+            f"снимка {path} нет — снимите его: откройте {MENU_URL} в браузере "
+            f"и выполните backend/data/collect/mcdonalds.js")
+    records = json.loads(path.read_text(encoding="utf-8"))
+
+    sections_path = sections_path or SECTIONS_FILE
+    sections = (json.loads(sections_path.read_text(encoding="utf-8"))
+                if sections_path.exists() else {})
+
+    items: list[Item] = []
+    seen: set[str] = set()
+    for record in records:
+        name = " ".join(str(record.get("n") or "").split())
+        if not name or record.get("kcal") is None:
             continue
-        # Пресет `nutrition-calculator-tile` режет снимок в широкий формат
-        # 1000×600. Без пресета Scene7 отдаёт исходный квадрат целиком.
-        image_url = f"{_PRESET.sub('', url)}?fmt=png-alpha&wid=1000"
-        pairs.append((name, image_url, CALCULATOR_URL))
-    return pairs
+        key = slugify(name)
+        if key in seen:
+            continue
+        seen.add(key)
+        grams = record.get("g")
+        items.append(Item(
+            chain=CHAIN, ext_key=key, name=name,
+            category=category_of(record["id"], sections, record.get("cat")),
+            serving=f"{grams} g" if grams else None,
+            source=DOMAIN, source_url=MENU_URL,
+            image_url=_image(record.get("img")),
+            allergens=_allergens(record.get("alg") or []),
+            **{n: record.get(n) for n in NUTRIENTS}))
+    return items

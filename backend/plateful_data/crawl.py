@@ -122,12 +122,22 @@ class Plan:
     seen_keys: list[str] = field(default_factory=list)
     #: Сошлись с сайтом до округления — их большинство, и это норма.
     agreed: int = 0
+    #: Ключи сошедшихся. Цифры менять не надо, а происхождение надо:
+    #: сеть публикует ровно эти числа сегодня, значит строка не «данные
+    #: 2018 года», а подтверждённая. Пока это не записывалось, у Burger
+    #: King 23 позиции в меню оставались устаревшими — при том что кроул
+    #: сверил их с сетью и разошёлся ноль раз.
+    confirmed: list[str] = field(default_factory=list)
     #: Сколько позиций сняли со страниц. Отдельным числом, а не суммой
     #: остальных: позиция, не прошедшая валидацию, не попадает ни в одну
     #: из корзин, и итог без неё не сходился бы с тем, что видел обход.
     crawled: int = 0
     problems: list[validate.Problem] = field(default_factory=list)
     held: str | None = None
+    #: Вес порции, который сеть называет сама, по ключу каталога. Пишется
+    #: только туда, где его нет: у части позиций порция проставлена
+    #: руками («1 Cookie»), и заменять счёт на граммы — не наше дело.
+    servings: dict = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -214,13 +224,30 @@ def is_suspicious(changes: dict[str, tuple[float, float]]) -> bool:
 
 def build(chain: str, live, stored: dict[str, dict], *,
           previous: dict[str, dict] | None = None,
-          adopt: bool = False,
+          adopt: bool = False, structured: bool = False,
           source: str = "", menu_url: str = "") -> Plan:
     """Живые позиции + текущий каталог → план.
 
     `live` — объекты с `ext_key`, `name`, `source_url` и числами этикетки;
     `stored` — записи каталога по `ext_key`; `previous` — что видел прошлый
     кроул этой же сети.
+
+    `structured` говорит, что числа пришли из данных сети с именованными
+    полями — контент-базы или снимка её API, — а не из разбора PDF или
+    разметки.
+
+    Проверка «слишком непохоже» отвечает на вопрос «не ошиблись ли мы,
+    читая», и осмысленна ровно тогда, когда есть с чем сравнивать. На
+    **первом** кроуле сети сравнивать не с чем: в каталоге лежит срез
+    menustat 2018 года, и расхождение с ним — это восемь лет, а не наша
+    ошибка. Поэтому первый кроул из структурного источника большие
+    изменения записывает, оставляя их в отчёте на виду.
+
+    Дальше проверка работает как обычно, и это не формальность. Второй
+    кроул Burger King принёс «Cheeseburger: жир 12→2.4, холестерин 40→0»
+    и натрий с десятыми долями — поля названы верно, но значения в них
+    чужого масштаба. Своей же прошлой записи такой источник противоречит,
+    и вот это ловить надо.
 
     Дифф-проверка сравнивает **кроул с кроулом**, а не с каталогом. Разница
     принципиальная: каталог собран из среза 2018 года и содержит позиции,
@@ -230,6 +257,9 @@ def build(chain: str, live, stored: dict[str, dict], *,
     срабатывала бы всегда и потому не значила бы ничего.
     """
     live = list(live)
+    # Первый заход этого источника: своей записи о сети ещё нет, а каталог
+    # ей не ровня.
+    first_pass = structured and adopt and not previous
     plan = Plan(chain=chain, source=source, menu_url=menu_url, crawled=len(live))
     matched, best = match_all(live, stored)
     taken: set[str] = set()
@@ -247,6 +277,8 @@ def build(chain: str, live, stored: dict[str, dict], *,
             continue
 
         taken.add(record["ext_key"])
+        if serving := getattr(item, "serving", None):
+            plan.servings[record["ext_key"]] = serving
         problems = validate.check_item(item)
         plan.problems.extend(problems)
         if validate.errors(problems):
@@ -261,14 +293,18 @@ def build(chain: str, live, stored: dict[str, dict], *,
         changes = _changes(values, record)
         if not changes:
             plan.agreed += 1
+            plan.confirmed.append(record["ext_key"])
             continue
 
         update = Update(
             ext_key=record["ext_key"], name=record["name"], live_name=item.name,
             source_url=getattr(item, "source_url", "") or "",
             values=values, changes=changes)
-        bucket = plan.suspicious if is_suspicious(changes) else plan.updates
-        bucket.append(update)
+        odd = is_suspicious(changes)
+        if odd:
+            plan.suspicious.append(update)
+        if not odd or first_pass:
+            plan.updates.append(update)
 
     plan.unseen = sorted(set(stored) - taken)
     plan.seen_keys = sorted(taken)

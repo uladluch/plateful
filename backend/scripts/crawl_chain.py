@@ -6,6 +6,7 @@
     python3 backend/scripts/crawl_chain.py chick-fil-a --apply   # записать в базу
     python3 backend/scripts/crawl_chain.py subway --guide URL    # гид в PDF вместо обхода
     python3 backend/scripts/crawl_chain.py burger-king --sanity  # контент-база сети (RBI)
+    python3 backend/scripts/crawl_chain.py mcdonald-s --snapshot # снимок, снятый браузером
 
 Без `--apply` не пишется ничего — ни в базу, ни на диск, кроме отчёта.
 Так и задумано: человек сначала смотрит, что кроул собрался сделать.
@@ -39,7 +40,7 @@ from urllib.parse import urlparse
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import crawl, pdf_guide, validate
-from plateful_data.adapters import sanity_rbi, site
+from plateful_data.adapters import mcdonalds, sanity_rbi, site
 from plateful_data.adapters.base import Fetcher, curl_get
 from plateful_data.slug import slugify
 
@@ -236,6 +237,30 @@ def from_sanity(slug: str) -> list[Crawled]:
             for item in items]
 
 
+def from_snapshot(slug: str) -> list[Crawled]:
+    """Позиции из снимка, снятого браузером.
+
+    Сеть, которая не отвечает ни curl, ни Python, всё равно отвечает
+    настоящей странице — снимок снимают там (`backend/data/collect/`) и
+    кладут в `backend/cache/`. Для кроула это такой же полный источник,
+    как гид: сеть перечислила своё меню целиком, значит `--replace`
+    законен.
+    """
+    if slug != mcdonalds.SLUG:
+        raise SystemExit(f"снимок описан только для {mcdonalds.SLUG}")
+    items = mcdonalds.load()
+    print(f"  снимок: {len(items)} позиций,"
+          f" с картинкой {sum(1 for i in items if i.image_url)},"
+          f" с порцией {sum(1 for i in items if i.serving)}")
+    return [Crawled(chain=item.chain, ext_key=item.ext_key, name=item.name,
+                    source=item.source, source_url=item.source_url,
+                    category=item.category, serving=item.serving,
+                    **{f: getattr(item, f) for f in
+                       ("kcal", "protein", "carbs", "fat", "sugar", "sat_fat",
+                        "trans_fat", "cholesterol", "sodium", "fiber")})
+            for item in items]
+
+
 def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
     """Позиции из PDF-гида сети.
 
@@ -326,7 +351,14 @@ def report(plan: crawl.Plan) -> None:
         print(f"  … ещё {len(plan.updates) - 20}")
 
     if plan.suspicious:
-        print("\n  Слишком непохоже на дрейф рецептуры — человеку, не в базу:")
+        # При замене меню из структурного источника такие изменения всё
+        # равно записываются: ловить там нечего, кроме чужих цифр. Но
+        # показать их надо — это самые большие расхождения в прогоне.
+        applied = {u.ext_key for u in plan.updates}
+        where = ("самые большие расхождения — записываются, но взгляните"
+                 if plan.suspicious[0].ext_key in applied
+                 else "человеку, не в базу")
+        print(f"\n  Слишком непохоже на дрейф рецептуры ({where}):")
         for update in plan.suspicious[:10]:
             print(f"    {update.name}: {update.summary}")
 
@@ -402,6 +434,19 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
             f" date {sql_text(observed)}, false, 1.00\n"
             f"from closed;\n")
 
+    # Сошедшиеся: цифры те же, но подтверждены сегодня и у сети. Строку
+    # не версионируем — значения не менялись, менялось только то, что мы
+    # о них знаем. Без этой записи подтверждённая позиция навсегда
+    # оставалась бы помеченной как данные 2018 года.
+    if plan.confirmed:
+        keys = ", ".join(sql_text(key) for key in plan.confirmed)
+        lines.append(
+            f"update items set source = {sql_text(plan.source)},"
+            f" source_url = {sql_text(plan.menu_url)},"
+            f" observed_at = date {sql_text(observed)}, stale = false\n"
+            f"where chain_id = {chain_id} and valid_to is null"
+            f" and ext_key in ({keys});\n")
+
     # Новые позиции сети. Раздел и вариант им проставит sync_taxonomy по
     # тем же правилам, что и всем остальным: их считает конвейер по
     # названию, а не берёт с источника, — поэтому здесь оставляем пусто.
@@ -426,6 +471,20 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
             # прогон этого же гида. Повтор не ошибка, просто нечего делать.
             + "\non conflict do nothing;\n")
 
+    # Вес порции — только в пустое место. Сеть называет его точнее, чем
+    # срез 2018 года, но там, где порция проставлена счётом («1 Cookie»),
+    # граммы её не улучшат, а смысл поменяют.
+    blanks = {key: value for key, value in plan.servings.items()
+              if key not in {a.ext_key for a in plan.adopted}}
+    if blanks:
+        rows = ", ".join(f"({sql_text(key)}, {sql_text(value)})"
+                         for key, value in sorted(blanks.items()))
+        lines.append(
+            "update items set serving_text = fresh.serving\n"
+            f"from (values {rows}) as fresh(key, serving)\n"
+            f"where chain_id = {chain_id} and valid_to is null"
+            " and ext_key = fresh.key and serving_text is null;\n")
+
     # Чего сеть не назвала в собственном гиде, того она больше не подаёт.
     # Строку не трогаем: человек мог сохранить блюдо в заказ, и исчезновение
     # выглядело бы поломкой. Приложение уводит такие в раздел «Archive».
@@ -435,7 +494,11 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
         # прогон Burger King видел 281 документ там, где их 473. Строка,
         # которую прошлый прогон не дотянулся увидеть и увёл в архив,
         # должна вернуться следующим, а не остаться там навсегда.
-        for on_menu, keys in ((False, plan.retired), (True, plan.seen_keys)):
+        # Заведённая сейчас позиция — в меню по определению: сеть только
+        # что назвала её сама. Без этого у Firehouse 97 свежих строк, а у
+        # Popeyes 52 оставались без наблюдения вовсе.
+        on_menu_keys = sorted(set(plan.seen_keys) | {a.ext_key for a in plan.adopted})
+        for on_menu, keys in ((False, plan.retired), (True, on_menu_keys)):
             if not keys:
                 continue
             listed = ", ".join(sql_text(key) for key in keys)
@@ -449,6 +512,7 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
 
     kind = ("pdf" if plan.menu_url.endswith(".pdf")
             else "json_api" if plan.source in {b.domain for b in sanity_rbi.BRANDS.values()}
+            else "json_api" if plan.source == mcdonalds.DOMAIN
             else "json_in_html")
     lines.append(f"update chains set last_crawl_at = now(), source_url = "
                  f"{sql_text(plan.menu_url)}, source_kind = {sql_text(kind)}"
@@ -466,6 +530,8 @@ def main() -> int:
                         help="взять позиции из PDF-гида сети вместо обхода сайта")
     parser.add_argument("--sanity", action="store_true",
                         help="читать контент-базу сети напрямую (бренды RBI)")
+    parser.add_argument("--snapshot", action="store_true",
+                        help="взять меню из снимка, снятого браузером")
     parser.add_argument("--apply", action="store_true", help="записать в базу")
     parser.add_argument("--replace", action="store_true",
                         help="замена меню: завести новые позиции и увести в "
@@ -484,6 +550,8 @@ def main() -> int:
     if args.sanity:
         brand = sanity_rbi.BRANDS.get(args.chain)
         menu_url = f"https://www.{brand.domain}/menu" if brand else None
+    if args.snapshot:
+        menu_url = mcdonalds.MENU_URL
     if not menu_url:
         raise SystemExit("адрес меню неизвестен: укажите --menu (он запомнится в chains)")
 
@@ -491,6 +559,8 @@ def main() -> int:
 
     if args.sanity:
         live = from_sanity(args.chain)
+    elif args.snapshot:
+        live = from_snapshot(args.chain)
     elif args.guide:
         live = from_guide(args.guide, row["name"], args.chain)
     elif args.cache and args.cache.exists():
@@ -511,14 +581,16 @@ def main() -> int:
     stored = catalog(row["id"])
     print(f"  в каталоге: {len(stored)} позиций")
 
-    if args.replace and not (args.guide or args.sanity):
+    if args.replace and not (args.guide or args.sanity or args.snapshot):
         raise SystemExit(
-            "--replace только с --guide или --sanity: обход сайта неполон по "
-            "природе, и «мы не дошли до страницы» неотличимо от «блюда нет»")
+            "--replace только с --guide, --sanity или --snapshot: обход сайта "
+            "неполон по природе, и «мы не дошли до страницы» неотличимо от "
+            "«блюда нет»")
 
     plan = crawl.build(row["name"], live, stored,
                        previous=previous_crawl(row_id, live[0].source),
                        adopt=args.replace,
+                       structured=bool(args.sanity or args.snapshot),
                        source=live[0].source, menu_url=menu_url)
     report(plan)
 
@@ -544,7 +616,7 @@ def main() -> int:
         # решение принимает человек флагом, а не порог.
         print(f"\nЗамена меню: дифф-проверка сказала «{plan.held}» — "
               f"для замены это ожидаемо, продолжаю по --replace.")
-    if not (plan.updates or plan.adopted or plan.retired):
+    if not (plan.updates or plan.adopted or plan.retired or plan.confirmed):
         print("\nОбновлять нечего.")
         record_only(plan, row_id, args.observed)
         return 0
@@ -561,6 +633,8 @@ def main() -> int:
         print(result.stderr, file=sys.stderr)
         return 1
     done = [f"{len(plan.updates)} обновлено"]
+    if plan.confirmed:
+        done.append(f"{len(plan.confirmed)} подтверждено")
     if plan.adopted:
         done.append(f"{len(plan.adopted)} заведено")
     if plan.retired:

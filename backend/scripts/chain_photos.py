@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
-"""Снимки блюд из Sanity CMS сети — в наш бакет и в `item_photos`.
+"""Снимки блюд сети — в наш бакет и в `item_photos`.
 
-    python3 backend/scripts/sanity_photos.py burger-king            # показать
-    python3 backend/scripts/sanity_photos.py burger-king --apply    # залить
+    python3 backend/scripts/chain_photos.py burger-king            # показать
+    python3 backend/scripts/chain_photos.py burger-king --apply    # залить
 
-Идёт после `crawl_chain.py <сеть> --sanity --replace --apply`: снимок
-цепляется к позиции каталога по тому же ключу, который кроул считает из
-имени, — значит, сначала позиция, потом её фотография.
+Откуда брать снимки, решает сама сеть: у брендов RBI это их Sanity CMS,
+у McDonald's — снимок калькулятора питания. Разница ровно в одной функции;
+всё остальное — приведение к квадрату, перекладывание в бакет, строка
+прав — общее, потому что это про нас, а не про сеть.
+
+Идёт после `crawl_chain.py <сеть> … --replace --apply`: снимок цепляется
+к позиции каталога по тому же ключу, который кроул считает из имени, —
+значит, сначала позиция, потом её фотография.
 
 Снимок не хотлинкуется, а перекладывается к нам. У сети свой CDN и своя
 жизнь: адрес меняется вместе с версией ассета, а карточка обязана открыться
 и через год. Плюс права: строка «использовано с разрешения» лежит рядом
 с файлом, а не в чужой инфраструктуре.
 
-Sanity отдаёт исходный квадрат (1333 или 1600) — кадрировать нечего, но
-приводим к нашему размеру, чтобы все снимки в каталоге были одного веса.
+Sanity отдаёт исходный квадрат (1333 или 1600), Scene7 у McDonald's —
+1564: кадрировать нечего, но приводим к нашему размеру, чтобы все снимки
+в каталоге были одного веса.
 """
 from __future__ import annotations
 
@@ -31,7 +37,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from PIL import Image
 
-from plateful_data.adapters import sanity_rbi
+from plateful_data import matching
+from plateful_data.adapters import mcdonalds, sanity_rbi
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,7 +55,17 @@ RIGHTS = {
                 "https://www.popeyes.com/menu"),
     "tim-hortons": ("© Tim Hortons. Used with permission. Source: timhortons.com",
                     "https://www.timhortons.com/menu"),
+    mcdonalds.SLUG: ("© McDonald's Corporation. Used with permission. "
+                     "Source: mcdonalds.com", mcdonalds.MENU_URL),
 }
+
+
+def shots(slug: str) -> tuple[str, list]:
+    """Название сети и её позиции со снимками — откуда бы они ни брались."""
+    if slug == mcdonalds.SLUG:
+        return mcdonalds.CHAIN, [i for i in mcdonalds.load() if i.image_url]
+    brand = sanity_rbi.BRANDS[slug]
+    return brand.name, [i for i in sanity_rbi.fetch(brand) if i.image_url]
 
 
 def query(sql: str) -> list[dict]:
@@ -69,17 +86,18 @@ def sql_text(value) -> str:
     return "null" if value in (None, "") else "'" + str(value).replace("'", "''") + "'"
 
 
-def catalog_keys(slug: str) -> tuple[int, set[str], set[str]]:
-    """id сети, ключи её текущих позиций и ключи, у которых снимок уже есть."""
+def catalog_keys(slug: str) -> tuple[int, dict[str, dict], set[str]]:
+    """id сети, её текущие позиции по ключу и ключи со снимком."""
     rows = query(f"select id from chains where slug = {sql_text(slug)};")
     if not rows:
         raise SystemExit(f"сети {slug} нет в chains")
     chain_id = rows[0]["id"]
-    keys = {r["ext_key"] for r in query(
-        f"select ext_key from items where chain_id = {chain_id} and valid_to is null;")}
+    catalog = {r["ext_key"]: r for r in query(
+        f"select ext_key, name from items where chain_id = {chain_id}"
+        " and valid_to is null;")}
     have = {r["ext_key"] for r in query(
         f"select ext_key from item_photos where chain_id = {chain_id};")}
-    return chain_id, keys, have
+    return chain_id, catalog, have
 
 
 def download(url: str) -> Image.Image:
@@ -96,37 +114,41 @@ def squared(image: Image.Image) -> Image.Image:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("chain", choices=sorted(sanity_rbi.BRANDS))
+    parser.add_argument("chain", choices=sorted(RIGHTS))
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--limit", type=int)
     args = parser.parse_args()
 
-    brand = sanity_rbi.BRANDS[args.chain]
     license_text, page = RIGHTS[args.chain]
-    chain_id, keys, have = catalog_keys(args.chain)
+    chain_id, catalog, have = catalog_keys(args.chain)
 
-    items = [i for i in sanity_rbi.fetch(brand) if i.image_url]
-    matched = [i for i in items if i.ext_key in keys]
-    todo = [i for i in matched if i.ext_key not in have]
-    print(f"{brand.name}: снимков в Sanity {len(items)}, из них позиций в каталоге {len(matched)},"
+    name, items = shots(args.chain)
+    # Тем же правилом, что сопоставляет цифры. По точному ключу снимок
+    # терялся всюду, где сеть называет блюдо иначе: «Hash Browns, Small»
+    # в каталоге и «Small Hash Browns» у сети — одно блюдо для кроула и
+    # разные для снимков, и карточка оставалась без картинки.
+    pairs, _ = matching.match_all(items, catalog)
+    todo = [(i, pairs[i.ext_key]["ext_key"]) for i in items
+            if i.ext_key in pairs and pairs[i.ext_key]["ext_key"] not in have]
+    print(f"{name}: снимков у сети {len(items)}, сматчено с каталогом {len(pairs)},"
           f" без снимка {len(todo)}")
     if args.limit:
         todo = todo[:args.limit]
-    for item in todo[:8]:
-        print(f"   {item.ext_key:40} ← {item.image_url.split('?')[0].rsplit('/', 1)[-1]}")
+    for item, key in todo[:8]:
+        print(f"   {key:40} ← {item.name[:40]}")
     if not args.apply or not todo:
         return 0
 
-    workdir = Path(tempfile.mkdtemp(prefix="sanity-photos-"))
+    workdir = Path(tempfile.mkdtemp(prefix="chain-photos-"))
     statements = []
     done = 0
-    for item in todo:
+    for item, key in todo:
         try:
             image = squared(download(item.image_url))
         except Exception as error:
-            print(f"   ! {item.ext_key}: {error}")
+            print(f"   ! {key}: {error}")
             continue
-        filename = f"{args.chain}--{item.ext_key}.png"
+        filename = f"{args.chain}--{key}.png"
         path = workdir / filename
         image.save(path, "PNG", optimize=True)
         upload = subprocess.run(
@@ -135,13 +157,13 @@ def main() -> int:
              "--cache-control", "max-age=31536000, immutable"],
             capture_output=True, text=True)
         if upload.returncode != 0:
-            print(f"   ! {item.ext_key}: загрузка не удалась: {upload.stderr.strip()[:120]}")
+            print(f"   ! {key}: загрузка не удалась: {upload.stderr.strip()[:120]}")
             continue
         statements.append(
             "insert into item_photos (chain_id, ext_key, url, license, license_url,"
             " creator, title, source_page)\n"
-            f"values ({chain_id}, {sql_text(item.ext_key)}, {sql_text(f'{BUCKET_URL}/{filename}')},"
-            f" {sql_text(license_text)}, null, {sql_text(brand.name)}, {sql_text(item.name)},"
+            f"values ({chain_id}, {sql_text(key)}, {sql_text(f'{BUCKET_URL}/{filename}')},"
+            f" {sql_text(license_text)}, null, {sql_text(name)}, {sql_text(item.name)},"
             f" {sql_text(page)})\n"
             "on conflict (chain_id, ext_key) do update set url = excluded.url,"
             " license = excluded.license, creator = excluded.creator,"

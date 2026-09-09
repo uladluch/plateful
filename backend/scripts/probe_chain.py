@@ -29,8 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plateful_data.adapters.base import Fetcher, curl_get
-from plateful_data.adapters.mcdonalds import BROWSER_HEADERS
+from plateful_data.adapters.base import BROWSER_HEADERS, Fetcher, curl_get
 from plateful_data.adapters.site import NUTRIENTS, item_links, read_page
 
 # Адреса меню живут в `chains.source_url`, а не здесь: их читает `vacuum.py`,

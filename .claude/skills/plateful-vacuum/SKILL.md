@@ -81,7 +81,7 @@ python3 backend/scripts/vacuum.py --crawl 2 --apply    # обойти 2 и за�
 ```bash
 python3 backend/scripts/crawl_chain.py burger-king --sanity --replace --apply
 python3 backend/scripts/sync_taxonomy.py
-python3 backend/scripts/sanity_photos.py burger-king --apply
+python3 backend/scripts/chain_photos.py burger-king --apply
 ```
 
 Сайты RBI рисуют меню скриптом, но берут его из Sanity CMS, к которой фронт
@@ -92,7 +92,35 @@ python3 backend/scripts/sanity_photos.py burger-king --apply
 в памяти `plateful-rbi-sanity`.
 
 Снимки перекладываются в наш бакет, а не хотлинкуются, и каждый несёт
-строку прав из `RIGHTS` в `sanity_photos.py`.
+строку прав из `RIGHTS` в `chain_photos.py`.
+
+### Снимок, снятый браузером (McDonald's)
+
+```bash
+python3 backend/scripts/catch_snapshot.py backend/cache/mcdonalds-sections.json
+#   в браузере на странице калькулятора: выполнить backend/data/collect/mcdonalds.js,
+#   затем __send(__plateful.sections)
+python3 backend/scripts/catch_snapshot.py backend/cache/mcdonalds.json
+#   затем __send(__plateful.items)
+python3 backend/scripts/crawl_chain.py mcdonald-s --snapshot --replace --apply
+python3 backend/scripts/sync_taxonomy.py
+python3 backend/scripts/chain_photos.py mcdonald-s --apply
+```
+
+Когда сеть рвёт соединение на рукопожатии TLS — а McDonald's отвечает
+HTTP 000 и curl, и Python, — единственный клиент, которого она пускает, это
+настоящий браузер. Меню снимает скрипт из `backend/data/collect/`, файл
+принимает `catch_snapshot.py`, дальше идёт обычный кроул: снимок для него
+такой же полный источник, как гид, поэтому `--replace` законен.
+
+Страница отдаёт данные **формой, а не fetch**: её CSP закрывает
+`connect-src`, но `form-action` не объявлен. Отправка уводит страницу на
+ответ приёмника — поэтому разделы и позиции шлют по очереди, перезагружая
+страницу между ними.
+
+Что легко потерять: у однопорционных блюд нет массива `sizes`, и `itemId`
+у них равен ключу продукта. Пока сборщик читал только размеры, снимок
+приносил 185 позиций вместо 252 — без единого бургера, включая Big Mac.
 
 ### Гид в PDF
 

@@ -26,7 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data.adapters import chick_fil_a, mcdonalds
-from plateful_data.adapters.base import Fetcher, curl_get
+from plateful_data.adapters.base import BROWSER_HEADERS, Fetcher, curl_get
 
 ROOT = Path(__file__).resolve().parents[2]
 PACK = ROOT / "plateful" / "Resources" / "seed-pack.json"
@@ -46,7 +46,7 @@ def normalized(name: str) -> str:
 
 def mcdonalds_menu() -> tuple[list[str], str]:
     url = "https://www.mcdonalds.com/us/en-us/full-menu.html"
-    page = curl_get(url, mcdonalds.BROWSER_HEADERS)
+    page = curl_get(url, BROWSER_HEADERS)
     if not page:
         return [], url
     return [s.replace("-", " ") for s in sorted(set(_MCD_PRODUCT.findall(page)))], url
