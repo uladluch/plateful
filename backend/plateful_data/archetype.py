@@ -48,10 +48,13 @@ RULES: list[tuple[str, str]] = [
                           r"crispy chicken|original recipe"),
     ("taco",              r"\btaco\b|tostada|chalupa|gordita"),
     ("burrito",           r"burrito|chimichanga|quesadilla|enchilada"),
-    ("bowl",              r"\bbowl\b"),
+    ("bowl",              r"\bbowls?\b"),
     ("pizza",             r"pizza|calzone|stromboli|flatbread"),
-    ("sub-sandwich",      r"\bsub\b|hoagie|footlong|\d+ in\b|b\.?m\.?t\.?|cheesesteak"),
-    ("wrap",              r"\bwrap\b|cool wrap"),
+    ("wrap",              r"\bwraps?\b|cool wrap"),
+    # Размер сабвея сеть пишет и словом, и знаком дюйма: «6 in» в
+    # каталоге 2018 года, «6"» в сегодняшнем гиде.
+    ("sub-sandwich",      r"\bsub\b|hoagie|footlong|\d+\s*(?:in\b|\")|"
+                          r"b\.?m\.?t\.?|cheesesteak"),
     ("breakfast-sandwich", r"biscuit|mcmuffin|croissan|egg white grill|breakfast sandwich|"
                            r"english muffin|breakfast burrito"),
     ("sandwich",          r"sandwich|panini|\bmelt\b|\bb\.?l\.?t\.?\b|\bclub\b|reuben"),
