@@ -87,6 +87,10 @@ class Layout:
     #: Строку блюда разрывает вёрстка: имя в левой колонке на двух строках,
     #: числа правее и между ними. Читать такой гид надо по координатам.
     positioned: bool = False
+    #: Строка блюда называется не блюдом, а порцией: у Quiznos под
+    #: заголовком «Turkey Ranch & Swiss» идут три строки «Small Sub»,
+    #: «Medium Sub», «Large Sub». Имя брать со строки выше.
+    name_from_heading: bool = False
     #: Порция стоит текстом в хвосте названия, а не отдельной колонкой.
     #: У Subway это число граммов среди чисел, у Panera — «1 Bagel» прямо
     #: в имени, и без отделения половинка салата и целый салат становятся
@@ -124,7 +128,28 @@ PANERA = Layout(
              "sodium", "carbs", "fiber", "sugar", "protein", None),
     count=12, serving_in_name=True, positioned=True)
 
-LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA}
+#: Quiznos, US Base Nutritionals. Порция граммами первой колонкой, за
+#: калориями идут калории из жира — они нам не нужны.
+QUIZNOS = Layout(
+    columns=("serving", "kcal", None, "fat", "sat_fat", "trans_fat",
+             "cholesterol", "sodium", "carbs", "fiber", "sugar", "protein"),
+    count=12, name_from_heading=True)
+
+#: Frisch's Big Boy. Первая клетка — прочерк на месте порции: сеть её не
+#: публикует, но колонку в таблице держит.
+FRISCHS = Layout(
+    columns=(None, "kcal", "fat", "sat_fat", "trans_fat", "cholesterol",
+             "sodium", "carbs", "fiber", "sugar", "protein"),
+    count=11)
+
+#: Red Lobster, US Nutrition.
+RED_LOBSTER = Layout(
+    columns=("kcal", None, "fat", "sat_fat", "trans_fat", "cholesterol",
+             "sodium", "carbs", "fiber", "sugar", "protein"),
+    count=11)
+
+LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA, "quiznos": QUIZNOS,
+           "frisch-s-big-boy": FRISCHS, "red-lobster": RED_LOBSTER}
 
 
 def _number(token: str) -> float | None:
@@ -232,6 +257,10 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
         if layout.serving_in_name and (tail := _SERVING_TAIL.search(name)):
             serving = tail.group(1)
             name = name[:tail.start()].strip() or name
+        elif layout.name_from_heading and pending:
+            serving, name = name, pending
+            if category == pending:
+                category = previous_category
         elif layout.serving_in_name and pending and _SERVING_ONLY.match(name):
             # Имя перенесено на предыдущую строку, а здесь осталась порция.
             serving, name = name, pending
