@@ -68,9 +68,7 @@ struct ItemDetailView: View {
                 // карточку сверху вниз надо уже с выбранным сегментом.
                 if variants.count > 1 { sizePicker }
                 calories
-                macro("Protein", value: shown.proteinText, color: Tokens.Color.protein)
-                macro("Carbs", value: shown.carbsText, color: Tokens.Color.carbs)
-                macro("Fat", value: shown.fatText, color: Tokens.Color.fat)
+                macroRings
             } header: {
                 // Заголовок страницы переехал сюда: имя без размера, тот же
                 // повод, что был у navigationTitle — «L» и так виден в
@@ -210,6 +208,60 @@ struct ItemDetailView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Белки, углеводы, жиры — три кольца в ряд, а не строки друг под
+    /// другом: заполнение кольца — доля этого макроса в калориях блюда
+    /// (белок и углеводы по 4 ккал/г, жир — по 9), так три числа сразу
+    /// читаются и по отдельности, и по вкладу в общую цифру наверху.
+    private var macroRings: some View {
+        HStack(spacing: Tokens.Spacing.l) {
+            macroRing(title: "Protein", value: shown.proteinText,
+                      share: macroShare(shown.protein, kcalPerGram: 4), color: Tokens.Color.protein)
+            macroRing(title: "Carbs", value: shown.carbsText,
+                      share: macroShare(shown.carbs, kcalPerGram: 4), color: Tokens.Color.carbs)
+            macroRing(title: "Fat", value: shown.fatText,
+                      share: macroShare(shown.fat, kcalPerGram: 9), color: Tokens.Color.fat)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Tokens.Spacing.s)
+        .listRowInsets(EdgeInsets(top: 0, leading: Tokens.Spacing.m,
+                                  bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
+    }
+
+    /// Доля калорий одного макроса от суммы всех трёх — не от заявленных
+    /// калорий блюда: округление на этикетке иначе иногда дало бы кольцо
+    /// за пределами круга.
+    private var macroKcalTotal: Double {
+        shown.protein * 4 + shown.carbs * 4 + shown.fat * 9
+    }
+
+    private func macroShare(_ grams: Double, kcalPerGram: Double) -> Double {
+        guard macroKcalTotal > 0 else { return 0 }
+        return (grams * kcalPerGram) / macroKcalTotal
+    }
+
+    /// Системное кольцо-индикатор — то же, чем виджеты показывают заряд
+    /// или прогресс кольца активности, здесь применено к одному макросу.
+    private func macroRing(title: String, value: String, share: Double, color: Color) -> some View {
+        VStack(spacing: Tokens.Spacing.xs) {
+            Gauge(value: share) {
+                EmptyView()
+            } currentValueLabel: {
+                Text(value)
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+            }
+            .gaugeStyle(.accessoryCircularCapacity)
+            .tint(color)
+
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(Tokens.Color.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+
     /// Остальная этикетка.
     ///
     /// Отдельным разделом, а не вперемешку с макросами: белки, углеводы и
@@ -272,19 +324,6 @@ struct ItemDetailView: View {
         }
     }
 
-    private func macro(_ title: String, value: String, color: Color) -> some View {
-        LabeledContent {
-            Text(value).monospacedDigit()
-        } label: {
-            Label {
-                Text(title)
-            } icon: {
-                Image(systemName: Tokens.Symbol.protein)
-                    .foregroundStyle(color)
-                    .imageScale(.small)
-            }
-        }
-    }
 }
 
 #Preview("Устаревшие данные") {
