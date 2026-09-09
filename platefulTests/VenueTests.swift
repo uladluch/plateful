@@ -182,6 +182,33 @@ struct VenueTests {
         #expect(chains.last?.nearest.extKey == "c")
     }
 
+    // MARK: - Полоса цены
+
+    @Test("полоса рисуется долларами по числу")
+    func priceBand() {
+        #expect(MenuChain(name: "X", itemCount: 1, priceTier: 1).priceBand == "$")
+        #expect(MenuChain(name: "X", itemCount: 1, priceTier: 4).priceBand == "$$$$")
+    }
+
+    /// «Не проставили» и «бесплатно» — разные вещи, и пустая строка вместо
+    /// полосы честнее любой цифры.
+    @Test("без полосы ничего не показываем")
+    func missingPriceBand() {
+        #expect(MenuChain(name: "X", itemCount: 1).priceBand == nil)
+        #expect(MenuChain(name: "X", itemCount: 1, priceTier: 0).priceBand == nil)
+        #expect(MenuChain(name: "X", itemCount: 1, priceTier: 9).priceBand == nil)
+    }
+
+    @Test("пак без полосы читается по-прежнему")
+    func packWithoutPriceTier() throws {
+        let json = #"{"name": "Popeyes", "itemCount": 169}"#
+        let chain = try JSONDecoder().decode(MenuPack.Chain.self,
+                                             from: Data(json.utf8))
+
+        #expect(chain.priceTier == nil)
+        #expect(chain.itemCount == 169)
+    }
+
     @Test("неделя в карточке начинается с сегодняшнего дня")
     func weekStartsToday() {
         let week = VenueDetailView.weekFromToday(now: Self.moment(day: 10, hour: 12),

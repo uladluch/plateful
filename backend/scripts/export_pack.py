@@ -116,6 +116,16 @@ def fetch_all() -> list[Row]:
 MAX_LOSS = 0.05
 
 
+def price_tiers() -> dict[str, int]:
+    """Полоса цены по сетям — та, что проставлена руками в базе.
+
+    Сети без полосы сюда не попадают вовсе: пустое поле в паке честнее
+    выдуманной цифры.
+    """
+    rows = query("select name, price_tier from chains where price_tier is not null;")
+    return {row["name"]: int(row["price_tier"]) for row in rows}
+
+
 def ready(rows: list[Row]) -> tuple[list[Row], list[str]]:
     """Позиции готовых сетей и отчёт по всем — строкой на сеть.
 
@@ -203,7 +213,8 @@ def main() -> int:
 
     rows.sort(key=lambda r: (r.chain, r.name))
 
-    built = pack.build(rows, version=args.version, source="", observed="")
+    built = pack.build(rows, version=args.version, source="", observed="",
+                       price_tiers=price_tiers())
 
     if losses := check_against_previous(built, args.version):
         print("\nПак беднее прошлого:", file=sys.stderr)

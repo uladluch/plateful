@@ -122,7 +122,8 @@ def unready(built: dict) -> dict[str, Readiness]:
             if not score.ok}
 
 
-def build(items, *, version: int, source: str, observed: str) -> dict:
+def build(items, *, version: int, source: str, observed: str,
+          price_tiers: dict[str, int] | None = None) -> dict:
     chains = Counter(i.chain for i in items)
     # Размерные варианты одного блюда склеиваются в группу: приложение
     # покажет их переключателем вместо четырёх карточек колы подряд.
@@ -204,8 +205,13 @@ def build(items, *, version: int, source: str, observed: str) -> dict:
         # Только те разделы, что реально встретились, — в общем порядке.
         "sections": [name for name in SECTION_ORDER
                      if any(row["section"] == name for row in encoded)],
+        # Полоса цены — свойство сети, и её проставляют руками: среднего
+        # чека по конкретному ресторану нет ни в одном открытом источнике.
+        # Сети без полосы едут без поля, а не с нулём: «не знаем» и
+        # «бесплатно» — разные вещи.
         "chains": [
             {"name": name, "itemCount": count}
+            | ({"priceTier": tier} if (tier := (price_tiers or {}).get(name)) else {})
             for name, count in sorted(chains.items())
         ],
         "items": encoded,

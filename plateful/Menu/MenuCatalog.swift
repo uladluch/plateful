@@ -79,7 +79,10 @@ nonisolated struct MenuCatalog: Sendable {
         self.index = TextIndex(names: names.build(), chains: chainNames.build())
 
         // Порядок сетей из пака: он уже отсортирован по названию.
-        self.chains = pack.chains.map { MenuChain(name: $0.name, itemCount: $0.itemCount) }
+        self.chains = pack.chains.map {
+            MenuChain(name: $0.name, itemCount: $0.itemCount,
+                      priceTier: $0.priceTier)
+        }
     }
 
     /// Позиции одной сети, в порядке пака (по названию).

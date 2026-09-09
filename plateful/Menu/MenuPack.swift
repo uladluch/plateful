@@ -68,6 +68,9 @@ nonisolated struct MenuPack: Decodable, Sendable {
     struct Chain: Decodable, Sendable {
         let name: String
         let itemCount: Int
+        /// 1 = `$`, 4 = `$$$$`. Поля нет у сетей, которым полосу не
+        /// проставили: паки до v31 не несут его вовсе.
+        let priceTier: Int?
     }
 
     struct Item: Decodable, Sendable {

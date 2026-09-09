@@ -197,4 +197,23 @@ nonisolated struct MenuChain: Identifiable, Hashable, Sendable {
     var id: String { name }
     let name: String
     let itemCount: Int
+
+    /// Насколько дорого в этой сети: 1 = `$`, 4 = `$$$$`.
+    ///
+    /// Полоса по сети, а не средний чек по ресторану: чека по конкретной
+    /// точке нет ни в одном открытом источнике, а придумывать его нельзя.
+    /// `nil` — полосу не проставляли.
+    let priceTier: Int?
+
+    init(name: String, itemCount: Int, priceTier: Int? = nil) {
+        self.name = name
+        self.itemCount = itemCount
+        self.priceTier = priceTier
+    }
+
+    /// `$$` — то, как эту полосу пишут везде, включая карточку места Apple.
+    var priceBand: String? {
+        guard let priceTier, (1...4).contains(priceTier) else { return nil }
+        return String(repeating: "$", count: priceTier)
+    }
 }

@@ -10,6 +10,9 @@ import SwiftUI
 struct VenueDetailView: View {
 
     let venue: Venue
+    /// `$$` — полоса по сети, а не чек этого ресторана. Разницу проговаривает
+    /// подпись под разделом, иначе цифру прочтут как обещание.
+    var priceBand: String?
 
     @Environment(\.dismiss) private var dismiss
     @State private var mapItem: MKMapItem?
@@ -26,6 +29,13 @@ struct VenueDetailView: View {
                     }
                     LabeledContent("Distance",
                                    value: NearbyView.distance(venue.distance))
+                    if let priceBand {
+                        LabeledContent("Prices", value: priceBand)
+                    }
+                } footer: {
+                    if priceBand != nil {
+                        Text("Prices are typical for the chain, not for this restaurant.")
+                    }
                 }
 
                 hours(venue.hours, title: "Hours")

@@ -13,7 +13,7 @@ struct MenuCatalogTests {
         items: [MenuPack.Item]
     ) -> MenuCatalog {
         let chains = Dictionary(grouping: items, by: \.chain)
-            .map { MenuPack.Chain(name: $0.key, itemCount: $0.value.count) }
+            .map { MenuPack.Chain(name: $0.key, itemCount: $0.value.count, priceTier: nil) }
             .sorted { $0.name < $1.name }
         let json: [String: Any] = [
             "format": 1, "version": version,

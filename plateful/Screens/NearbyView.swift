@@ -29,7 +29,10 @@ struct NearbyView: View {
                         }
                     }
                 }
-                .sheet(item: $selected) { VenueDetailView(venue: $0) }
+                .sheet(item: $selected) { venue in
+                    VenueDetailView(venue: venue,
+                                    priceBand: chain(named: venue.chain).priceBand)
+                }
         }
         .task { find() }
     }
@@ -141,7 +144,13 @@ struct NearbyView: View {
             HStack(spacing: Tokens.Spacing.s) {
                 ChainMarkView(chain: found.chain, size: 28)
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
-                    Text(found.chain)
+                    HStack(spacing: Tokens.Spacing.xs) {
+                        Text(found.chain)
+                        if let band = chain(named: found.chain).priceBand {
+                            Text(band)
+                                .foregroundStyle(Tokens.Color.textSecondary)
+                        }
+                    }
                     Text(subtitle(for: found))
                         .font(.caption)
                         .foregroundStyle(Tokens.Color.textSecondary)
