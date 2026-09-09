@@ -246,8 +246,6 @@ class Description(unittest.TestCase):
                 "Broccoli Cheese - (not available at all locations)"),
             "Broccoli Cheese")
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class PageFurniture(unittest.TestCase):
@@ -347,3 +345,35 @@ class Positioned(unittest.TestCase):
 
         self.assertEqual(item.name, "Market Bowl - Sesame Ginger Chicken - Half")
         self.assertEqual(item.serving, "1/2 Bowl")
+
+
+class ServingBeforeNumbers(unittest.TestCase):
+    """Порция, у которой число стоит вторым: «Approx 8»."""
+
+    LINE = "Crispy Cheesy Mini Dogs (small) Approx 8 690 39 17 0 110 1900 59 2 8 7 27"
+
+    def test_порция_вынимается_до_разбиения(self):
+        """Разбиение берёт первый ряд чисел, и «8» из «Approx 8» станет
+        калорийностью, а вся этикетка съедет на колонку: 8 ккал при
+        1900 г углеводов."""
+        line, serving = pdf_guide.pull_serving(self.LINE)
+        self.assertEqual(serving, "Approx 8")
+        self.assertNotIn("Approx", line)
+
+    def test_этикетка_после_этого_на_месте(self):
+        [item] = pdf_guide.parse(self.LINE, pdf_guide.AUNTIE_ANNES)
+        self.assertEqual(item.name, "Crispy Cheesy Mini Dogs (small)")
+        self.assertEqual(item.serving, "Approx 8")
+        self.assertEqual(item.values["kcal"], 690)
+        self.assertEqual(item.values["protein"], 27)
+
+    def test_порция_в_хвосте_читается_по_прежнему(self):
+        [item] = pdf_guide.parse(
+            "Crispy Cheesy Mini Dogs (bucket) 5 servings 690 39 17 0 110 1900 59 2 8 7 27",
+            pdf_guide.AUNTIE_ANNES)
+        self.assertEqual(item.serving, "5 servings")
+        self.assertEqual(item.values["kcal"], 690)
+
+
+if __name__ == "__main__":
+    unittest.main()

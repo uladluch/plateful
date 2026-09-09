@@ -65,6 +65,26 @@ class WrongGuide(Exception):
 _SERVING_TAIL = re.compile(
     r"\s+(\d+(?:/\d+)?(?:\.\d+)?\s+[A-Za-z][\w.'’-]*(?:\s+[A-Za-z][\w.'’-]*){0,2})$")
 
+#: Порция, у которой число стоит вторым: «Approx 8», «About 11». Число
+#: уезжает в клетки раньше, чем `_SERVING_TAIL` успевает его увидеть, —
+#: у Auntie Anne's так съезжала на колонку каждая штучная позиция, и
+#: «Approx 8 690 39 …» читалось как 8 ккал при 1900 г углеводов.
+_SERVING_WORD_FIRST = re.compile(
+    r"(?i)\s+((?:approx(?:imately)?|about|serves)\.?\s+\d+(?:\.\d+)?)(?=\s+\d)")
+
+
+def pull_serving(line: str) -> tuple[str, str | None]:
+    """Вынимает из строки порцию вида «Approx 8», стоящую перед числами.
+
+    Разбиение строки берёт первый же ряд чисел, поэтому такую порцию надо
+    убрать раньше: иначе она становится первой клеткой и сдвигает всю
+    этикетку на колонку.
+    """
+    match = _SERVING_WORD_FIRST.search(line)
+    if not match:
+        return line, None
+    return (line[:match.start()] + line[match.end():]), match.group(1).strip()
+
 #: Вся «строка блюда» — одна порция: «1 Bowl», «1/2 Stuffer». Значит имя
 #: перенесено на предыдущую строку, и там его и надо брать. Пока этого не
 #: делали, у Panera девять пар блюд оказывались неразличимы: половинка
@@ -148,8 +168,17 @@ RED_LOBSTER = Layout(
              "sodium", "carbs", "fiber", "sugar", "protein"),
     count=11)
 
+#: Auntie Anne's. Порция стоит текстом в хвосте названия («Approx 8»,
+#: «Small (16 fl oz)»), за клетчаткой идёт добавленный сахар — его мы не
+#: ведём.
+AUNTIE_ANNES = Layout(
+    columns=("kcal", "fat", "sat_fat", "trans_fat", "cholesterol", "sodium",
+             "carbs", "fiber", "sugar", None, "protein"),
+    count=11, serving_in_name=True)
+
 LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA, "quiznos": QUIZNOS,
-           "frisch-s-big-boy": FRISCHS, "red-lobster": RED_LOBSTER}
+           "frisch-s-big-boy": FRISCHS, "red-lobster": RED_LOBSTER,
+           "auntie-anne-s": AUNTIE_ANNES}
 
 
 def _number(token: str) -> float | None:
@@ -254,6 +283,8 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
     for line in text.splitlines():
         if not line.strip():
             continue
+        line, pulled = (pull_serving(line) if layout.serving_in_name
+                        else (line, None))
         split = _split(line, layout.count)
         if not split:
             # Не позиция. Заголовок капсом меняет формат подачи, обычный —
@@ -267,8 +298,10 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
                 previous_category, category = category, heading
             continue
         name, cells = split
-        serving = None
-        if layout.serving_in_name and (tail := _SERVING_TAIL.search(name)):
+        serving = pulled
+        if serving:
+            pass
+        elif layout.serving_in_name and (tail := _SERVING_TAIL.search(name)):
             serving = tail.group(1)
             name = name[:tail.start()].strip() or name
         elif layout.name_from_heading and pending:
