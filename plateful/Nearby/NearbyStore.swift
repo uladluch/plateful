@@ -3,13 +3,33 @@ import MapKit
 import Observation
 import OSLog
 
+/// Заведение на карте: наше сопоставление с каталогом плюс сам `MKMapItem`.
+///
+/// Карту-объект держим целиком, а не разбираем на поля. Часов работы и
+/// ценника среди свойств `MKMapItem` нет вовсе — в заголовках iOS 26 SDK
+/// у него только имя, координата, адрес, телефон, ссылка, часовой пояс и
+/// категория. Всё остальное про место — часы, ценник «$/$$/$$$», снимки,
+/// оценки — показывает карточка места, которую рисует сама Apple
+/// (`mapItemDetailSelectionAccessory`), и ей нужен исходный объект.
+struct NearbyVenue: Identifiable {
+    /// Имя сети ровно как в каталоге: по нему открывается меню.
+    let chain: String
+    let place: NearbyPlace
+    let item: MKMapItem
+
+    /// Личность экземпляра, а не места: в одном ответе карты объекты
+    /// разные, а `isEqual` у `MKMapItem` про содержимое.
+    var id: ObjectIdentifier { ObjectIdentifier(item) }
+}
+
 /// Что рядом: геопозиция у системы, заведения у карты, сети из каталога.
 ///
 /// Своих данных о ресторанах приложение не хранит вовсе. Три крупнейшие
 /// сети США — это уже больше пятидесяти тысяч точек, а все девяносто шесть
 /// дали бы за полтораста тысяч адресов: их пришлось бы собирать, лицензировать
 /// и возить в паке ради ответа, который карта даёт запросом с устройства
-/// и всегда свежим.
+/// и всегда свежим. Условия Apple Maps этого и не разрешают: результаты
+/// поиска нельзя складывать в свою базу мест.
 ///
 /// Разрешение спрашиваем в момент, когда человек сам открыл экран «рядом», —
 /// не на старте. Приложение обещает работать без онбординга, и диалог о
@@ -29,6 +49,11 @@ final class NearbyStore: NSObject {
     }
 
     private(set) var state: State = .idle
+
+    /// Каждое найденное заведение наших сетей — по одному на точку, а не
+    /// на сеть: на карте у «Subway» вокруг человека бывает четыре булавки,
+    /// и все четыре ему нужны, чтобы выбрать ближнюю по дороге.
+    private(set) var venues: [NearbyVenue] = []
 
     /// Радиус поиска. Пятьдесят километров — потолок
     /// `MKLocalPointsOfInterestRequest`; столько и не нужно, но у карты
@@ -51,6 +76,7 @@ final class NearbyStore: NSObject {
     func find(chains: [String]) {
         catalog = chains
         pending = true
+        venues = []
 
         switch manager.authorizationStatus {
         case .notDetermined:
@@ -79,28 +105,41 @@ final class NearbyStore: NSObject {
             let response = try await MKLocalSearch(request: request).start()
             let origin = CLLocation(latitude: coordinate.latitude,
                                     longitude: coordinate.longitude)
-            let places = response.mapItems.compactMap { item in
-                Self.place(from: item, origin: origin)
+            let index = NearbyCatalog(catalog)
+
+            var places: [NearbyPlace] = []
+            var found: [NearbyVenue] = []
+            for item in response.mapItems {
+                guard let place = Self.place(from: item, origin: origin) else {
+                    continue
+                }
+                places.append(place)
+                if let chain = index.chain(of: place.name) {
+                    found.append(NearbyVenue(chain: chain, place: place, item: item))
+                }
             }
-            let found = NearbyMatch.chains(near: places, in: catalog)
-            log.info("Рядом: \(places.count) заведений, из них наших сетей \(found.count)")
+
+            let chains = NearbyMatch.chains(near: places, in: index)
+            venues = found.sorted { $0.place.distance < $1.place.distance }
+            log.info("Рядом: \(places.count) заведений, наших точек \(found.count) у \(chains.count) сетей")
             // Чего мы не узнали — список сетей, которых не хватает каталогу.
             // Человек стоит рядом с ними прямо сейчас, и это лучший
             // приоритет для следующего адаптера, чем размер сети.
             let unknown = Set(places.map(\.name))
-                .subtracting(found.map(\.nearest.name))
+                .subtracting(found.map(\.place.name))
                 .sorted()
                 .prefix(12)
             log.info("Не опознаны: \(unknown.joined(separator: ", "))")
-            state = .ready(found)
+            state = .ready(chains)
         } catch {
             log.error("Поиск рядом не удался: \(error.localizedDescription)")
+            venues = []
             state = .failed(error.localizedDescription)
         }
     }
 
-    /// `MKMapItem` → наше значение. Всё, что карта готова рассказать:
-    /// имя, координата и адрес. Часов работы среди её свойств нет.
+    /// `MKMapItem` → наше значение: имя, расстояние, координата и адрес.
+    /// Всё, что карта отдаёт данными, — остальное живёт в карточке места.
     private static func place(from item: MKMapItem,
                              origin: CLLocation) -> NearbyPlace? {
         guard let name = item.name else { return nil }

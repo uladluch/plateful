@@ -12,8 +12,9 @@ nonisolated struct NearbyPlace: Hashable, Sendable {
     let name: String
     /// Метры от человека до заведения.
     let distance: Double
-    /// Адрес одной строкой, как его даёт карта. Часов работы карта не
-    /// отдаёт вовсе — ни одно свойство `MKMapItem` их не несёт.
+    /// Адрес одной строкой, как его даёт карта. Часов работы и ценника карта
+    /// не отдаёт вовсе — среди свойств `MKMapItem` их нет (iOS 26 SDK), их
+    /// показывает только карточка места, которую рисует сама Apple.
     let address: String?
     let latitude: Double
     let longitude: Double
@@ -31,46 +32,42 @@ nonisolated struct NearbyChain: Identifiable, Hashable, Sendable {
     var id: String { chain }
 }
 
-/// Сопоставление того, что показала карта, с тем, что есть в каталоге.
+/// Каталог сетей, подготовленный к сопоставлению с картой.
 ///
 /// Карта пишет «Chick-fil-A», каталог — «Chick-Fil-A»; карта пишет
 /// «Starbucks Coffee» там, где у нас просто «Starbucks». Поэтому имена
 /// сравниваются нормализованными, и тем же нормализатором, что и поиск:
 /// иначе «McDonald's» разошёлся бы сам с собой в двух местах приложения.
-nonisolated enum NearbyMatch {
+///
+/// Отдельный тип, а не функция: подготовка каталога стоит девяноста шести
+/// нормализаций, а спрашивают его по разу на каждое заведение вокруг.
+nonisolated struct NearbyCatalog: Sendable {
 
-    /// Сети каталога, найденные среди заведений вокруг, ближайшие первыми.
+    private struct Known: Sendable {
+        let name: String
+        let key: [UInt8]
+    }
+
+    private let known: [Known]
+
+    init(_ chains: [String]) {
+        // Длинные вперёд: первое же совпадение окажется самым точным —
+        // «Panda Express» точнее, чем «Panda».
+        known = chains
+            .map { Known(name: $0, key: TextIndex.normalized($0)) }
+            .filter { !$0.key.isEmpty }
+            .sorted { $0.key.count > $1.key.count }
+    }
+
+    /// Сеть каталога, которой принадлежит заведение, — или `nil`, если это
+    /// не наша сеть.
     ///
     /// Совпадением считается либо точное имя, либо имя сети в начале
     /// названия заведения на границе слова: «Sonic Drive-In» — это Sonic,
-    /// а «Sonicare» — нет. Из нескольких подходящих сетей берётся самая
-    /// длинная: «Panda Express» точнее, чем «Panda».
-    static func chains(near places: [NearbyPlace], in catalog: [String]) -> [NearbyChain] {
-        // Длинные вперёд: первое же совпадение окажется самым точным.
-        let known = catalog
-            .map { (name: $0, key: TextIndex.normalized($0)) }
-            .filter { !$0.key.isEmpty }
-            .sorted { $0.key.count > $1.key.count }
-
-        var nearest: [String: NearbyPlace] = [:]
-        var counts: [String: Int] = [:]
-
-        for place in places {
-            let key = TextIndex.normalized(place.name)
-            guard let chain = known.first(where: { starts(key, with: $0.key) }) else {
-                continue
-            }
-            counts[chain.name, default: 0] += 1
-            if let known = nearest[chain.name], known.distance <= place.distance {
-                continue
-            }
-            nearest[chain.name] = place
-        }
-
-        return nearest
-            .map { NearbyChain(chain: $0.key, nearest: $0.value,
-                               venues: counts[$0.key] ?? 1) }
-            .sorted { ($0.nearest.distance, $0.chain) < ($1.nearest.distance, $1.chain) }
+    /// а «Sonicare» — нет.
+    func chain(of placeName: String) -> String? {
+        let key = TextIndex.normalized(placeName)
+        return known.first { Self.starts(key, with: $0.key) }?.name
     }
 
     /// Имя заведения начинается с имени сети — целиком или до пробела.
@@ -81,5 +78,34 @@ nonisolated enum NearbyMatch {
         guard name.count >= chain.count, name.prefix(chain.count).elementsEqual(chain)
         else { return false }
         return name.count == chain.count || name[chain.count] == UInt8(ascii: " ")
+    }
+}
+
+/// Сопоставление того, что показала карта, с тем, что есть в каталоге.
+nonisolated enum NearbyMatch {
+
+    /// Сети каталога, найденные среди заведений вокруг, ближайшие первыми.
+    static func chains(near places: [NearbyPlace], in catalog: [String]) -> [NearbyChain] {
+        chains(near: places, in: NearbyCatalog(catalog))
+    }
+
+    static func chains(near places: [NearbyPlace],
+                       in catalog: NearbyCatalog) -> [NearbyChain] {
+        var nearest: [String: NearbyPlace] = [:]
+        var counts: [String: Int] = [:]
+
+        for place in places {
+            guard let chain = catalog.chain(of: place.name) else { continue }
+            counts[chain, default: 0] += 1
+            if let known = nearest[chain], known.distance <= place.distance {
+                continue
+            }
+            nearest[chain] = place
+        }
+
+        return nearest
+            .map { NearbyChain(chain: $0.key, nearest: $0.value,
+                               venues: counts[$0.key] ?? 1) }
+            .sorted { ($0.nearest.distance, $0.chain) < ($1.nearest.distance, $1.chain) }
     }
 }

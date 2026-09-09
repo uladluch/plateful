@@ -103,6 +103,37 @@ struct NearbyTests {
         #expect(NearbyMatch.chains(near: [Self.place("Subway", 10)], in: []).isEmpty)
     }
 
+    // MARK: - Каталог по одному заведению
+    //
+    // Тем же правилом, что и список сетей, пользуется карта: булавка
+    // ставится на каждое заведение, и каждому нужно знать свою сеть.
+
+    @Test("каталог узнаёт сеть в имени заведения")
+    func catalogNamesTheChain() {
+        let index = NearbyCatalog(Self.catalog)
+
+        #expect(index.chain(of: "Chick-fil-A") == "Chick-Fil-A")
+        #expect(index.chain(of: "Starbucks Coffee") == "Starbucks")
+        #expect(index.chain(of: "McDonalds") == "McDonald's")
+    }
+
+    @Test("каталог не выдаёт чужое за сеть")
+    func catalogRejectsStrangers() {
+        let index = NearbyCatalog(Self.catalog)
+
+        #expect(index.chain(of: "Sonicare Dental") == nil)
+        #expect(index.chain(of: "Joe's Pizza") == nil)
+        #expect(index.chain(of: "") == nil)
+    }
+
+    @Test("каталог берёт самую длинную подходящую сеть")
+    func catalogPrefersTheLongestChain() {
+        let index = NearbyCatalog(Self.catalog + ["Panda"])
+
+        #expect(index.chain(of: "Panda Express") == "Panda Express")
+        #expect(index.chain(of: "Panda Inn") == "Panda")
+    }
+
     @Test("расстояние показывается в единицах системы")
     func formatsDistance() {
         let text = NearbyView.distance(1_200)

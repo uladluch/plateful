@@ -12,6 +12,9 @@ struct NearbyView: View {
     @Environment(MenuRepository.self) private var menu
     @State private var nearby = NearbyStore()
     @State private var filter = MenuFilter.none
+    /// Выбранная булавка. Она же — вход в карточку места: карточку рисует
+    /// система, ей нужен сам `MKMapItem`.
+    @State private var selected: MKMapItem?
 
     /// Цели человека — те же, что на экране сети: фильтр один на приложение.
     @Query private var goals: [UserGoals]
@@ -84,8 +87,8 @@ struct NearbyView: View {
     private func list(_ chains: [NearbyChain]) -> some View {
         List {
             Section {
-                map(chains)
-                    .frame(height: 200)
+                map
+                    .frame(height: 220)
                     .listRowInsets(EdgeInsets())
             }
 
@@ -106,15 +109,22 @@ struct NearbyView: View {
     }
 
     /// Системная карта: она уже умеет масштаб, тёмную тему и жесты.
-    private func map(_ chains: [NearbyChain]) -> some View {
-        Map {
+    ///
+    /// Булавка на каждое заведение наших сетей, а не на сеть: выбирают
+    /// конкретную точку, и четыре «Subway» вокруг — это четыре разных
+    /// ответа на вопрос «куда идти».
+    ///
+    /// По нажатию систему просим показать её карточку места: адрес, часы
+    /// работы, ценник «$$», телефон, снимки, маршрут. Своей такой карточки
+    /// у нас быть не может — часов и ценника MapKit не отдаёт данными
+    /// вовсе, а складывать их к себе условия Apple Maps не разрешают.
+    private var map: some View {
+        Map(selection: $selected) {
             UserAnnotation()
-            ForEach(chains) { found in
-                Marker(found.chain, systemImage: Tokens.Symbol.chain,
-                       coordinate: CLLocationCoordinate2D(
-                        latitude: found.nearest.latitude,
-                        longitude: found.nearest.longitude))
+            ForEach(nearby.venues) { venue in
+                Marker(item: venue.item)
             }
+            .mapItemDetailSelectionAccessory(.sheet)
         }
         .mapControls { MapUserLocationButton() }
     }
