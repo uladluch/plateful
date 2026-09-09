@@ -25,7 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plateful_data import pack
+from plateful_data import pack, variants
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "backend" / "data"
@@ -131,8 +131,14 @@ def ready(rows: list[Row]) -> tuple[list[Row], list[str]]:
 
     Правило одно на пак и на бандл и живёт в `plateful_data.pack`.
     """
+    # Группы вариантов считает тот же код, что и сборка пака, — иначе
+    # порог мерил бы одни карточки, а приложение показывало другие.
+    groups = variants.assign_groups(rows)
     scored = pack.readiness(
-        (r.chain, bool(r.photo), not r.stale, r.off_menu) for r in rows)
+        (r.chain,
+         (groups.get((r.chain, r.ext_key)) or (f"{r.chain}:{r.ext_key}",))[0],
+         bool(r.photo), not r.stale, r.off_menu)
+        for r in rows)
     passed = {chain for chain, score in scored.items() if score.ok}
     lines = [f"  {'✓' if chain in passed else '×'} {chain[:26]:26} {score}"
              for chain, score in sorted(scored.items(),

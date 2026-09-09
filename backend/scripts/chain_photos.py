@@ -40,7 +40,7 @@ from PIL import Image
 from plateful_data import matching
 from plateful_data.adapters import (collected, gotofoods, jersey_mikes, mcdonalds,
                                     olo_menu, panera, quiznos, sanity_rbi,
-                                    starbucks)
+                                    starbucks, subway_newsroom)
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -67,6 +67,8 @@ RIGHTS = {
                         "permission. Source: jerseymikes.com", jersey_mikes.MENU_URL),
     starbucks.SLUG: ("© Starbucks Corporation. Used with permission. "
                      "Source: starbucks.com", starbucks.MENU_URL),
+    subway_newsroom.SLUG: ("© Subway IP LLC. Used with permission. "
+                           "Source: newsroom.subway.com", subway_newsroom.MENU_URL),
     **{b.slug: (f"© {b.name}. Used with permission. "
                 f"Source: {b.menu_url.split('/')[2].removeprefix('www.')}", b.menu_url)
        for b in olo_menu.BRANDS.values()},
@@ -94,6 +96,8 @@ def shots(slug: str) -> tuple[str, list]:
         return jersey_mikes.CHAIN, jersey_mikes.catalog()
     if slug == starbucks.SLUG:
         return starbucks.CHAIN, starbucks.catalog()
+    if slug == subway_newsroom.SLUG:
+        return subway_newsroom.CHAIN, subway_newsroom.catalog()
     if brand := olo_menu.BRANDS.get(slug):
         return brand.name, olo_menu.catalog(brand)
     if slug in collected.available():

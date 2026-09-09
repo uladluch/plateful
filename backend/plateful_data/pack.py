@@ -66,9 +66,17 @@ def _mode(values, fallback):
 # свежими — и перестаёт верить и тем, и другим. Отсутствие сети он
 # объясняет себе сам, а битую карточку объясняет качеством приложения.
 #
-# Порог не «всё до последней позиции»: у сети всегда найдётся напиток,
-# который она сама нигде не сфотографировала. Десятая часть — это то, что
-# не бросается в глаза при листании.
+# **Считаем карточками, а не строками.** Этикетка перечисляет каждое
+# сочетание: у Starbucks 3625 строк «напиток × молоко × размер» на 280
+# напитков, у Jersey Mike's 1108 строк на 42 блюда. Человек этого не
+# видит — приложение схлопывает варианты в одну карточку с
+# переключателем. Считать строками значило бы мерить не то, что на
+# экране: сеть, снявшая каждое своё блюдо, показывала бы тридцать
+# процентов.
+#
+# Порог не «всё до последней карточки»: у сети всегда найдётся напиток,
+# который она нигде не сфотографировала. Десятая часть — это то, что не
+# бросается в глаза при листании.
 PHOTO_SHARE = 0.90
 FRESH_SHARE = 0.90
 
@@ -76,6 +84,7 @@ FRESH_SHARE = 0.90
 @dataclass(frozen=True)
 class Readiness:
     """Насколько сеть готова показаться человеку."""
+    cards: int
     items: int
     photos: float
     fresh: float
@@ -85,33 +94,59 @@ class Readiness:
         return self.photos >= PHOTO_SHARE and self.fresh >= FRESH_SHARE
 
     def __str__(self) -> str:
-        return f"{self.items:>5} поз.  снимки {self.photos:5.0%}  свежих {self.fresh:5.0%}"
+        return (f"{self.cards:>5} карт. ({self.items:>5} поз.)"
+                f"  снимки {self.photos:5.0%}  свежих {self.fresh:5.0%}")
 
 
 def readiness(rows) -> dict[str, Readiness]:
-    """Готовность каждой сети. `rows` — (сеть, есть снимок, свежая, снята с меню).
+    """Готовность каждой сети.
+
+    `rows` — (сеть, ключ карточки, есть снимок, свежая, снята с меню).
+    Ключ карточки — группа вариантов, если позиция в ней состоит, иначе
+    её собственный ключ: ровно то, что приложение показывает одной
+    строкой меню.
+
+    **Снимок у карточки есть, если он есть хоть у одного её варианта** —
+    так же выбирает и приложение: `MenuCatalog.representative` ставит
+    представителем группы того, у кого фотография, если такой есть.
+
+    **Свежей карточка считается, когда свежи все её варианты**: человек
+    переключает размер и видит цифры соседнего, и одна устаревшая строка
+    портит карточку целиком.
 
     Архивные позиции в счёт не идут: у снятого с меню блюда снимка нет и
-    не будет, а дата у него старая по определению. Судить по ним готовность
-    сети — значит наказывать её за то, что мы честно храним её прошлое.
+    не будет, а дата у него старая по определению. Судить по ним
+    готовность сети — значит наказывать её за то, что мы честно храним её
+    прошлое.
     """
-    counts: dict[str, list[int]] = {}
-    for chain, has_photo, fresh, off_menu in rows:
+    cards: dict[str, dict[str, list]] = {}
+    for chain, card, has_photo, fresh, off_menu in rows:
         if off_menu:
             continue
-        bucket = counts.setdefault(chain, [0, 0, 0])
-        bucket[0] += 1
-        bucket[1] += bool(has_photo)
-        bucket[2] += bool(fresh)
-    return {chain: Readiness(n, photos / n, fresh / n)
-            for chain, (n, photos, fresh) in counts.items() if n}
+        state = cards.setdefault(chain, {}).setdefault(card, [0, False, True])
+        state[0] += 1
+        state[1] = state[1] or bool(has_photo)
+        state[2] = state[2] and bool(fresh)
+
+    out: dict[str, Readiness] = {}
+    for chain, by_card in cards.items():
+        if not by_card:
+            continue
+        photos = sum(1 for _, has_photo, _ in by_card.values() if has_photo)
+        fresh = sum(1 for _, _, is_fresh in by_card.values() if is_fresh)
+        items = sum(n for n, _, _ in by_card.values())
+        out[chain] = Readiness(len(by_card), items,
+                               photos / len(by_card), fresh / len(by_card))
+    return out
 
 
 def pack_rows(built: dict):
     """Строки готовности из собранного пака — он несёт всё нужное сам."""
     default_stale = bool(built.get("stale", True))
     for item in built["items"]:
-        yield (item["chain"], bool(item.get("photo")),
+        variant = item.get("variant") or {}
+        card = variant.get("group") or f'{item["chain"]}:{item["key"]}'
+        yield (item["chain"], card, bool(item.get("photo")),
                not bool(item.get("stale", default_stale)),
                bool(item.get("offMenu")))
 

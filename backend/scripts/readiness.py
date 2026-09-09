@@ -57,13 +57,11 @@ def main() -> int:
     args = parser.parse_args()
 
     rows = query(SQL)
-    scored = []
-    for row in rows:
-        n = row["items"]
-        if not n:
-            continue
-        score = pack.Readiness(n, row["photos"] / n, row["fresh"] / n)
-        scored.append((score, row))
+    slugs = {r["chain"]: r["slug"] for r in rows}
+    scored = [(score, {"chain": chain, "slug": slugs.get(chain, chain)})
+              for chain, score in pack.readiness(
+                  (r["chain"], r["card"], r["photo"], r["fresh"], False)
+                  for r in rows).items()]
     scored.sort(key=lambda pair: (-pair[0].photos, -pair[0].fresh))
 
     print(f"── Порог: снимки {pack.PHOTO_SHARE:.0%}, свежих {pack.FRESH_SHARE:.0%} ──")
@@ -78,9 +76,11 @@ def main() -> int:
         shown += 1
         need = []
         if score.photos < pack.PHOTO_SHARE:
-            need.append(f"снимков ещё {int(row['items'] * pack.PHOTO_SHARE) - row['photos']}")
+            need.append("снимков ещё "
+                        f"{int(score.cards * pack.PHOTO_SHARE - score.cards * score.photos) + 1}")
         if score.fresh < pack.FRESH_SHARE:
-            need.append(f"обновить ещё {int(row['items'] * pack.FRESH_SHARE) - row['fresh']}")
+            need.append("обновить ещё "
+                        f"{int(score.cards * pack.FRESH_SHARE - score.cards * score.fresh) + 1}")
         print(f"  {'✓' if score.ok else '·'} {row['slug'][:24]:24} {score}"
               f"   {', '.join(need)}")
     hidden = len(scored) - shown
