@@ -27,13 +27,16 @@ struct SavedOrdersView: View {
                         }
                         .onDelete(perform: delete)
                     }
-                    .navigationDestination(for: SavedOrder.self) {
-                        SavedOrderDetailView(saved: $0)
-                    }
                 }
             }
             .navigationTitle("Suggest Meal")
             .navigationBarTitleDisplayMode(.inline)
+            // На стабильном Group, а не на List внутри if/else: назначение,
+            // объявленное в условной ветке, однажды теряется при повторном
+            // рендере, и вторая попытка открыть заказ перестаёт работать.
+            .navigationDestination(for: SavedOrder.self) {
+                SavedOrderDetailView(saved: $0)
+            }
         }
     }
 
@@ -139,12 +142,12 @@ private struct SavedOrderDetailView: View {
                         }
                     }
                 }
-                .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
             } else {
                 ProgressView()
             }
         }
         .navigationTitle(saved.title)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
     }
 }

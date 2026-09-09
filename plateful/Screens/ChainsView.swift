@@ -22,6 +22,13 @@ struct ChainsView: View {
                 .navigationTitle("Discovery")
                 .navigationBarTitleDisplayMode(.inline)
                 .searchable(text: $query, prompt: "Search chains and dishes")
+                // На стабильном корне стека, а не внутри chainList/searchResults:
+                // объявление внутри if/switch однажды теряется при повторном
+                // рендере, и вторая попытка открыть сеть перестаёт находить
+                // назначение — тот самый баг с «NavigationLink cannot be
+                // activated» после возврата назад.
+                .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
+                .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         NavigationLink {
@@ -76,8 +83,6 @@ struct ChainsView: View {
             }
             .padding(.vertical, Tokens.Spacing.m)
         }
-        .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
-        .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
         // Проверка обновлений сама идёт при запуске; жест нужен тем, кто
         // увидел устаревшее число и хочет проверить прямо сейчас.
         .refreshable { await menu.checkForUpdate() }
@@ -200,7 +205,6 @@ struct ChainsView: View {
                                 variants: menu.variants(of: item))
                 }
             }
-            .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
         }
     }
 }
