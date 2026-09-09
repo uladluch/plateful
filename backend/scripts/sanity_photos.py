@@ -46,6 +46,8 @@ RIGHTS = {
                        "Source: firehousesubs.com", "https://www.firehousesubs.com/menu"),
     "popeyes": ("© Popeyes Louisiana Kitchen, Inc. Used with permission. Source: popeyes.com",
                 "https://www.popeyes.com/menu"),
+    "tim-hortons": ("© Tim Hortons. Used with permission. Source: timhortons.com",
+                    "https://www.timhortons.com/menu"),
 }
 
 

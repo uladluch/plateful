@@ -74,7 +74,11 @@ FIREHOUSE = Brand(slug="firehouse-subs", name="Firehouse Subs", project="czqk28j
 POPEYES = Brand(slug="popeyes", name="Popeyes", project="czqk28jt",
                 dataset="prod_plk_us", menu_id="menu_1", domain="popeyes.com")
 
-BRANDS = {b.slug: b for b in (BURGER_KING, FIREHOUSE, POPEYES)}
+TIM_HORTONS = Brand(slug="tim-hortons", name="Tim Hortons", project="czqk28jt",
+                    dataset="prod_th_us", menu_id="f2f90f07-4765-458a-b1ea-9d3c287a5ca7",
+                    domain="timhortons.com")
+
+BRANDS = {b.slug: b for b in (BURGER_KING, FIREHOUSE, POPEYES, TIM_HORTONS)}
 
 
 @dataclass(frozen=True)
