@@ -55,6 +55,13 @@ _GENERIC = ("subs", "restaurant", "restaurants", "brewhouse", "grill", "grille",
             "pizza", "cafe", "coffee", "kitchen", "donuts", "bakery", "bar",
             "house", "shack", "express", "company", "co")
 
+#: Заслон, а не сайт. Cloudflare отдаёт его с кодом 200 и весом в пять
+#: килобайт, и по коду он неотличим от настоящей страницы: «Just a
+#: moment…» — проверка браузера, «Attention Required» — прямой отказ.
+_WALL = re.compile(
+    r"<title[^>]*>\s*(?:just a moment|attention required|access denied"
+    r"|please wait|checking your browser)", re.I)
+
 #: Меньше этого страница не бывает: отказ бот-защиты весит десятки байт,
 #: настоящая страница — десятки килобайт.
 MIN_PAGE = 1024
@@ -98,6 +105,8 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str]:
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             body = response.read().decode("utf-8", errors="replace")
+            if _WALL.search(body):
+                return 403, ""
             if body:
                 return response.status, body
             # Пустое тело с кодом 200 — бот-защита, только вежливая.
@@ -106,7 +115,7 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str]:
             # «Not found» в десять байт — тоже отказ, просто не кодом.
             # Без этой проверки olivegarden.com засчитывался как открытый
             # 200, и сеть числилась «домен не найден по названию».
-            if len(fallback) >= MIN_PAGE:
+            if len(fallback) >= MIN_PAGE and not _WALL.search(fallback):
                 return 200, fallback
             return 403, ""
     except urllib.error.HTTPError as error:
@@ -115,10 +124,13 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str]:
         # объявлялась «закрытой», хотя curl их открывает.
         if error.code in (403, 429):
             body = curl_get(url, BROWSER, timeout=timeout) or ""
-            if len(body) >= MIN_PAGE:
+            if len(body) >= MIN_PAGE and not _WALL.search(body):
                 return 200, body
         return error.code, ""
     except Exception:
+        # Сюда же приходят редиректы, которых urllib не осилил: curl их
+        # проходит сам. У Zaxby's без этого www.zaxbys.com отдавал 301 и
+        # сеть числилась ненайденной.
         body = curl_get(url, BROWSER, timeout=timeout) or ""
         # Короткий ответ — не страница, а отказ: «Not found» весит десять
         # байт и приходит с кодом 403, который curl в теле не показывает.
@@ -136,6 +148,14 @@ def domain_candidates(name: str) -> list[str]:
     # существует, и без дефисного кандидата домен не найти вовсе.
     seen: list[str] = ["".join(words) + ".com", "-".join(words) + ".com",
                        "".join(words) + "s.com"]
+    # Имя основателя в домен обычно не идёт: «Romano's Macaroni Grill» это
+    # macaronigrill.com, «Checker's Drive-In/Rallys» — checkers.com.
+    if len(words) > 2:
+        # Притяжательное «s» уходит вместе с именем: «Romano's Macaroni
+        # Grill» это macaronigrill.com, а не smacaronigrill.com.
+        rest = words[2:] if words[1] == "s" else words[1:]
+        if len(rest) > 1:
+            seen.append("".join(rest) + ".com")
     for trim in (0, 1, 2):
         core = words[:len(words) - trim] if trim else words
         if not core:
