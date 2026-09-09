@@ -52,7 +52,7 @@ struct ChainMenuView: View {
 
             switch tab {
             case .bestForYou:
-                bestForYouPlaceholder
+                bestForYouRows
             case .fullMenu:
                 fullMenuRows
             case .restaurants:
@@ -100,24 +100,19 @@ struct ChainMenuView: View {
 
     // MARK: - Best for you
 
-    /// Пока пусто: заполнится персональными подборками позже.
-    private var bestForYouPlaceholder: some View {
-        ContentUnavailableView("Coming soon", systemImage: "sparkles")
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-    }
-
-    // MARK: - Full Menu
-
+    /// High Protein, Less Sugar, Less Calories — готовые подборки по одной
+    /// цифре, без фильтра и без целей: раньше жили сверху полного меню,
+    /// теперь у них своя вкладка, а не место над категориями.
     @ViewBuilder
-    private var fullMenuRows: some View {
-        // Витрина живёт над обычными категориями и не зависит от фильтра по
-        // целям — это готовые подборки, а не то, что человек сам сузил.
-        // Скрывается, как только он это сделал: иначе на экране одновременно
-        // два разных «лучшее по цифре».
-        if filter == .none {
-            ForEach(menu.highlightShelves(for: chain.name)) { section in
+    private var bestForYouRows: some View {
+        let shelves = menu.highlightShelves(for: chain.name)
+        if shelves.isEmpty {
+            ContentUnavailableView("Coming soon", systemImage: "sparkles")
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+        } else {
+            ForEach(shelves) { section in
                 Section {
                     itemShelf(section.items)
                 } header: {
@@ -125,7 +120,12 @@ struct ChainMenuView: View {
                 }
             }
         }
+    }
 
+    // MARK: - Full Menu
+
+    @ViewBuilder
+    private var fullMenuRows: some View {
         // Свёртка размеров — последней: фильтр по целям должен видеть все
         // размеры, иначе группа пропадёт из-за среднего.
         let sections = menu.collapsingVariants(
