@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Разведка каталога, сохранённое, профиль.
+/// Разведка каталога, подсказка блюда, аналитика, профиль.
 ///
 /// Поиск раньше жил отдельной вкладкой с ролью `.search`; теперь он —
 /// `.searchable` поверх сеток «Discovery», как поиск был устроен изначально.
@@ -13,8 +13,11 @@ struct RootView: View {
             Tab("Discovery", systemImage: Tokens.Symbol.chain) {
                 ChainsView()
             }
-            Tab("Saved", systemImage: "bookmark") {
+            Tab("Suggest Meal", systemImage: "wand.and.stars") {
                 SavedOrdersView()
+            }
+            Tab("Analytics", systemImage: "chart.bar") {
+                AnalyticsView()
             }
             Tab("Profile", systemImage: "person.crop.circle") {
                 ProfileView()

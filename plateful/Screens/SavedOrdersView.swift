@@ -32,7 +32,7 @@ struct SavedOrdersView: View {
                     }
                 }
             }
-            .navigationTitle("Saved")
+            .navigationTitle("Suggest Meal")
         }
     }
 
