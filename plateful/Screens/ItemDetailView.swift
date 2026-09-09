@@ -40,11 +40,7 @@ struct ItemDetailView: View {
 
     var body: some View {
         List {
-            Section {
-                DishImage(item: illustrated, size: 220, isHero: true)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-            }
+            hero
 
             if item.isOffMenu {
                 Section {
@@ -57,20 +53,6 @@ struct ItemDetailView: View {
                 } footer: {
                     Text("This dish was on \(item.chain)'s menu when the data was collected, but is not listed today.")
                 }
-            }
-
-            Section {
-                // Вариант — первым: он меняет все числа под собой, и читать
-                // карточку сверху вниз надо уже с выбранным сегментом.
-                if variants.count > 1 { sizePicker }
-                calories
-                macroRings
-            } header: {
-                // Заголовок страницы переехал сюда: имя без размера, тот же
-                // повод, что был у navigationTitle — «L» и так виден в
-                // переключателе, а у одинокого блюда без вариантов размер
-                // остаётся частью имени, отрезать его нечестно.
-                SectionTitle(variants.count > 1 ? item.baseName : item.name)
             }
 
             label
@@ -112,6 +94,35 @@ struct ItemDetailView: View {
             // а история лишь удобство.
             try? UserDataStore(context: context).recordView(of: shown)
         }
+    }
+
+    /// Снимок, название, калории и макросы — одним блоком под шапкой, не
+    /// в карточке: это не ещё один раздел этикетки, а то, ради чего сюда
+    /// зашли в первую секунду, и оно не должно выглядеть строкой среди
+    /// прочих. Имя — Headline 2, крупнее заголовков разделов ниже: это всё
+    /// ещё заголовок всей карточки, просто не в навбаре и не в header'е
+    /// секции.
+    private var hero: some View {
+        VStack(spacing: Tokens.Spacing.m) {
+            DishImage(item: illustrated, size: 220, isHero: true)
+
+            VStack(spacing: Tokens.Spacing.s) {
+                Text(variants.count > 1 ? item.baseName : item.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Tokens.Color.textPrimary)
+                    .multilineTextAlignment(.center)
+
+                if variants.count > 1 { sizePicker }
+
+                calories
+                macroRings
+            }
+            .padding(.horizontal, Tokens.Spacing.m)
+        }
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     /// Откуда цифра, на какой год и чей снимок — в самом низу карточки,
@@ -196,13 +207,16 @@ struct ItemDetailView: View {
         if variants.count <= Self.maxSegments {
             picker
                 .pickerStyle(.segmented)
-                .listRowInsets(EdgeInsets(top: Tokens.Spacing.s, leading: Tokens.Spacing.m,
-                                          bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
+                .padding(.vertical, Tokens.Spacing.xs)
         } else {
             picker.pickerStyle(.navigationLink)
         }
     }
 
+    /// По центру, как имя над ней: раньше цифра стояла у левого края
+    /// строки, а предупреждение об устаревании — у правого. В блоке под
+    /// снимком это была бы асимметрия без причины, поэтому предупреждение
+    /// встало рядом с подписью «calories», а не отдельно у края.
     private var calories: some View {
         HStack(alignment: .firstTextBaseline, spacing: Tokens.Spacing.s) {
             Text(shown.calorieText)
@@ -213,7 +227,6 @@ struct ItemDetailView: View {
             Text("calories")
                 .font(.subheadline)
                 .foregroundStyle(Tokens.Color.textSecondary)
-            Spacer()
             if shown.isStale {
                 Image(systemName: Tokens.Symbol.stale)
                     .foregroundStyle(Tokens.Color.staleWarning)
@@ -239,8 +252,6 @@ struct ItemDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Tokens.Spacing.s)
-        .listRowInsets(EdgeInsets(top: 0, leading: Tokens.Spacing.m,
-                                  bottom: Tokens.Spacing.s, trailing: Tokens.Spacing.m))
     }
 
     /// Доля калорий одного макроса от суммы всех трёх — не от заявленных
