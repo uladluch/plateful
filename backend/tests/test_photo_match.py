@@ -137,5 +137,34 @@ class PhotoPairs(unittest.TestCase):
         self.assertNotIn("stranger", found)
 
 
+
+
+class NearMiss(unittest.TestCase):
+    """Промах на волосок принимается, только если слова укладываются."""
+
+    CATALOG = {
+        "muffin": {"ext_key": "muffin", "name": "Muffin - Blueberry"},
+        "croissant": {"ext_key": "croissant",
+                      "name": "Bacon, Egg & Cheese on Croissant"},
+    }
+
+    class Shot:
+        def __init__(self, name):
+            self.ext_key = name.lower().replace(" ", "-")
+            self.name = name
+
+    def test_лишнее_слово_у_сети_не_мешает(self):
+        """«Muffin — Blueberry» против «Blueberry Muffin Paradise» — 0.78,
+        ниже порога, но все слова каталога лежат в имени сети."""
+        found = matching.photo_pairs([self.Shot("Blueberry Muffin Paradise")],
+                                     self.CATALOG)
+        self.assertIn("muffin", found)
+
+    def test_чужое_блюдо_не_проходит_даже_рядом(self):
+        """Одного вхождения мало: «banana» лежит и в хлебе, и в смузи."""
+        found = matching.photo_pairs([self.Shot("Banana")], self.CATALOG)
+        self.assertEqual(found, {})
+
+
 if __name__ == "__main__":
     unittest.main()

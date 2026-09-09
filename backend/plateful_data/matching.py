@@ -97,6 +97,26 @@ def dish(name: str) -> str:
     return comparable(text)
 
 
+#: Сходство, ниже которого не смотрим даже при полном вхождении слов.
+#: Между ним и обычным порогом лежат промахи на волосок: «Muffin —
+#: Blueberry» против «blueberry muffin paradise» — 0.78, и это одно блюдо.
+NEAR_THRESHOLD = 0.75
+
+
+def _covers(short: str, long: str) -> bool:
+    """Все слова короткого имени есть в длинном.
+
+    Одного сходства строк мало: сеть добавляет к имени слово-другое
+    («paradise», «catering»), и длина штрафует верную пару. Но и одного
+    вхождения мало — «banana» лежит в «banana bread» и в «banana
+    smoothie». Поэтому спрашиваем оба условия сразу.
+    """
+    left, right = set(short.split()), set(long.split())
+    if len(left) > len(right):
+        left, right = right, left
+    return bool(left) and left <= right
+
+
 def photo_pairs(shots, stored: dict[str, dict], *,
                 threshold: float = MATCH_THRESHOLD) -> dict[str, object]:
     """Ключ строки каталога → снимок, который ей подходит.
@@ -125,12 +145,15 @@ def photo_pairs(shots, stored: dict[str, dict], *,
         wanted = dish(record["name"].split(",", 1)[0]) or dish(record["name"])
         if not wanted:
             continue
-        best_shot, best_ratio = None, 0.0
+        best_shot, best_ratio, best_name = None, 0.0, ""
         for name, group in by_dish.items():
             ratio = difflib.SequenceMatcher(None, wanted, name).ratio()
             if ratio > best_ratio:
-                best_shot, best_ratio = group[0], ratio
-        if best_shot is not None and best_ratio >= threshold:
+                best_shot, best_ratio, best_name = group[0], ratio, name
+        if best_shot is None:
+            continue
+        if best_ratio >= threshold or (best_ratio >= NEAR_THRESHOLD
+                                       and _covers(wanted, best_name)):
             chosen[key] = best_shot
     return chosen
 
