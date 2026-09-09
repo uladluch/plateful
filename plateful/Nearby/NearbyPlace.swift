@@ -83,15 +83,13 @@ nonisolated struct NearbyCatalog: Sendable {
 
 /// Сопоставление того, что показала карта, с тем, что есть в каталоге.
 ///
-/// Нужно только запасному пути. Когда отвечает наша база, сети приходят
-/// готовыми — угадывать по имени нечего.
+/// Карту спрашивают по имени сети, но отвечает она вольно: на «Firehouse
+/// Subs» в городе без Firehouse придут другие сэндвичные. Каждый ответ
+/// проверяется тем же правилом про имя — и тем же нормализатором, что и
+/// поиск по меню.
 nonisolated enum NearbyMatch {
 
     /// Сети из списка заведений, ближайшие первыми.
-    ///
-    /// Одна группировка на оба пути — и на точки из базы, и на то, что нашла
-    /// карта: иначе список сетей вёл бы себя по-разному в зависимости от
-    /// того, отвечал ли сервер, а человеку это различие не видно.
     static func chains(from venues: [Venue]) -> [NearbyChain] {
         var nearest: [String: Venue] = [:]
         var counts: [String: Int] = [:]
@@ -116,18 +114,13 @@ nonisolated enum NearbyMatch {
         places.compactMap { place in
             guard let chain = catalog.chain(of: place.name) else { return nil }
             return Venue(chain: chain,
-                         // У карты номера магазина нет; координата различает
-                         // две точки одной сети не хуже.
+                         // Координата различает две точки одной сети не
+                         // хуже номера магазина.
                          extKey: "map:\(place.latitude),\(place.longitude)",
                          latitude: place.latitude,
                          longitude: place.longitude,
                          address: place.address ?? "",
                          phone: nil,
-                         // Часов карта не отдаёт вовсе — и делать вид, что
-                         // отдаёт, нельзя.
-                         hours: nil,
-                         driveThruHours: nil,
-                         amenities: [],
                          distance: place.distance)
         }
     }

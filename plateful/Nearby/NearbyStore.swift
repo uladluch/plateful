@@ -3,17 +3,15 @@ import MapKit
 import Observation
 import OSLog
 
-/// Что рядом: геопозиция у системы, заведения из нашей базы, меню из пака.
+/// Что рядом: геопозиция у системы, заведения у карты, меню из пака.
 ///
-/// Раньше список заведений спрашивали у карты Apple и опознавали ответ по
-/// имени. Так нельзя знать заранее, что показываешь: на Таймс-сквер из 48
-/// заведений вокруг опознавались два. Теперь точки свои — те же сети,
-/// которые публикуют их у себя на сайте, — и на карте ровно то, чьё меню
-/// приложение умеет открыть.
-///
-/// Карта остаётся запасным путём: интернет бывает плохим, а «ничего не
-/// нашлось» на экране «рядом» — плохой ответ, когда вокруг всё же стоит
-/// знакомая вывеска.
+/// Карту спрашиваем **по имени каждой сети из пака**, а не «что вокруг»:
+/// первый вариант экрана брал все заведения в радиусе и опознавал их по
+/// имени — на Таймс-сквер из 48 опознались два. Запрос «Burger King»
+/// возвращает Burger King, и так для каждой сети, чьё меню приложение
+/// умеет открыть. Своей базы точек нет и не будет: у Apple есть все 96
+/// сетей уже сегодня, а своя база — это по импортёру на сеть с тех же
+/// сайтов, что режут скрейперы.
 ///
 /// Разрешение спрашиваем в момент, когда человек сам открыл экран, — не на
 /// старте. Приложение обещает работать без онбординга, и диалог о геопозиции
@@ -32,39 +30,49 @@ final class NearbyStore: NSObject {
         case failed(String)
     }
 
-    /// Откуда взялись точки. Видно на экране: у карты нет часов работы, и
-    /// молча показывать заведение без них как полноценное — обман.
-    enum Source: Equatable {
-        case catalog
-        case map
-    }
-
     private(set) var state: State = .idle
     private(set) var venues: [Venue] = []
-    private(set) var source: Source = .catalog
 
     /// Радиус поиска.
     static let radius: CLLocationDistance = 5_000
 
+    /// Сколько сетей спрашивается у карты разом. Она ограничивает частоту
+    /// запросов (`MKError.loadingThrottled`), и девяносто шесть параллельных
+    /// вопросов получили бы отказ вместо ответа.
+    static let width = 4
+
     private let manager = CLLocationManager()
-    private let service: any VenueTransport
     private let log = Logger(subsystem: "com.anluch.plateful", category: "nearby")
     private var catalog: [String] = []
     private var pending = false
+    /// Сами объекты карты — для её карточки места и маршрута.
+    private var items: [Venue.ID: MKMapItem] = [:]
 
-    init(service: any VenueTransport = SupabaseVenues()) {
-        self.service = service
+    /// Ответ карты на одну сеть, каким его можно вынести из дочерней задачи.
+    ///
+    /// `MKMapItem` не `Sendable`, а результат задачи в группе обязан им быть.
+    /// Сама карта отдаёт эти объекты на главном акторе (её обработчики
+    /// помечены `NS_SWIFT_UI_ACTOR`), и читаем мы их тоже только там —
+    /// поэтому обещание честное, а не для компилятора.
+    nonisolated private struct Answer: @unchecked Sendable {
+        let chain: String
+        /// `nil` — карта не ответила; пустой список — ответила, что нет.
+        let items: [MKMapItem]?
+    }
+
+    override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
     }
 
     /// Спрашивает, что рядом. Каталог передаётся снаружи: хранилище знает
-    /// про геопозицию, но не про меню.
+    /// про карту, но не про меню.
     func find(chains: [String]) {
         catalog = chains
         pending = true
         venues = []
+        items = [:]
 
         switch manager.authorizationStatus {
         case .notDetermined:
@@ -78,52 +86,89 @@ final class NearbyStore: NSObject {
         }
     }
 
+    /// Объект карты для заведения — карточке Apple нужен именно он.
+    func mapItem(for venue: Venue) -> MKMapItem? {
+        items[venue.id]
+    }
+
     private func search(around coordinate: CLLocationCoordinate2D) async {
         state = .searching
-        do {
-            let found = try await service.venues(
-                latitude: coordinate.latitude, longitude: coordinate.longitude,
-                radius: Self.radius, chains: catalog)
-            let chains = NearbyMatch.chains(from: found)
-            let withHours = found.count { $0.hours != nil }
-            log.info("Рядом: \(found.count) наших точек у \(chains.count) сетей, часы у \(withHours)")
-            venues = found
-            source = .catalog
-            state = .ready(chains)
-        } catch {
-            log.error("База точек не ответила: \(error.localizedDescription)")
-            await searchOnMap(around: coordinate)
+        let origin = CLLocation(latitude: coordinate.latitude,
+                                longitude: coordinate.longitude)
+        let region = MKCoordinateRegion(center: coordinate,
+                                        latitudinalMeters: Self.radius * 2,
+                                        longitudinalMeters: Self.radius * 2)
+        let index = NearbyCatalog(catalog)
+
+        var found: [Venue] = []
+        var failed = 0
+        // По `width` сетей за раз: результаты каждой публикуются сразу,
+        // чтобы с девяноста шестью сетями экран не ждал последнюю.
+        var queue = catalog[...]
+        while !queue.isEmpty {
+            let batch = Array(queue.prefix(Self.width))
+            queue = queue.dropFirst(Self.width)
+            await withTaskGroup(of: Answer.self) { group in
+                for chain in batch {
+                    group.addTask { await Self.ask(chain, in: region) }
+                }
+                for await answer in group {
+                    let chain = answer.chain
+                    guard let result = answer.items else { failed += 1; continue }
+                    for item in result {
+                        guard let place = Self.place(from: item, origin: origin),
+                              let matched = index.chain(of: place.name),
+                              matched == chain else { continue }
+                        let venue = Venue(chain: matched, extKey: Self.key(of: item),
+                                          latitude: place.latitude,
+                                          longitude: place.longitude,
+                                          address: place.address ?? "",
+                                          phone: item.phoneNumber,
+                                          distance: place.distance)
+                        guard items[venue.id] == nil else { continue }
+                        items[venue.id] = item
+                        found.append(venue)
+                    }
+                }
+            }
+            venues = found.sorted { $0.distance < $1.distance }
+            state = .ready(NearbyMatch.chains(from: venues))
+        }
+
+        log.info("Рядом: \(found.count) точек у \(Set(found.map(\.chain)).count) сетей из \(self.catalog.count); не ответили \(failed)")
+        if found.isEmpty, failed == catalog.count, !catalog.isEmpty {
+            state = .failed("The map didn't answer. Try again in a moment.")
         }
     }
 
-    /// Запасной путь: спросить карту и опознать её ответ по именам сетей.
-    ///
-    /// Ответ беднее — часов работы у карты нет вовсе, — но лучше, чем пустой
-    /// экран при плохой связи.
-    private func searchOnMap(around coordinate: CLLocationCoordinate2D) async {
-        let request = MKLocalPointsOfInterestRequest(
-            center: coordinate, radius: Self.radius)
+    /// Одна сеть у карты. Ответ уезжает из дочерней задачи в конверте —
+    /// граница акторов пропускает только его.
+    private static func ask(_ chain: String,
+                            in region: MKCoordinateRegion) async -> Answer {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = chain
+        request.region = region
+        request.resultTypes = .pointOfInterest
         // Фастфуда отдельной категорией у карты нет — он лежит в
         // «ресторанах». Кофейни и пекарни нужны отдельно: Starbucks и
         // Dunkin' приходят как кафе, Krispy Kreme как пекарня.
         request.pointOfInterestFilter = MKPointOfInterestFilter(
             including: [.restaurant, .cafe, .bakery])
-
         do {
-            let response = try await MKLocalSearch(request: request).start()
-            let origin = CLLocation(latitude: coordinate.latitude,
-                                    longitude: coordinate.longitude)
-            let places = response.mapItems.compactMap { Self.place(from: $0, origin: origin) }
-            let found = NearbyMatch.venues(among: places, in: NearbyCatalog(catalog))
-            log.info("Запасной путь: карта дала \(places.count) заведений, наших \(found.count)")
-            venues = found
-            source = .map
-            state = .ready(NearbyMatch.chains(from: found))
+            return Answer(chain: chain,
+                          items: try await MKLocalSearch(request: request).start().mapItems)
         } catch {
-            log.error("И карта не ответила: \(error.localizedDescription)")
-            venues = []
-            state = .failed(error.localizedDescription)
+            // Чаще всего карта просит спрашивать не так часто.
+            return Answer(chain: chain, items: nil)
         }
+    }
+
+    /// Устойчивый ключ места. У Apple он есть с iOS 18; без него —
+    /// координата, и этого хватает, чтобы две точки не слиплись.
+    private static func key(of item: MKMapItem) -> String {
+        if let id = item.identifier?.rawValue { return id }
+        let c = item.placemark.coordinate
+        return "map:\(c.latitude),\(c.longitude)"
     }
 
     /// `MKMapItem` → наше значение: имя, расстояние, координата и адрес.

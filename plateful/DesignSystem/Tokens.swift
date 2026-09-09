@@ -26,12 +26,6 @@ enum Tokens {
         /// Пометка «данные могут быть устаревшими» — предупреждение, не ошибка.
         static let staleWarning = SwiftUI.Color(.systemOrange)
 
-        /// Работает сейчас или уже закрыто. Те же два цвета, которыми об
-        /// этом говорит системная карта, — заново придумывать язык, который
-        /// человек уже знает, незачем.
-        static let openNow = SwiftUI.Color(.systemGreen)
-        static let closedNow = SwiftUI.Color(.systemRed)
-
         /// Подложка под настоящий снимок блюда.
         ///
         /// Осознанное исключение из правила «только системные цвета»: съёмка
@@ -67,10 +61,7 @@ enum Tokens {
         static let serving = "fork.knife"
         static let failure = "exclamationmark.triangle"
 
-        /// Заведение и всё, что о нём известно.
-        static let venue = "mappin.and.ellipse"
-        static let hours = "clock"
-        static let phone = "phone"
+        /// Маршрут до заведения.
         static let directions = "arrow.triangle.turn.up.right.circle"
 
         /// Пометки позиции.

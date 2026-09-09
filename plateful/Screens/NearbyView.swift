@@ -31,6 +31,7 @@ struct NearbyView: View {
                 }
                 .sheet(item: $selected) { venue in
                     VenueDetailSheet(venue: venue,
+                                     mapItem: nearby.mapItem(for: venue),
                                      priceBand: chain(named: venue.chain).priceBand,
                                      menuChain: menuChain(for: venue))
                 }
@@ -88,9 +89,7 @@ struct NearbyView: View {
             ?? MenuChain(name: name, itemCount: 0)
     }
 
-    /// Сеть, чьё меню можно открыть из карточки заведения. На запасном
-    /// пути точки находит карта, и её сети в паке может не быть вовсе —
-    /// тогда ссылки на меню не будет, а не будет пустого экрана.
+    /// Сеть, чьё меню можно открыть из карточки заведения.
     private func menuChain(for venue: Venue) -> MenuChain? {
         menu.catalog?.chains.first { $0.name == venue.chain }
     }
@@ -101,19 +100,13 @@ struct NearbyView: View {
                 map
                     .frame(height: 220)
                     .listRowInsets(EdgeInsets())
-            } footer: {
-                // Запасной путь беднее, и молчать об этом нельзя: у карты
-                // нет часов работы, и пустая строка там, где обычно «до
-                // 22:00», читалась бы как «закрыто».
-                if nearby.source == .map {
-                    Text("Showing map results — opening hours are unavailable right now.")
-                }
             }
 
             Section("Restaurants around you") {
                 ForEach(nearby.venues) { venue in
                     NavigationLink {
                         VenueDetailView(venue: venue,
+                                        mapItem: nearby.mapItem(for: venue),
                                         priceBand: chain(named: venue.chain).priceBand,
                                         menuChain: menuChain(for: venue))
                     } label: {
@@ -173,14 +166,6 @@ struct NearbyView: View {
                             .font(.caption)
                             .foregroundStyle(Tokens.Color.textSecondary)
                     }
-                    if let hours = venue.hours {
-                        let status = hours.status(at: .now)
-                        if let text = Self.statusText(status) {
-                            Text(text)
-                                .font(.caption)
-                                .foregroundStyle(Self.statusColor(status))
-                        }
-                    }
                 }
             }
         }
@@ -205,12 +190,6 @@ struct NearbyView: View {
                     Text(subtitle(for: found))
                         .font(.caption)
                         .foregroundStyle(Tokens.Color.textSecondary)
-                    if let hours = found.nearest.hours {
-                        let status = hours.status(at: .now)
-                        Text(Self.statusText(status) ?? "")
-                            .font(.caption)
-                            .foregroundStyle(Self.statusColor(status))
-                    }
                 }
             }
         }
@@ -254,34 +233,6 @@ struct NearbyView: View {
             .formatted(.measurement(width: .abbreviated,
                                     usage: .road,
                                     numberFormatStyle: .number.precision(.fractionLength(0...1))))
-    }
-
-    /// «Открыто до 22:00» или «Закрыто · откроется в 6:00».
-    ///
-    /// Про часы, которых у нас нет, не говорим ничего: «закрыто» и «не
-    /// знаем» — разные вещи, и первое отправило бы человека мимо открытой
-    /// двери.
-    static func statusText(_ status: WeekHours.Status) -> String? {
-        switch status {
-        case .open(nil):
-            "Open 24 hours"
-        case .open(let until?):
-            "Open until \(VenueDetailView.clock(until))"
-        case .closed(let opens?):
-            "Closed · opens \(VenueDetailView.clock(opens))"
-        case .closed(nil):
-            "Closed"
-        case .unknown:
-            nil
-        }
-    }
-
-    static func statusColor(_ status: WeekHours.Status) -> Color {
-        switch status {
-        case .open: Tokens.Color.openNow
-        case .closed: Tokens.Color.closedNow
-        case .unknown: Tokens.Color.textSecondary
-        }
     }
 }
 
