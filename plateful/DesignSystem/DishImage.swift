@@ -21,6 +21,12 @@ struct DishImage: View {
                         image.resizable()
                             .scaledToFit()
                             .padding(size * 0.06)
+                            // В шапке кадр меньше своей рамки — background
+                            // на самом Image заливает только его, центром;
+                            // растягиваем ДО заливки, чтобы белый шёл во всю
+                            // ширину экрана, а не пятном по центру.
+                            .frame(maxWidth: isHero ? .infinity : nil,
+                                   maxHeight: isHero ? size : nil)
                             .background(Tokens.Color.photoBackground)
                     } else {
                         // Кадр без полей и так покрывает весь размер, но
