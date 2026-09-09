@@ -91,13 +91,17 @@ def match_all(live, stored: dict[str, dict], *,
             # «такого блюда у нас нет». Ровно там, где диагностика и нужна.
             best[item.ext_key] = max(best.get(item.ext_key, 0.0), ratio)
             if ratio >= threshold and portion(record["name"]) == size:
-                pairs.append((ratio, item.ext_key, key))
+                # При равном сходстве строку занимает пара с одинаковым
+                # ключом: «Small Barq's Root Beer» и «Small Barqs Root Beer»
+                # оба дают 1.0 против одной строки, и если её займёт чужой,
+                # свой пойдёт заводиться под уже занятый ключ.
+                pairs.append((ratio, item.ext_key == key, item.ext_key, key))
 
     pairs.sort(reverse=True)
     matched: dict[str, dict] = {}
     used: set[str] = set()
 
-    for ratio, live_key, stored_key in pairs:
+    for ratio, _same_key, live_key, stored_key in pairs:
         if live_key in matched or stored_key in used:
             continue
         matched[live_key] = stored[stored_key]

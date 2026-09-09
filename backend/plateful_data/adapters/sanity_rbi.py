@@ -219,14 +219,19 @@ def fetch(brand: Brand, *, only_on_menu: bool = True) -> list[SanityItem]:
         if not name or re.search(r"\b(test|dummy|placeholder)\b", name, re.I):
             continue
 
+        from ..matching import normalized
         from ..slug import slugify
         key = slugify(name)
-        # Один и тот же бургер лежит в датасете под двумя документами —
-        # для разных касс. Имя одно, этикетка одна; вторая копия ничего
-        # не добавляет, а ключ у обеих один.
-        if key in seen_keys:
+        # Один и тот же напиток лежит в датасете под двумя документами —
+        # для разных касс, и порой с разным написанием: «Barq's» и «Barqs».
+        # Для slug апостроф значим, и двойники расходились ключами: один
+        # занимал строку каталога, второй шёл заводиться под занятый ключ,
+        # и кроул честно отказывался. Склеиваем той же нормализацией, что
+        # и матчинг, — для неё это одно имя.
+        twin = normalized(name)
+        if twin in seen_keys:
             continue
-        seen_keys.add(key)
+        seen_keys.add(twin)
 
         nutrition = doc.get("nutrition") or {}
         values = {ours: _number(nutrition.get(theirs))

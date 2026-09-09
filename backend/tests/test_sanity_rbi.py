@@ -28,6 +28,8 @@ TEST_ITEM = {**COOKIE, "_id": "t1", "name": "16 Pc. Chicken Nuggets - PDP Test"}
 DUMMY = {**COOKIE, "_id": "d1", "name": "Dummy Item for Coupon", "dummy": True}
 CANADA = {**COOKIE, "_id": "c1", "name": "Poutine", "region": "CA"}
 TWIN = {**COOKIE, "_id": "twin", "name": "Two Chocolate Chip Cookies"}
+APOSTROPHE = {**COOKIE, "_id": "ap1", "name": "Small Barq's Root Beer"}
+NO_APOSTROPHE = {**COOKIE, "_id": "ap2", "name": "Small Barqs Root Beer"}
 RETIRED = {**COOKIE, "_id": "old1", "name": "Ch'King Sandwich"}
 
 # Ответ обхода: на каждом уровне только `t`/`id` — прямая ссылка или через
@@ -36,6 +38,8 @@ RETIRED = {**COOKIE, "_id": "old1", "name": "Ch'King Sandwich"}
 MENU = {"sections": [
     {"name": "Sweets", "opts": [
         {"t": "item", "id": "604676c0"},
+        {"t": "item", "id": "ap1"},
+        {"t": "item", "id": "ap2"},
         {"t": "picker", "id": "p1", "opts": [
             {"t": "item", "id": "twin"},
             {"t": "combo", "id": "combo1", "opts": [
@@ -48,7 +52,7 @@ MENU = {"sections": [
 def fake_query(brand, groq, params=None):
     if "_id == $menu" in groq:
         return MENU
-    return [COOKIE, TEST_ITEM, DUMMY, CANADA, TWIN, RETIRED]
+    return [COOKIE, TEST_ITEM, DUMMY, CANADA, TWIN, RETIRED, APOSTROPHE, NO_APOSTROPHE]
 
 
 class ImageUrl(unittest.TestCase):
@@ -73,7 +77,7 @@ class Fetch(unittest.TestCase):
         """Раздел → пикер → комбо → слот комбо → позиция. Пока уровень
         понимал только прямую ссылку, слоты комбо обрывали обход, и живое
         меню Firehouse выглядело как 72 позиции при 753 настоящих."""
-        self.assertEqual(s.on_menu_ids(s.BURGER_KING), {"604676c0", "twin", "t1"})
+        self.assertEqual(s.on_menu_ids(s.BURGER_KING), {"604676c0", "twin", "t1", "ap1", "ap2"})
 
     def test_запрос_принимает_оба_вида_ссылки_на_каждом_уровне(self, _):
         """Прямая `->` и завёрнутая `option->` — одним `coalesce`."""
@@ -96,11 +100,23 @@ class Fetch(unittest.TestCase):
 
     def test_двойник_для_другой_кассы_не_дублируется(self, _):
         """Один бургер лежит под двумя документами — для разных касс."""
-        items = s.fetch(s.BURGER_KING)
-        self.assertEqual([i.name for i in items], ["Two Chocolate Chip Cookies"])
+        names = [i.name for i in s.fetch(s.BURGER_KING)]
+        self.assertEqual(names.count("Two Chocolate Chip Cookies"), 1)
+
+    def test_двойники_с_апострофом_и_без_это_одно_имя(self, _):
+        """«Barq's» и «Barqs» — один напиток. Для slug апостроф значим,
+        и двойники расходились ключами: один занимал строку каталога,
+        второй шёл заводиться под занятый ключ, и кроул отказывался."""
+        names = [i.name for i in s.fetch(s.BURGER_KING) if "barq" in i.name.lower()]
+        self.assertEqual(len(names), 1)
+
+    @staticmethod
+    def _cookie():
+        [cookie] = [i for i in s.fetch(s.BURGER_KING) if "Cookie" in i.name]
+        return cookie
 
     def test_этикетка_в_наших_терминах(self, _):
-        [cookie] = s.fetch(s.BURGER_KING)
+        cookie = self._cookie()
         self.assertEqual(cookie.kcal, 320)
         self.assertEqual(cookie.protein, 4)
         self.assertEqual(cookie.sat_fat, 8)
@@ -108,11 +124,11 @@ class Fetch(unittest.TestCase):
         self.assertEqual(cookie.cholesterol, 20)
 
     def test_аллергены_только_отмеченные(self, _):
-        [cookie] = s.fetch(s.BURGER_KING)
+        cookie = self._cookie()
         self.assertEqual(cookie.allergens, ("milk", "wheat", "soy"))
 
     def test_категория_из_иерархии_продукта(self, _):
-        [cookie] = s.fetch(s.BURGER_KING)
+        cookie = self._cookie()
         self.assertEqual(cookie.category, "Desserts")
         self.assertEqual(cookie.ext_key, "two-chocolate-chip-cookies")
 

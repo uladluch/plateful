@@ -15,6 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import crawl, matching
+from plateful_data.slug import slugify
 
 
 @dataclass(frozen=True)
@@ -36,7 +37,9 @@ class Live:
 
     @property
     def ext_key(self) -> str:
-        return self.name.lower().replace(" ", "-")
+        # Тем же правилом, что и конвейер: подделка ключа расходилась с
+        # настоящим на апострофе и прятала ошибку матчинга.
+        return slugify(self.name)
 
 
 def stored(**over) -> dict[str, dict]:
@@ -79,6 +82,16 @@ class Matching(unittest.TestCase):
             [Live(name="Grilled Chicken Club Sandwich")],
             stored(ext_key="grilled-chicken-sandwich", name="Grilled Chicken Sandwich"))
         self.assertGreater(best["grilled-chicken-club-sandwich"], 0.5)
+
+    def test_при_равном_сходстве_занимает_строку_одинаковый_ключ(self):
+        """Оба живых имени дают 1.0 против одной строки; занять её должен
+        тот, чей ключ с ней совпадает, иначе второй пойдёт заводиться под
+        занятый ключ."""
+        stored_row = stored(ext_key="small-barq-s-root-beer", name="Small Barq's Root Beer")
+        matched, _ = matching.match_all(
+            [Live(name="Small Barqs Root Beer"), Live(name="Small Barq's Root Beer")],
+            stored_row)
+        self.assertIn("small-barq-s-root-beer", matched)
 
     def test_запись_каталога_занимается_один_раз(self):
         matched, _ = matching.match_all(
