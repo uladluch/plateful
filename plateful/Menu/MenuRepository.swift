@@ -47,6 +47,11 @@ final class MenuRepository {
 
     var chains: [MenuChain] { catalog?.chains ?? [] }
 
+    /// Сеть каталога по имени — тому самому, что публикует `venues_near`.
+    func chain(named name: String) -> MenuChain? {
+        catalog?.chains.first { $0.name == name }
+    }
+
     /// Разбор пака идёт вне главного потока: это мегабайты JSON, на главном
     /// они видны как подвисший запуск.
     /// Загружает каталог. Повторные и параллельные вызовы схлопываются в один.

@@ -52,6 +52,15 @@ struct MenuRepositoryTests {
         #expect(repository.search("whopper").first?.chain == "Burger King")
     }
 
+    /// Витрина «рядом» ищет сеть по её имени в `venues_near` — тому же, что
+    /// в каталоге, без обходного пути через список сетей.
+    @Test("сеть находится по имени, незнакомое имя даёт пусто")
+    func findsChainByName() async throws {
+        let repository = try await loadedRepository()
+        #expect(repository.chain(named: "McDonald's")?.name == "McDonald's")
+        #expect(repository.chain(named: "Нет такой сети") == nil)
+    }
+
     @Test("позиция достаётся по устойчивой ссылке")
     func resolvesPersistentID() async throws {
         let repository = try await loadedRepository()

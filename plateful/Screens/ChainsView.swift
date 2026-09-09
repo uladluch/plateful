@@ -1,3 +1,4 @@
+import CoreLocation
 import SwiftUI
 
 /// Корневой экран: сетки сетей и поиск по всему каталогу.
@@ -10,6 +11,10 @@ struct ChainsView: View {
 
     @Environment(MenuRepository.self) private var menu
     @State private var query = ""
+
+    /// Своя копия, не общая с вкладкой «Nearby»: витрина здесь — тизер,
+    /// полный список с картой и часами остаётся её работой.
+    @State private var nearby = NearbyStore()
 
     var body: some View {
         NavigationStack {
@@ -56,21 +61,130 @@ struct ChainsView: View {
 
     private var chainList: some View {
         ScrollView {
-            LazyVGrid(columns: Self.columns, spacing: Tokens.Spacing.m) {
-                ForEach(menu.chains) { chain in
-                    NavigationLink(value: chain) {
-                        ChainCard(chain: chain)
+            VStack(alignment: .leading, spacing: Tokens.Spacing.m) {
+                nearbySection
+
+                LazyVGrid(columns: Self.columns, spacing: Tokens.Spacing.m) {
+                    ForEach(menu.chains) { chain in
+                        NavigationLink(value: chain) {
+                            ChainCard(chain: chain)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, Tokens.Spacing.m)
             }
-            .padding(Tokens.Spacing.m)
+            .padding(.vertical, Tokens.Spacing.m)
         }
         .navigationDestination(for: MenuChain.self) { ChainMenuView(chain: $0) }
         .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
         // Проверка обновлений сама идёт при запуске; жест нужен тем, кто
         // увидел устаревшее число и хочет проверить прямо сейчас.
         .refreshable { await menu.checkForUpdate() }
+        // Разрешение не переспрашиваем: если человек уже разрешил геопозицию
+        // на вкладке «Nearby», витрина подхватывает её молча. Если ещё нет —
+        // только карточка-приглашение, диалог показывается по её тапу, а не
+        // здесь, при открытии главного экрана.
+        .task { autoLoadNearbyIfAuthorized() }
+    }
+
+    /// «Рядом» — витрина в одну строку: сети, а не заведения с адресом и
+    /// часами, полный разбор остаётся за вкладкой «Nearby». Отказ и ошибка
+    /// молчат — это необязательная секция, а не тело экрана, приставать
+    /// на главном экране с ними незачем.
+    @ViewBuilder
+    private var nearbySection: some View {
+        switch nearby.state {
+        case .idle:
+            if CLLocationManager().authorizationStatus == .notDetermined {
+                nearbyPrompt
+            }
+        case .locating, .searching:
+            nearbyLoading
+        case .ready(let chains):
+            if !chains.isEmpty {
+                nearbyShelf(chains)
+            }
+        case .denied, .failed:
+            EmptyView()
+        }
+    }
+
+    private var nearbyPrompt: some View {
+        Button {
+            nearby.find(chains: menu.chains.map(\.name))
+        } label: {
+            HStack(spacing: Tokens.Spacing.s) {
+                Image(systemName: "location.circle.fill")
+                    .foregroundStyle(Tokens.Color.accent)
+                VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
+                    Text("Restaurants Near Me")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Tokens.Color.textPrimary)
+                    Text("See which chains are around you right now.")
+                        .font(.caption)
+                        .foregroundStyle(Tokens.Color.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(Tokens.Color.textSecondary)
+            }
+            .padding(Tokens.Spacing.m)
+            .background(Tokens.Color.cardBackground, in: .rect(cornerRadius: Tokens.Radius.card))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, Tokens.Spacing.m)
+    }
+
+    private var nearbyLoading: some View {
+        HStack(spacing: Tokens.Spacing.s) {
+            ProgressView()
+            Text("Finding restaurants near you…")
+                .font(.subheadline)
+                .foregroundStyle(Tokens.Color.textSecondary)
+        }
+        .padding(.horizontal, Tokens.Spacing.m)
+    }
+
+    private func nearbyShelf(_ chains: [NearbyChain]) -> some View {
+        VStack(alignment: .leading, spacing: Tokens.Spacing.s) {
+            sectionHeader("Restaurants Near Me")
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: Tokens.Spacing.m) {
+                    ForEach(chains) { found in
+                        if let chain = menu.chain(named: found.chain) {
+                            NavigationLink(value: chain) {
+                                ChainCard(chain: chain)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.horizontal, Tokens.Spacing.m)
+            }
+        }
+    }
+
+    /// Тот же вес заголовка, что у разделов меню сети: обе витрины —
+    /// разрез одного каталога, и должны читаться одной системой.
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.title3)
+            .fontWeight(.bold)
+            .foregroundStyle(Tokens.Color.textPrimary)
+            .padding(.horizontal, Tokens.Spacing.m)
+    }
+
+    /// Спрашивать заново нельзя — только подхватить решение, которое уже
+    /// стоит в системе (например, человек разрешил на вкладке «Nearby»).
+    private func autoLoadNearbyIfAuthorized() {
+        guard nearby.state == .idle, !menu.chains.isEmpty else { return }
+        let status = CLLocationManager().authorizationStatus
+        guard status == .authorizedWhenInUse || status == .authorizedAlways else { return }
+        nearby.find(chains: menu.chains.map(\.name))
     }
 
     /// Запрос ищет сразу по всем сетям, а не по одной открытой.
