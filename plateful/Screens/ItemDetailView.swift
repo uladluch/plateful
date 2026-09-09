@@ -50,10 +50,10 @@ struct ItemDetailView: View {
                 Section {
                     Label {
                         Text("No longer on the menu")
+                            .foregroundStyle(Tokens.Color.staleWarning)
                     } icon: {
-                        Image(systemName: Tokens.Symbol.stale)
+                        RowIcon(symbol: Tokens.Symbol.stale, tint: Tokens.RowIconTint.freshness)
                     }
-                    .foregroundStyle(Tokens.Color.staleWarning)
                 } footer: {
                     Text("This dish was on \(item.chain)'s menu when the data was collected, but is not listed today.")
                 }
@@ -76,27 +76,6 @@ struct ItemDetailView: View {
             label
 
             portion
-
-            // Конкурентов бьют за молчаливо устаревшие данные. Мы говорим,
-            // откуда цифра и на какой год, — это одно из трёх отличий.
-            Section {
-                LabeledContent {
-                    Text(shown.sourceDisplayName)
-                        .multilineTextAlignment(.trailing)
-                } label: {
-                    Label("Source", systemImage: Tokens.Symbol.source)
-                }
-                LabeledContent {
-                    Text(shown.observedDisplay)
-                        .monospacedDigit()
-                } label: {
-                    Label("Figures from", systemImage: Tokens.Symbol.stale)
-                }
-            } footer: {
-                if let notice = shown.staleNotice {
-                    Text(notice)
-                }
-            }
 
             legal
         }
@@ -135,16 +114,41 @@ struct ItemDetailView: View {
         }
     }
 
-    /// Правовая мелочь — в самом низу карточки, отдельным разделом, а не
-    /// подписью под снимком: числа наверху читают все, лицензию — почти
-    /// никто, и ей не место между фотографией и калориями.
+    /// Откуда цифра, на какой год и чей снимок — в самом низу карточки,
+    /// одной секцией, а не подписью под снимком и отдельным разделом
+    /// наверху: числа читают все, происхождение и лицензию — почти никто,
+    /// и обоим место рядом, а не между фотографией и калориями.
     @ViewBuilder
     private var legal: some View {
-        if let photo = illustrated.photo {
-            Section {
+        Section {
+            LabeledContent {
+                Text(shown.sourceDisplayName)
+                    .multilineTextAlignment(.trailing)
+            } label: {
+                Label {
+                    Text("Source")
+                } icon: {
+                    RowIcon(symbol: Tokens.Symbol.source, tint: Tokens.RowIconTint.source)
+                }
+            }
+            LabeledContent {
+                Text(shown.observedDisplay)
+                    .monospacedDigit()
+            } label: {
+                Label {
+                    Text("Figures from")
+                } icon: {
+                    RowIcon(symbol: Tokens.Symbol.stale, tint: Tokens.RowIconTint.freshness)
+                }
+            }
+            if let photo = illustrated.photo {
                 PhotoCaption(photo: photo)
-            } header: {
-                SectionTitle("Legal")
+            }
+        } header: {
+            SectionTitle("Legal")
+        } footer: {
+            if let notice = shown.staleNotice {
+                Text(notice)
             }
         }
     }
@@ -322,11 +326,19 @@ struct ItemDetailView: View {
                     LabeledContent {
                         Text(serving)
                     } label: {
-                        Label("Serving", systemImage: Tokens.Symbol.serving)
+                        Label {
+                            Text("Serving")
+                        } icon: {
+                            RowIcon(symbol: Tokens.Symbol.serving, tint: Tokens.RowIconTint.serving)
+                        }
                     }
                 }
                 ForEach(flags, id: \.self) { flag in
-                    Label(flag.title, systemImage: flag.symbol)
+                    Label {
+                        Text(flag.title)
+                    } icon: {
+                        RowIcon(symbol: flag.symbol, tint: flag.rowIconTint)
+                    }
                 }
             } footer: {
                 // Пояснение — только там, где сама формулировка может
