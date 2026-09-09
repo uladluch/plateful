@@ -30,13 +30,17 @@ CANADA = {**COOKIE, "_id": "c1", "name": "Poutine", "region": "CA"}
 TWIN = {**COOKIE, "_id": "twin", "name": "Two Chocolate Chip Cookies"}
 RETIRED = {**COOKIE, "_id": "old1", "name": "Ch'King Sandwich"}
 
+# Ответ обхода: на каждом уровне только `t`/`id` — прямая ссылка или через
+# `option`, GROQ это уже склеил. У Firehouse позиция лежит на пятом уровне:
+# раздел → пикер → комбо → слот комбо → позиция.
 MENU = {"sections": [
     {"name": "Sweets", "opts": [
-        {"_type": "item", "_id": "604676c0"},
-        {"_type": "picker", "_id": "p1", "opts": [
-            {"_type": "item", "_id": "twin"},
-            {"_type": "combo", "_id": "combo1", "opts": [
-                {"t": "item", "id": "t1"}]}]}]},
+        {"t": "item", "id": "604676c0"},
+        {"t": "picker", "id": "p1", "opts": [
+            {"t": "item", "id": "twin"},
+            {"t": "combo", "id": "combo1", "opts": [
+                {"t": "comboSlot", "id": "slot1", "opts": [
+                    {"t": "item", "id": "t1"}]}]}]}]},
     {"name": "Empty", "opts": None},
 ]}
 
@@ -66,9 +70,15 @@ class ImageUrl(unittest.TestCase):
 class Fetch(unittest.TestCase):
 
     def test_живое_меню_обходится_на_всю_глубину(self, _):
-        """Раздел → пикер → комбо → позиция. Пикер прячет варианты в
-        `option`, поэтому на последнем уровне поля зовутся иначе."""
+        """Раздел → пикер → комбо → слот комбо → позиция. Пока уровень
+        понимал только прямую ссылку, слоты комбо обрывали обход, и живое
+        меню Firehouse выглядело как 72 позиции при 753 настоящих."""
         self.assertEqual(s.on_menu_ids(s.BURGER_KING), {"604676c0", "twin", "t1"})
+
+    def test_запрос_принимает_оба_вида_ссылки_на_каждом_уровне(self, _):
+        """Прямая `->` и завёрнутая `option->` — одним `coalesce`."""
+        self.assertIn("coalesce(@->_id, option->_id)", s.MENU_QUERY)
+        self.assertGreaterEqual(s.MENU_QUERY.count('"opts"'), 5)
 
     def test_берётся_только_то_что_в_меню(self, _):
         names = {i.name for i in s.fetch(s.BURGER_KING)}

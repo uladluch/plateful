@@ -429,14 +429,23 @@ def sql_for(plan: crawl.Plan, chain_id: int, observed: str) -> str:
     # Чего сеть не назвала в собственном гиде, того она больше не подаёт.
     # Строку не трогаем: человек мог сохранить блюдо в заказ, и исчезновение
     # выглядело бы поломкой. Приложение уводит такие в раздел «Archive».
-    if plan.retired:
-        keys = ", ".join(sql_text(key) for key in plan.retired)
-        lines.append(
-            "insert into menu_presence (chain_id, ext_key, on_menu, source, checked_at)\n"
-            f"select {chain_id}, key, false, {sql_text(plan.source)}, now()\n"
-            f"from unnest(array[{keys}]::text[]) as key\n"
-            "on conflict (chain_id, ext_key) do update set on_menu = excluded.on_menu,"
-            " source = excluded.source, checked_at = excluded.checked_at;\n")
+    if plan.retired or plan.adopted:
+        # «Снято» и «в меню» пишем одинаково явно. Обход бывает неполным —
+        # у Firehouse позиции лежат на пятом уровне вложенности, и первый
+        # прогон Burger King видел 281 документ там, где их 473. Строка,
+        # которую прошлый прогон не дотянулся увидеть и увёл в архив,
+        # должна вернуться следующим, а не остаться там навсегда.
+        for on_menu, keys in ((False, plan.retired), (True, plan.seen_keys)):
+            if not keys:
+                continue
+            listed = ", ".join(sql_text(key) for key in keys)
+            lines.append(
+                "insert into menu_presence (chain_id, ext_key, on_menu, source, checked_at)\n"
+                f"select {chain_id}, key, {'true' if on_menu else 'false'},"
+                f" {sql_text(plan.source)}, now()\n"
+                f"from unnest(array[{listed}]::text[]) as key\n"
+                "on conflict (chain_id, ext_key) do update set on_menu = excluded.on_menu,"
+                " source = excluded.source, checked_at = excluded.checked_at;\n")
 
     kind = ("pdf" if plan.menu_url.endswith(".pdf")
             else "json_api" if plan.source in {b.domain for b in sanity_rbi.BRANDS.values()}
