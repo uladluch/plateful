@@ -18,7 +18,7 @@ import time
 from dataclasses import dataclass
 
 from .base import BROWSER_HEADERS, Robots, curl_get
-from .rbi_venues import Venue
+from .rbi_venues import Venue, in_us
 
 LOCATOR = "https://www.mcdonalds.com/googleappsv2/geolocation"
 
@@ -176,6 +176,8 @@ def venue(feature: dict) -> Venue | None:
         return None
     lng, lat = coords
     if not isinstance(lat, (int, float)) or not isinstance(lng, (int, float)):
+        return None
+    if not in_us(float(lat), float(lng)):
         return None
 
     street, city = props.get("addressLine1"), props.get("addressLine3")

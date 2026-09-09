@@ -96,6 +96,22 @@ class VenueTest(unittest.TestCase):
         self.assertIsNone(rbi_venues.venue(
             self.doc(physicalAddress={"city": "Temple"}), self.brand))
 
+    def test_antarctica_is_dropped(self):
+        # Настоящая строка из датасета Firehouse: страна «US», штат «GL»,
+        # город в Гренландии и координата посреди Антарктиды. Она доехала
+        # до базы и встала бы на карте во льдах.
+        self.assertIsNone(rbi_venues.venue(self.doc(
+            latitude=-82.862752, longitude=135,
+            physicalAddress={"address1": "283P+JVV,", "city": "Narsarmijit",
+                             "stateProvinceShort": "GL", "country": "US"}),
+            self.brand))
+
+    def test_keeps_the_far_corners_of_the_country(self):
+        # Граница не должна отрезать настоящие штаты: Аляска, Гавайи и
+        # Пуэрто-Рико лежат далеко от континентальной середины.
+        for lat, lng in ((61.2, -149.9), (21.3, -157.8), (18.4, -66.1)):
+            self.assertTrue(rbi_venues.in_us(lat, lng), (lat, lng))
+
     def test_falls_back_to_document_id(self):
         v = rbi_venues.venue(self.doc(number=None), self.brand)
         self.assertEqual(v.ext_key, "abc")

@@ -39,6 +39,13 @@ US = ("US", "USA", "United States")
 #: ответ на шесть тысяч ресторанов — это мегабайты в одной строке.
 PAGE = 500
 
+#: Где может стоять американский ресторан: от Пуэрто-Рико до Аляски.
+#:
+#: Потолок правдоподобия, как у калорий. В датасете Firehouse нашлась точка
+#: со страной «US», штатом «GL» и координатой −82.86, 135 — это Антарктида.
+#: Фильтр по стране её пропускает, и на карте она встала бы во льдах.
+US_BOUNDS = (17.0, 72.0, -180.0, -64.0)
+
 
 @dataclass(frozen=True)
 class Venue:
@@ -128,6 +135,9 @@ def venue(doc: dict, brand: Brand) -> Venue | None:
     if not key:
         return None
 
+    if not in_us(float(lat), float(lng)):
+        return None
+
     amenities = tuple(sorted(name for field, name in AMENITIES.items()
                              if doc.get(field) is True))
 
@@ -147,6 +157,17 @@ def venue(doc: dict, brand: Brand) -> Venue | None:
         amenities=amenities,
         source=f"sanity:{brand.project}/{brand.dataset}",
     )
+
+
+def in_us(latitude: float, longitude: float) -> bool:
+    """Координата похожа на американскую.
+
+    Проверяется у всех сетей, а не только у той, где нашёлся Антарктида:
+    мусорная строка в чужом датасете — это не особенность одной сети, а то,
+    чего стоит ждать от любого.
+    """
+    south, north, west, east = US_BOUNDS
+    return south <= latitude <= north and west <= longitude <= east
 
 
 def fetch(brand: Brand) -> list[Venue]:
