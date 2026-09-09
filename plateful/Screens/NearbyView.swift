@@ -12,9 +12,8 @@ struct NearbyView: View {
     @Environment(MenuRepository.self) private var menu
     @State private var nearby = NearbyStore()
     @State private var filter = MenuFilter.none
-    /// Выбранная булавка. Она же — вход в карточку места: карточку рисует
-    /// система, ей нужен сам `MKMapItem`.
-    @State private var selected: MKMapItem?
+    /// Выбранная булавка. Она же открывает карточку заведения.
+    @State private var selected: Venue?
 
     /// Цели человека — те же, что на экране сети: фильтр один на приложение.
     @Query private var goals: [UserGoals]
@@ -23,7 +22,6 @@ struct NearbyView: View {
         NavigationStack {
             content
                 .navigationTitle("Nearby")
-                .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     if case .ready = nearby.state {
                         ToolbarItem(placement: .primaryAction) {
@@ -31,6 +29,7 @@ struct NearbyView: View {
                         }
                     }
                 }
+                .sheet(item: $selected) { VenueDetailView(venue: $0) }
         }
         .task { find() }
     }
@@ -72,7 +71,7 @@ struct NearbyView: View {
                 ContentUnavailableView(
                     "No known chains nearby",
                     systemImage: "mappin.slash",
-                    description: Text("There are places around you, but none of them is a chain in this catalogue."))
+                    description: Text("None of the chains in this catalogue has a restaurant around you."))
             } else {
                 list(chains)
             }
@@ -91,6 +90,13 @@ struct NearbyView: View {
                 map
                     .frame(height: 220)
                     .listRowInsets(EdgeInsets())
+            } footer: {
+                // Запасной путь беднее, и молчать об этом нельзя: у карты
+                // нет часов работы, и пустая строка там, где обычно «до
+                // 22:00», читалась бы как «закрыто».
+                if nearby.source == .map {
+                    Text("Showing map results — opening hours are unavailable right now.")
+                }
             }
 
             Section("Chains around you") {
@@ -111,21 +117,17 @@ struct NearbyView: View {
 
     /// Системная карта: она уже умеет масштаб, тёмную тему и жесты.
     ///
-    /// Булавка на каждое заведение наших сетей, а не на сеть: выбирают
-    /// конкретную точку, и четыре «Subway» вокруг — это четыре разных
-    /// ответа на вопрос «куда идти».
-    ///
-    /// По нажатию систему просим показать её карточку места: адрес, часы
-    /// работы, ценник «$$», телефон, снимки, маршрут. Своей такой карточки
-    /// у нас быть не может — часов и ценника MapKit не отдаёт данными
-    /// вовсе, а складывать их к себе условия Apple Maps не разрешают.
+    /// Булавка на каждое заведение, а не на сеть: четыре «Burger King»
+    /// вокруг — это четыре разных ответа на вопрос «куда идти».
     private var map: some View {
         Map(selection: $selected) {
             UserAnnotation()
             ForEach(nearby.venues) { venue in
-                Marker(item: venue.item)
+                Marker(venue.chain, systemImage: Tokens.Symbol.chain,
+                       coordinate: CLLocationCoordinate2D(
+                        latitude: venue.latitude, longitude: venue.longitude))
+                .tag(venue)
             }
-            .mapItemDetailSelectionAccessory(.sheet)
         }
         .mapControls { MapUserLocationButton() }
     }
@@ -140,16 +142,26 @@ struct NearbyView: View {
                 ChainMarkView(chain: found.chain, size: 28)
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
                     Text(found.chain)
-                    if let address = found.nearest.address {
-                        Text(found.venues > 1
-                             ? "\(address) · \(found.venues) nearby"
-                             : address)
+                    Text(subtitle(for: found))
+                        .font(.caption)
+                        .foregroundStyle(Tokens.Color.textSecondary)
+                    if let hours = found.nearest.hours {
+                        let status = hours.status(at: .now)
+                        Text(Self.statusText(status) ?? "")
                             .font(.caption)
-                            .foregroundStyle(Tokens.Color.textSecondary)
+                            .foregroundStyle(Self.statusColor(status))
                     }
                 }
             }
         }
+    }
+
+    private func subtitle(for found: NearbyChain) -> String {
+        let address = found.nearest.address
+        guard found.venues > 1 else { return address }
+        return address.isEmpty
+            ? "\(found.venues) nearby"
+            : "\(address) · \(found.venues) nearby"
     }
 
     /// Блюда под цель — из того, что рядом, а не из всего каталога.
@@ -182,6 +194,34 @@ struct NearbyView: View {
             .formatted(.measurement(width: .abbreviated,
                                     usage: .road,
                                     numberFormatStyle: .number.precision(.fractionLength(0...1))))
+    }
+
+    /// «Открыто до 22:00» или «Закрыто · откроется в 6:00».
+    ///
+    /// Про часы, которых у нас нет, не говорим ничего: «закрыто» и «не
+    /// знаем» — разные вещи, и первое отправило бы человека мимо открытой
+    /// двери.
+    static func statusText(_ status: WeekHours.Status) -> String? {
+        switch status {
+        case .open(nil):
+            "Open 24 hours"
+        case .open(let until?):
+            "Open until \(VenueDetailView.clock(until))"
+        case .closed(let opens?):
+            "Closed · opens \(VenueDetailView.clock(opens))"
+        case .closed(nil):
+            "Closed"
+        case .unknown:
+            nil
+        }
+    }
+
+    static func statusColor(_ status: WeekHours.Status) -> Color {
+        switch status {
+        case .open: Tokens.Color.openNow
+        case .closed: Tokens.Color.closedNow
+        case .unknown: Tokens.Color.textSecondary
+        }
     }
 }
 

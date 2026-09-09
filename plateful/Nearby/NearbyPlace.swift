@@ -25,7 +25,7 @@ nonisolated struct NearbyChain: Identifiable, Hashable, Sendable {
     /// Имя ровно как в каталоге: по нему открывается меню.
     let chain: String
     /// Ближайшее заведение этой сети.
-    let nearest: NearbyPlace
+    let nearest: Venue
     /// Сколько заведений сети попало в радиус.
     let venues: Int
 
@@ -82,30 +82,62 @@ nonisolated struct NearbyCatalog: Sendable {
 }
 
 /// Сопоставление того, что показала карта, с тем, что есть в каталоге.
+///
+/// Нужно только запасному пути. Когда отвечает наша база, сети приходят
+/// готовыми — угадывать по имени нечего.
 nonisolated enum NearbyMatch {
 
-    /// Сети каталога, найденные среди заведений вокруг, ближайшие первыми.
-    static func chains(near places: [NearbyPlace], in catalog: [String]) -> [NearbyChain] {
-        chains(near: places, in: NearbyCatalog(catalog))
-    }
-
-    static func chains(near places: [NearbyPlace],
-                       in catalog: NearbyCatalog) -> [NearbyChain] {
-        var nearest: [String: NearbyPlace] = [:]
+    /// Сети из списка заведений, ближайшие первыми.
+    ///
+    /// Одна группировка на оба пути — и на точки из базы, и на то, что нашла
+    /// карта: иначе список сетей вёл бы себя по-разному в зависимости от
+    /// того, отвечал ли сервер, а человеку это различие не видно.
+    static func chains(from venues: [Venue]) -> [NearbyChain] {
+        var nearest: [String: Venue] = [:]
         var counts: [String: Int] = [:]
 
-        for place in places {
-            guard let chain = catalog.chain(of: place.name) else { continue }
-            counts[chain, default: 0] += 1
-            if let known = nearest[chain], known.distance <= place.distance {
+        for venue in venues {
+            counts[venue.chain, default: 0] += 1
+            if let known = nearest[venue.chain], known.distance <= venue.distance {
                 continue
             }
-            nearest[chain] = place
+            nearest[venue.chain] = venue
         }
 
         return nearest
             .map { NearbyChain(chain: $0.key, nearest: $0.value,
                                venues: counts[$0.key] ?? 1) }
             .sorted { ($0.nearest.distance, $0.chain) < ($1.nearest.distance, $1.chain) }
+    }
+
+    /// Заведения, которые карта нашла вокруг, — те из них, что наши.
+    static func venues(among places: [NearbyPlace],
+                       in catalog: NearbyCatalog) -> [Venue] {
+        places.compactMap { place in
+            guard let chain = catalog.chain(of: place.name) else { return nil }
+            return Venue(chain: chain,
+                         // У карты номера магазина нет; координата различает
+                         // две точки одной сети не хуже.
+                         extKey: "map:\(place.latitude),\(place.longitude)",
+                         latitude: place.latitude,
+                         longitude: place.longitude,
+                         address: place.address ?? "",
+                         phone: nil,
+                         // Часов карта не отдаёт вовсе — и делать вид, что
+                         // отдаёт, нельзя.
+                         hours: nil,
+                         driveThruHours: nil,
+                         amenities: [],
+                         distance: place.distance)
+        }
+    }
+
+    static func chains(near places: [NearbyPlace], in catalog: [String]) -> [NearbyChain] {
+        chains(near: places, in: NearbyCatalog(catalog))
+    }
+
+    static func chains(near places: [NearbyPlace],
+                       in catalog: NearbyCatalog) -> [NearbyChain] {
+        chains(from: venues(among: places, in: catalog))
     }
 }
