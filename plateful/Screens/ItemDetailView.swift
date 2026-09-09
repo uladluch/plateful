@@ -44,10 +44,6 @@ struct ItemDetailView: View {
                 DishImage(item: illustrated, size: 220, isHero: true)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-            } footer: {
-                if let photo = illustrated.photo {
-                    PhotoCaption(photo: photo)
-                }
             }
 
             if item.isOffMenu {
@@ -101,6 +97,8 @@ struct ItemDetailView: View {
                     Text(notice)
                 }
             }
+
+            legal
         }
         // Заголовка в навбаре больше нет — имя блюда переехало в шапку
         // раздела с калориями. Пустая строка оставляет системную кнопку
@@ -134,6 +132,20 @@ struct ItemDetailView: View {
             // Сбой истории не должен мешать смотреть калории — это справочник,
             // а история лишь удобство.
             try? UserDataStore(context: context).recordView(of: shown)
+        }
+    }
+
+    /// Правовая мелочь — в самом низу карточки, отдельным разделом, а не
+    /// подписью под снимком: числа наверху читают все, лицензию — почти
+    /// никто, и ей не место между фотографией и калориями.
+    @ViewBuilder
+    private var legal: some View {
+        if let photo = illustrated.photo {
+            Section {
+                PhotoCaption(photo: photo)
+            } header: {
+                SectionTitle("Legal")
+            }
         }
     }
 
