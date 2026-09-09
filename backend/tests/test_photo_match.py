@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+from plateful_data import matching
 from fetch_chain_photos import (PHOTO_THRESHOLD, containment, ingredients_agree,
                                 photo_score, photo_words)
 
@@ -90,6 +91,50 @@ class ScoreTests(unittest.TestCase):
     def test_matches_camel_case_from_a_filename(self):
         # «McDouble» в каталоге слитно, из имени файла разбор даёт «Mc Double».
         self.assertTrue(matches("McDouble", "Mc Double Protein"))
+
+
+class PhotoPairs(unittest.TestCase):
+    """Снимку правила мягче, чем цифрам: одна фотография на все размеры."""
+
+    CATALOG = {
+        "coffee-16": {"ext_key": "coffee-16",
+                      "name": "Cafe Blend Light Roast Coffee - 16 fl oz 16 fl oz (473 mL)"},
+        "coffee-20": {"ext_key": "coffee-20",
+                      "name": "Cafe Blend Light Roast Coffee - 20 fl oz (591 mL)"},
+        "roll": {"ext_key": "roll",
+                 "name": "Italian Style Roll 2 oz (about 2.5 inch slice / 57g)"},
+        "tea": {"ext_key": "tea", "name": "Unsweetened Iced Tea - Serves 4 - Group"},
+        "stranger": {"ext_key": "stranger", "name": "Broccoli Cheddar Soup, Bowl"},
+    }
+
+    class Shot:
+        def __init__(self, slug):
+            self.ext_key = slug
+            self.name = slug.replace("-", " ")
+
+    def pairs(self, *slugs):
+        return matching.photo_pairs([self.Shot(s) for s in slugs], self.CATALOG)
+
+    def test_мера_порции_из_имени_не_мешает(self):
+        """«Cafe Blend Light Roast Coffee - 16 fl oz 16 fl oz (473 mL)» —
+        это кофе, а не отдельное блюдо с мерой в названии."""
+        found = self.pairs("cafe-blend-light-roast-coffee")
+        self.assertIn("coffee-16", found)
+
+    def test_один_снимок_достаётся_всем_размерам(self):
+        """У блюда четыре строки каталога и одна фотография."""
+        found = self.pairs("cafe-blend-light-roast-coffee")
+        self.assertEqual({found["coffee-16"].ext_key, found["coffee-20"].ext_key},
+                         {"cafe-blend-light-roast-coffee"})
+
+    def test_подача_отбрасывается(self):
+        found = self.pairs("unsweetened-iced-tea", "italian-style-roll")
+        self.assertIn("tea", found)
+        self.assertIn("roll", found)
+
+    def test_чужому_блюду_снимок_не_достаётся(self):
+        found = self.pairs("cafe-blend-light-roast-coffee")
+        self.assertNotIn("stranger", found)
 
 
 if __name__ == "__main__":

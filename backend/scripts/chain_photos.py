@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PIL import Image
 
 from plateful_data import matching
-from plateful_data.adapters import mcdonalds, sanity_rbi
+from plateful_data.adapters import gotofoods, mcdonalds, panera, sanity_rbi
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -57,6 +57,11 @@ RIGHTS = {
                     "https://www.timhortons.com/menu"),
     mcdonalds.SLUG: ("© McDonald's Corporation. Used with permission. "
                      "Source: mcdonalds.com", mcdonalds.MENU_URL),
+    panera.SLUG: ("© Panera Bread. Used with permission. Source: panerabread.com",
+                  panera.MENU_URL),
+    **{b.slug: (f"© {b.name}. Used with permission. Source: {b.domain}",
+                f"https://www.{b.domain}/menu")
+       for b in gotofoods.BRANDS.values()},
 }
 
 
@@ -64,6 +69,10 @@ def shots(slug: str) -> tuple[str, list]:
     """Название сети и её позиции со снимками — откуда бы они ни брались."""
     if slug == mcdonalds.SLUG:
         return mcdonalds.CHAIN, [i for i in mcdonalds.load() if i.image_url]
+    if slug == panera.SLUG:
+        return panera.CHAIN, panera.catalog()
+    if brand := gotofoods.BRANDS.get(slug):
+        return brand.name, [i for i in gotofoods.catalog(brand) if i.image_url]
     brand = sanity_rbi.BRANDS[slug]
     return brand.name, [i for i in sanity_rbi.fetch(brand) if i.image_url]
 
@@ -127,10 +136,12 @@ def main() -> int:
     # терялся всюду, где сеть называет блюдо иначе: «Hash Browns, Small»
     # в каталоге и «Small Hash Browns» у сети — одно блюдо для кроула и
     # разные для снимков, и карточка оставалась без картинки.
-    pairs, _ = matching.match_all(items, catalog)
-    todo = [(i, pairs[i.ext_key]["ext_key"]) for i in items
-            if i.ext_key in pairs and pairs[i.ext_key]["ext_key"] not in have]
-    print(f"{name}: снимков у сети {len(items)}, сматчено с каталогом {len(pairs)},"
+    # Правило для снимков мягче, чем для цифр: этикетка у стакана 16 и 20
+    # унций разная, а фотография одна, и сеть её одну и снимает. Поэтому
+    # один снимок разрешено отдать нескольким строкам каталога.
+    chosen = matching.photo_pairs(items, catalog)
+    todo = [(shot, key) for key, shot in chosen.items() if key not in have]
+    print(f"{name}: снимков у сети {len(items)}, сматчено с каталогом {len(chosen)},"
           f" без снимка {len(todo)}")
     if args.limit:
         todo = todo[:args.limit]

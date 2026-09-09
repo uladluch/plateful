@@ -68,6 +68,64 @@ def similarity(left: str, right: str) -> float:
     return difflib.SequenceMatcher(None, comparable(left), comparable(right)).ratio()
 
 
+# ── Сопоставление снимков ───────────────────────────────────────────────
+#
+# У снимка правила мягче, чем у цифр, и по делу: этикетка у стакана 16 и
+# 20 унций разная, а фотография — одна и та же. Более того, сеть её одну и
+# снимает: в описи ассетов Panera на «Cafe Blend Light Roast Coffee» лежит
+# один файл, а в каталоге у него четыре строки с разными порциями.
+#
+# Поэтому здесь, в отличие от `match_all`, мера порции из имени убирается,
+# а один снимок разрешено отдать нескольким строкам каталога. Для цифр так
+# делать нельзя — там подмена размера означает выдуманное расхождение.
+
+#: Мера в названии: «16 fl oz», «(473 mL)», «2 oz», «12 inch».
+_MEASURE = re.compile(
+    r"\(?\b\d+(?:\.\d+)?\s*(?:fl\s*)?(?:oz|ml|l|g|kg|lb|inch|in|cal)\b[^,()]*\)?",
+    re.I)
+#: Довески подачи, которые к самому блюду отношения не имеют.
+_SERVING_WORDS = re.compile(
+    r"\b(?:with\s+ice|bottle|can|jug|group|serves\s+\d+|drive\s*-?\s*thru)\b", re.I)
+
+
+def dish(name: str) -> str:
+    """Имя блюда без мер и подачи — то, что видно на фотографии."""
+    text = _MEASURE.sub(" ", name)
+    text = _SERVING_WORDS.sub(" ", text)
+    # Пустые скобки и повисшие разделители после вычистки.
+    text = re.sub(r"\(\s*\)|\s+-\s+$|,\s*$", " ", text)
+    return comparable(text)
+
+
+def photo_pairs(shots, stored: dict[str, dict], *,
+                threshold: float = MATCH_THRESHOLD) -> dict[str, object]:
+    """Ключ строки каталога → снимок, который ей подходит.
+
+    Снимок может достаться нескольким строкам: у блюда с четырьмя
+    порциями фотография одна.
+    """
+    by_dish: dict[str, list] = {}
+    for shot in shots:
+        by_dish.setdefault(dish(shot.name), []).append(shot)
+
+    chosen: dict[str, object] = {}
+    for key, record in stored.items():
+        wanted = dish(record["name"])
+        if not wanted:
+            continue
+        if exact := by_dish.get(wanted):
+            chosen[key] = exact[0]
+            continue
+        best_shot, best_ratio = None, 0.0
+        for name, group in by_dish.items():
+            ratio = difflib.SequenceMatcher(None, wanted, name).ratio()
+            if ratio > best_ratio:
+                best_shot, best_ratio = group[0], ratio
+        if best_shot is not None and best_ratio >= threshold:
+            chosen[key] = best_shot
+    return chosen
+
+
 def match_all(live, stored: dict[str, dict], *,
               threshold: float = MATCH_THRESHOLD
               ) -> tuple[dict[str, dict], dict[str, float]]:
