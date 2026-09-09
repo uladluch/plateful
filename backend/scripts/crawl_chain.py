@@ -304,7 +304,8 @@ def from_guide(url: str, chain: str, slug: str) -> list[Crawled]:
                 # заголовка раздела по виду и становились то категорией,
                 # то именем блюда.
                 text = pdf_guide.without_furniture(
-                    [(page.extract_text() or "") for page in pdf.pages])
+                    [(page.extract_text(x_tolerance=layout.tolerance) or "")
+                     for page in pdf.pages])
                 items = pdf_guide.read(text, layout=layout)
     except pdf_guide.WrongGuide as wrong:
         raise SystemExit(f"гид не подходит: {wrong}")

@@ -169,7 +169,7 @@ Steak Philly 260 720 40 12 1 120 1900 56 3 6 4 45 15 8 45 45
 """
         with self.assertRaises(pdf_guide.WrongGuide) as caught:
             pdf_guide.read(same, layout=pdf_guide.SUBWAY)
-        self.assertIn("неразличимые", str(caught.exception))
+        self.assertIn("неразличима", str(caught.exception))
 
 
 # Panera Bread® Nutrition Guide: порция стоит словами в названии, а имя
@@ -373,6 +373,35 @@ class ServingBeforeNumbers(unittest.TestCase):
             pdf_guide.AUNTIE_ANNES)
         self.assertEqual(item.serving, "5 servings")
         self.assertEqual(item.values["kcal"], 690)
+
+
+
+
+class AmbiguousMinority(unittest.TestCase):
+    """Немногие неразличимые строки выбрасываются, а не отменяют гид."""
+
+    @staticmethod
+    def rows(clean: int) -> list:
+        items = [pdf_guide.GuideItem(name=f"Sub {n}", values={"kcal": 300.0},
+                                     serving=None, category=None, section=None)
+                 for n in range(clean)]
+        # Две строки с одним именем и без чего-либо различающего.
+        items += [pdf_guide.GuideItem(name="Cheese", values={"kcal": float(k)},
+                                      serving=None, category=None, section=None)
+                  for k in (170, 430)]
+        return items
+
+    def test_меньшинство_выбрасывается_громко(self):
+        """У White Castle девять неразличимых строк из 249 отменяли
+        остальные 240 — целую сеть из-за одной матричной страницы."""
+        kept = pdf_guide.qualify(self.rows(50))
+        self.assertEqual(len(kept), 50)
+        self.assertNotIn("Cheese", [i.name for i in kept])
+
+    def test_большинство_значит_раскладка_не_та(self):
+        with self.assertRaises(pdf_guide.WrongGuide) as caught:
+            pdf_guide.qualify(self.rows(2))
+        self.assertIn("неразличима", str(caught.exception))
 
 
 if __name__ == "__main__":

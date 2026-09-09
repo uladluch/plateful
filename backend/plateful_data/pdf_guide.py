@@ -92,6 +92,14 @@ def pull_serving(line: str) -> tuple[str, str | None]:
 _SERVING_ONLY = re.compile(
     r"^\d+(?:/\d+)?(?:\.\d+)?\s+[A-Za-z][\w.'’-]*(?:\s+[A-Za-z][\w.'’-]*){0,2}$")
 
+#: Строка блюда, названная одним размером: «Small», «Medium», «Sack
+#: (serves 3)». Блюдо у неё — заголовок строкой выше. У White Castle так
+#: подана вся вторая страница, и без этого правила «Small» из пяти разных
+#: разделов сталкивались друг с другом одним ключом.
+_SIZE_ONLY = re.compile(
+    r"^(?:small|medium|large|regular|sack|kids?|jr\.?|single|double|triple)"
+    r"(?:\s*\([^)]*\))?$", re.I)
+
 
 @dataclass(frozen=True)
 class Layout:
@@ -111,6 +119,11 @@ class Layout:
     #: заголовком «Turkey Ranch & Swiss» идут три строки «Small Sub»,
     #: «Medium Sub», «Large Sub». Имя брать со строки выше.
     name_from_heading: bool = False
+    #: Насколько далеко должны стоять символы, чтобы между ними считался
+    #: пробел. У White Castle шрифт разрежен, и при обычном допуске имя
+    #: рассыпается на буквы: «The Ori gi nal Sl i der», а «2.5» читается
+    #: как два числа «2.» и «5» и сдвигает всю этикетку.
+    tolerance: float = 3.0
     #: Порция стоит текстом в хвосте названия, а не отдельной колонкой.
     #: У Subway это число граммов среди чисел, у Panera — «1 Bagel» прямо
     #: в имени, и без отделения половинка салата и целый салат становятся
@@ -176,9 +189,17 @@ AUNTIE_ANNES = Layout(
              "carbs", "fiber", "sugar", None, "protein"),
     count=11, serving_in_name=True)
 
+#: White Castle. Порция граммами первой колонкой, за калориями идут
+#: калории из жира, а в хвосте — витамины в процентах от нормы и пометки
+#: аллергенов; ни того, ни другого мы не ведём.
+WHITE_CASTLE = Layout(
+    columns=("serving", "kcal", None, "fat", "sat_fat", "trans_fat",
+             "cholesterol", "sodium", "carbs", "fiber", "sugar", "protein"),
+    count=12, tolerance=4.0)
+
 LAYOUTS = {"subway": SUBWAY, "panera-bread": PANERA, "quiznos": QUIZNOS,
            "frisch-s-big-boy": FRISCHS, "red-lobster": RED_LOBSTER,
-           "auntie-anne-s": AUNTIE_ANNES}
+           "auntie-anne-s": AUNTIE_ANNES, "white-castle": WHITE_CASTLE}
 
 
 def _number(token: str) -> float | None:
@@ -192,9 +213,22 @@ def _number(token: str) -> float | None:
     return float(token.replace(",", "."))
 
 
+#: Доля строк, которые гид позволяет выбросить как неразличимые. Больше —
+#: значит раскладка не та, и выбрасывать уже нечего: надо разбираться.
+MAX_AMBIGUOUS = 0.10
+
+#: Пометки аллергенов в хвосте строки: гид ставит крестик или решётку в
+#: колонке каждого аллергена. Числами они не являются, и пока их не
+#: убирали, счёт клеток с конца обрывался на первой же — у White Castle
+#: так пропадали все 49 бургеров, а разбирались одни соусы.
+_FLAG_TOKENS = frozenset("#xX*•·-–—✓✔◆●○□■")
+
+
 def _split(line: str, count: int) -> tuple[str, list[str]] | None:
     """Название и хвост из `count` клеток. None — строка не про блюдо."""
     tokens = line.split()
+    while tokens and all(ch in _FLAG_TOKENS for ch in tokens[-1]):
+        tokens.pop()
     tail = 0
     while tail < len(tokens) and _VALUE.match(tokens[len(tokens) - 1 - tail]):
         tail += 1
@@ -305,6 +339,11 @@ def parse(text: str, layout: Layout) -> list[GuideItem]:
             serving = tail.group(1)
             name = name[:tail.start()].strip() or name
         elif layout.name_from_heading and pending:
+            serving, name = name, pending
+            if category == pending:
+                category = previous_category
+        elif pending and _SIZE_ONLY.match(name):
+            # Имя — один размер: блюдо стоит заголовком выше.
             serving, name = name, pending
             if category == pending:
                 category = previous_category
@@ -605,16 +644,30 @@ def qualify(items: list[GuideItem]) -> list[GuideItem]:
         for item in qualified
     ]
 
-    duplicated = [key for key, n in Counter(slugify(i.name)
-                                            for i in qualified).items() if n > 1]
-    if duplicated:
-        # Две строки, которые мы не умеем различить. Завести их обе нельзя
-        # (вторая молча затрёт первую), выбрать одну — тоже: неизвестно,
-        # какая. Значит гид устроен не так, как мы думаем.
-        raise WrongGuide(
-            f"неразличимые позиции даже с разделом: {', '.join(duplicated[:5])}")
+    duplicated = {key for key, n in Counter(slugify(i.name)
+                                            for i in qualified).items() if n > 1}
+    if not duplicated:
+        return qualified
 
-    return qualified
+    # Две строки, которые мы не умеем различить. Завести их обе нельзя —
+    # вторая молча затрёт первую; выбрать одну тоже нельзя, неизвестно
+    # какая. Обе выбрасываем.
+    #
+    # Пока выбрасывался весь гид, одна матричная страница отменяла всю
+    # сеть: у White Castle девять неразличимых строк из 249 стоили нам
+    # остальных 240. Но и молчать нельзя — на Subway так потерялись 48
+    # позиций из 162, и заметили это только вручную. Поэтому потеря
+    # громкая: выброшенное перечислено и посчитано.
+    kept = [i for i in qualified if slugify(i.name) not in duplicated]
+    share = 1 - len(kept) / len(qualified)
+    if share > MAX_AMBIGUOUS:
+        # Неразличима половина гида — значит он устроен не так, как мы
+        # думаем, и спасать тут нечего.
+        raise WrongGuide(
+            f"неразличима {share:.0%} строк: {', '.join(sorted(duplicated)[:5])}")
+    print(f"  неразличимых строк выброшено: {len(qualified) - len(kept)}"
+          f" ({', '.join(sorted(duplicated)[:4])})")
+    return kept
 
 
 def _checked(items: list[GuideItem]) -> list[GuideItem]:
