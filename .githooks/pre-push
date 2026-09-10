@@ -28,12 +28,22 @@ fi
 
 if grep -qE '^(plateful/|platefulTests/|plateful\.xcodeproj/)' <<<"$changed"; then
     printf '→ тесты iOS… '
+    # Симулятор не прибит гвоздями к имени. Прибитый однажды остаётся на
+    # старом рантайме (у iPhone 17 Pro тут iOS 26.5 при Xcode 27), и
+    # xcodebuild его не берёт — а хук читается как «тесты упали», хотя
+    # они и не запускались. Берём первый айфон, который сам xcodebuild
+    # назвал совместимым со схемой.
+    device=$(xcodebuild -project plateful.xcodeproj -scheme plateful -showdestinations 2>/dev/null \
+        | sed -n '/Destinations compatible/,/Destinations incompatible/p' \
+        | grep 'platform:iOS Simulator' | grep -o 'name:iPhone [^}]*' \
+        | sed 's/name://; s/ *$//' | head -1)
+    [ -n "$device" ] || fail "нет ни одного симулятора iPhone для схемы"
     xcodebuild test -project plateful.xcodeproj -scheme plateful \
-        -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet \
+        -destination "platform=iOS Simulator,name=$device" -quiet \
         >/tmp/plateful-ios-tests.log 2>&1 \
         || { grep -E 'error:|Failing tests:|^\s+[A-Za-z]+Tests\.' /tmp/plateful-ios-tests.log \
-               | head -20; fail "тесты iOS"; }
-    printf 'ок\n'
+               | head -20; fail "тесты iOS ($device)"; }
+    printf 'ок (%s)\n' "$device"
 fi
 
 # Каталог конвейера обязан совпадать с пересборкой: он детерминирован, и
