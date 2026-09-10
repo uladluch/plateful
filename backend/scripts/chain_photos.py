@@ -30,6 +30,9 @@ import json
 import subprocess
 import sys
 import tempfile
+import time
+import unicodedata
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -44,75 +47,41 @@ from PIL import Image, PngImagePlugin
 PngImagePlugin.MAX_TEXT_CHUNK = 32 * 1024 * 1024
 
 from plateful_data import matching
-from plateful_data.adapters import (collected, gotofoods, jersey_mikes, mcdonalds,
-                                    olo_menu, panera, quiznos, sanity_rbi,
-                                    starbucks, subway_newsroom)
+from plateful_data.adapters import photo_sources
 from plateful_data.adapters.base import USER_AGENT
 
 ROOT = Path(__file__).resolve().parents[2]
 BUCKET_URL = "https://tnlmtyhuuqpjwuhzximh.supabase.co/storage/v1/object/public/photos"
 SIDE = 1000
 
-#: Условия использования — у каждой сети свои, как в refresh_chain.CHAINS.
-RIGHTS = {
-    "burger-king": ("© Burger King Company LLC. Used with permission. Source: bk.com",
-                    "https://www.bk.com/menu"),
-    "firehouse-subs": ("© Firehouse Restaurant Group, Inc. Used with permission. "
-                       "Source: firehousesubs.com", "https://www.firehousesubs.com/menu"),
-    "popeyes": ("© Popeyes Louisiana Kitchen, Inc. Used with permission. Source: popeyes.com",
-                "https://www.popeyes.com/menu"),
-    "tim-hortons": ("© Tim Hortons. Used with permission. Source: timhortons.com",
-                    "https://www.timhortons.com/menu"),
-    mcdonalds.SLUG: ("© McDonald's Corporation. Used with permission. "
-                     "Source: mcdonalds.com", mcdonalds.MENU_URL),
-    panera.SLUG: ("© Panera Bread. Used with permission. Source: panerabread.com",
-                  panera.MENU_URL),
-    quiznos.SLUG: ("© Quiznos. Used with permission. Source: quiznos.com",
-                   quiznos.MENU_URL),
-    jersey_mikes.SLUG: ("© Jersey Mike's Franchise Systems, Inc. Used with "
-                        "permission. Source: jerseymikes.com", jersey_mikes.MENU_URL),
-    starbucks.SLUG: ("© Starbucks Corporation. Used with permission. "
-                     "Source: starbucks.com", starbucks.MENU_URL),
-    subway_newsroom.SLUG: ("© Subway IP LLC. Used with permission. "
-                           "Source: newsroom.subway.com", subway_newsroom.MENU_URL),
-    **{b.slug: (f"© {b.name}. Used with permission. "
-                f"Source: {b.menu_url.split('/')[2].removeprefix('www.')}", b.menu_url)
-       for b in olo_menu.BRANDS.values()},
-    "white-castle": ("© White Castle System, Inc. Used with permission. "
-                     "Source: whitecastle.com", "https://www.whitecastle.com/menu"),
-    **{b.slug: (f"© {b.name}. Used with permission. Source: {b.domain}",
-                f"https://www.{b.domain}/menu")
-       for b in gotofoods.BRANDS.values()},
-}
+def source(slug: str) -> photo_sources.Source:
+    """Откуда у сети снимки — из `chains`, не из кода.
+
+    Вид платформы, адрес меню и строка прав лежат рядом с сетью, и
+    подключить новую на известной платформе значит записать строку.
+    """
+    rows = query("select slug, name, photo_source_kind, photo_source_url, photo_rights"
+                 f" from chains where slug = {sql_text(slug)};")
+    if not rows:
+        raise SystemExit(f"сети {slug} нет в chains")
+    row = rows[0]
+    if not row["photo_source_kind"]:
+        raise SystemExit(f"{slug}: источник снимков не записан — сначала "
+                         "probe_photo_sources.py и строка в chains.photo_source_kind")
+    return photo_sources.Source(row["slug"], row["name"], row["photo_source_kind"],
+                                row["photo_source_url"], row["photo_rights"])
 
 
-#: Как сеть называется в каталоге — для строки прав и подписи снимка.
-CHAIN_NAMES = {"white-castle": "White Castle"}
+def with_photo_source() -> list[str]:
+    """Сети, у которых источник снимков записан."""
+    return [r["slug"] for r in query(
+        "select slug from chains where photo_source_kind is not null order by slug;")]
 
 
 def shots(slug: str) -> tuple[str, list]:
-    """Название сети и её позиции со снимками — откуда бы они ни брались."""
-    if slug == mcdonalds.SLUG:
-        return mcdonalds.CHAIN, [i for i in mcdonalds.load() if i.image_url]
-    if slug == panera.SLUG:
-        return panera.CHAIN, panera.catalog()
-    if slug == quiznos.SLUG:
-        return quiznos.CHAIN, quiznos.catalog()
-    if slug == jersey_mikes.SLUG:
-        return jersey_mikes.CHAIN, jersey_mikes.catalog()
-    if slug == starbucks.SLUG:
-        return starbucks.CHAIN, starbucks.catalog()
-    if slug == subway_newsroom.SLUG:
-        return subway_newsroom.CHAIN, subway_newsroom.catalog()
-    if brand := olo_menu.BRANDS.get(slug):
-        return brand.name, olo_menu.catalog(brand)
-    if slug in collected.available():
-        name = CHAIN_NAMES.get(slug, slug)
-        return name, collected.catalog(slug, name, RIGHTS[slug][1])
-    if brand := gotofoods.BRANDS.get(slug):
-        return brand.name, [i for i in gotofoods.catalog(brand) if i.image_url]
-    brand = sanity_rbi.BRANDS[slug]
-    return brand.name, [i for i in sanity_rbi.fetch(brand) if i.image_url]
+    """Название сети и её позиции со снимками — по реестру платформ."""
+    src = source(slug)
+    return src.name, photo_sources.shots(src)
 
 
 def query(sql: str) -> list[dict]:
@@ -152,10 +121,49 @@ def catalog_keys(slug: str) -> tuple[int, dict[str, dict], set[str]]:
     return chain_id, catalog, have
 
 
+def clean_url(url: str) -> str:
+    """Адрес, пригодный для запроса.
+
+    Двумя разными бедами занят один и тот же шаг. У Starbucks часть
+    ссылок несёт нулевой пробел (U+200B) — редакторский мусор из CMS,
+    который в адресе не значит ничего, как и любой форматирующий символ.
+    У Chick-fil-A в имени файла живёт знак ®, и такой адрес — уже не
+    URI, а IRI: браузер кодирует его сам, а `urllib` отказывается
+    отправлять что угодно за пределами ASCII.
+    """
+    text = "".join(ch for ch in url if unicodedata.category(ch) != "Cf")
+    return urllib.parse.quote(text, safe=":/?#[]@!$&'()*+,;=~%-._")
+
+
+#: Пауза перед каждым обращением к архиву. Wayback Machine — общий
+#: ресурс, и полторы сотни параллельных запросов кладут его для нас на
+#: час; по одному раз в пару секунд он отдаёт ровно.
+ARCHIVE_PAUSE = 2.5
+_ARCHIVE_HOST = "web.archive.org"
+
+
 def download(url: str) -> Image.Image:
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:
+    if _ARCHIVE_HOST in url:
+        time.sleep(ARCHIVE_PAUSE)
+    request = urllib.request.Request(clean_url(url), headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(request, timeout=120) as response:
         return Image.open(io.BytesIO(response.read())).convert("RGBA")
+
+
+def download_any(item) -> Image.Image:
+    """Снимок по первому адресу, который отдался.
+
+    У Taco Bell лучший формат есть не у всех файлов, и адаптер даёт
+    запасные — тот же снимок меньше. Ошибка — только если не отдался ни
+    один.
+    """
+    error: Exception | None = None
+    for url in (item.image_url, *getattr(item, "fallbacks", ())):
+        try:
+            return download(url)
+        except Exception as exc:  # noqa: BLE001 — пробуем следующий адрес
+            error = exc
+    raise error or RuntimeError("нет адресов")
 
 
 def squared(image: Image.Image) -> Image.Image:
@@ -166,15 +174,18 @@ def squared(image: Image.Image) -> Image.Image:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("chain", choices=sorted(RIGHTS))
+    parser.add_argument("chain")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--limit", type=int)
     args = parser.parse_args()
 
-    license_text, page = RIGHTS[args.chain]
+    src = source(args.chain)
+    if not src.rights:
+        raise SystemExit(f"{args.chain}: строка прав не записана (chains.photo_rights)")
+    license_text, page = src.rights, src.url
     chain_id, catalog, have = catalog_keys(args.chain)
 
-    name, items = shots(args.chain)
+    name, items = src.name, photo_sources.shots(src)
     # Тем же правилом, что сопоставляет цифры. По точному ключу снимок
     # терялся всюду, где сеть называет блюдо иначе: «Hash Browns, Small»
     # в каталоге и «Small Hash Browns» у сети — одно блюдо для кроула и
@@ -198,7 +209,7 @@ def main() -> int:
     done = 0
     for item, key in todo:
         try:
-            image = squared(download(item.image_url))
+            image = squared(download_any(item))
         except Exception as error:
             print(f"   ! {key}: {error}")
             continue
@@ -210,7 +221,11 @@ def main() -> int:
              "--linked", "--experimental", "--content-type", "image/png",
              "--cache-control", "max-age=31536000, immutable"],
             capture_output=True, text=True)
-        if upload.returncode != 0:
+        # «Уже есть» — не отказ. Имя файла складывается из сети и ключа
+        # позиции, значит объект с этим именем клали мы и из того же
+        # источника; строку в `item_photos` прошлый заход дописать не
+        # успел, и без этой ветки она не появится уже никогда.
+        if upload.returncode != 0 and "KeyAlreadyExists" not in upload.stderr:
             print(f"   ! {key}: загрузка не удалась: {upload.stderr.strip()[:120]}")
             continue
         statements.append(

@@ -17,6 +17,7 @@ Olo показывает калории комбинируемого блюда 
 
 from __future__ import annotations
 
+import html
 import json
 import re
 from dataclasses import dataclass
@@ -32,14 +33,24 @@ class Brand:
 
 
 CHILIS = Brand("chili-s", "Chili's", "https://www.chilis.com/menu")
+#: Отдаёт меню только с американского адреса — иначе 403.
+APPLEBEES = Brand("applebee-s", "Applebee's", "https://www.applebees.com/en/menu")
 
-BRANDS = {b.slug: b for b in (CHILIS,)}
+BRANDS = {b.slug: b for b in (CHILIS, APPLEBEES)}
 
 #: Снимок на общем CDN Olo. Подпись `s=` делает адрес неизменяемым.
 _IMAGE = re.compile(r"https://olo-images-live\.imgix\.net/\S+?\.jpg\?[^\"'\\ ]+")
 _WIDTH = re.compile(r"[?&]w=(\d+)")
 
 _DECODER = json.JSONDecoder()
+#: Карточка продукта в разметке: снимок, следом имя. Две выкладки:
+#: у Hardee's и Carl's Jr — `<img>` и `<h3>`, у Krystal (Nuxt) — фон
+#: `background-image` и `.item-title-text`.
+_MARKUP = re.compile(
+    r'<img[^>]+src="(https://olo-images-live\.imgix\.net/[^"]+)"[^>]*>\s*</span>'
+    r'\s*<h3>(.*?)</h3>'
+    r'|background-image:url\((https://olo-images-live\.imgix\.net/[^)]+)\).*?'
+    r'class="item-title-text"[^>]*>(.*?)</div>', re.S)
 
 
 @dataclass(frozen=True)
@@ -61,7 +72,10 @@ def products(page: str) -> list[dict]:
     text = page.replace('\\"', '"').replace("\\u0026", "&").replace("\\/", "/")
     found: list[dict] = []
     starts: set[int] = set()
-    for hit in re.finditer(r'"oloProductId"', text):
+    # Две выкладки одного Olo: у Chili's ключи в camelCase («oloProductId»,
+    # «name», «images»), у Applebee's — в PascalCase («ChainProductId»,
+    # «Name», «ImageLarge»). Данные те же, CDN тот же.
+    for hit in re.finditer(r'"(?:oloProductId|ChainProductId)"', text):
         for start in range(hit.start(), max(-1, hit.start() - 6000), -1):
             if text[start] != "{" or start in starts:
                 continue
@@ -69,7 +83,7 @@ def products(page: str) -> list[dict]:
                 obj, end = _DECODER.raw_decode(text, start)
             except ValueError:
                 continue
-            if isinstance(obj, dict) and end > hit.start() and obj.get("name"):
+            if isinstance(obj, dict) and end > hit.start() and (obj.get("name") or obj.get("Name")):
                 starts.add(start)
                 found.append(obj)
                 break
@@ -97,9 +111,27 @@ def catalog(brand: Brand) -> list[Shot]:
 
     shots: list[Shot] = []
     seen: set[str] = set()
+    # Третья выкладка Olo — у Hardee's и Carl's Jr продукты не в JSON, а
+    # прямо в разметке: карточка `.inner-box`, снимок в `<img>`, имя в
+    # `<h3>`. CDN и подпись адреса те же, значит и адаптер тот же.
+    for image_a, name_a, image_b, name_b in _MARKUP.findall(page):
+        image, name = (image_a or image_b), (name_a or name_b)
+        name = " ".join(html.unescape(name).replace("®", " ").split())
+        # У Krystal имена капсом — приводим к обычному регистру, чтобы
+        # подпись снимка читалась как имя, а не как вывеска.
+        if name.isupper():
+            name = name.title()
+        key = slugify(name)
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        shots.append(Shot(chain=brand.name, ext_key=key, name=name,
+                          image_url=html.unescape(image), source_url=brand.menu_url))
     for product in products(page):
-        name = " ".join(str(product.get("name") or "").split())
-        image = largest(product.get("images"))
+        name = " ".join(str(product.get("name") or product.get("Name") or "").split())
+        image = largest(product.get("images")) or (
+            str(product.get("ImageLarge") or "") if str(product.get("ImageLarge") or "")
+            .startswith("https://olo-images-live.") else None)
         key = slugify(name)
         if not name or not image or key in seen:
             continue
