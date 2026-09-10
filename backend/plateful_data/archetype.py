@@ -139,3 +139,109 @@ def all_archetypes() -> list[str]:
     names.update(CATEGORY_FALLBACK.values())
     names.add(DEFAULT)
     return sorted(names)
+
+
+# ── Кому своя фотография не нужна ───────────────────────────────────────
+#
+# Снимок нужен блюду. Пакетик сахара, помпа сиропа, бустер шпината и
+# бутылка Pepsi — не блюда: сеть их не фотографирует и никогда не будет,
+# а человек и так знает, как выглядит кола. Им хватит общей картинки по
+# архетипу — ровно того, ради чего этот модуль и написан.
+#
+# Правило нужно не для показа, а для счёта: такие карточки не идут в
+# знаменатель порога снимков (`pack.readiness`). В меню они остаются.
+#
+# Мерили: у Panera из 117 карточек без снимка 30 — соусы и сиропы, 20 —
+# бутылки чужих брендов; у Jamba из 65 почти все — бустеры и топпинги.
+
+#: Чужой бренд в бутылке или банке. Сеть его перепродаёт, а не готовит,
+#: и снимать чужую этикетку ей незачем — да и права на неё не её.
+_PACKAGED_BRANDS = re.compile(
+    r"\b(?:coca[- ]?cola|coke|pepsi|starry|sprite|fanta|crush|"
+    r"dr\.? pepper|pibb|mtn dew|mountain dew|sierra mist|mello yello|barq|"
+    r"7\s*up|mug root beer|schweppes|canada dry|"
+    r"dasani|aquafina|smartwater|vitaminwater|perrier|san pellegrino|"
+    r"gatorade|powerade|body ?armor|red bull|celsius|amp energy|"
+    r"(?<!cookie )monster|"
+    r"tropicana|minute maid|simply (?:orange|lemonade|apple)|dole|"
+    r"ocean spray|naked juice|izze|snapple|honest tea|gold peak|"
+    r"pure leaf|lipton|sobe|bubly|core power|hi-?c|nestea|"
+    r"bai|essentia|life ?wtr|propel)\b", re.I)
+
+#: Добавка, а не блюдо. Слово обязано стоять **в конце** имени: позиция
+#: должна добавкой быть, а не упоминать её. «Yellow Mustard» — горчица,
+#: «Honey Mustard Chicken Wrap» — врап, и разница между ними ровно в
+#: том, чем имя кончается.
+_ADD_ON_TAIL = re.compile(
+    r"\b(?:sauce|dressing|spread|aioli|mayo|mayonnaise|mustard|ketchup|"
+    r"vinaigrette|syrup|jam|jelly|preserves|creamer|sweetener|splenda|"
+    r"stevia|seasoning|boost|booster|topping|toppings|sugar|butter|"
+    r"half\s*(?:&|and)\s*half)\s*$", re.I)
+
+#: Мера подачи в хвосте: «BBQ Sauce Dipping **Cup**», «Hummus **Portion**».
+#: Снимаем её, чтобы добраться до слова, которым позиция названа.
+_PORTION_TAIL = re.compile(
+    r"[\s\-–]+(?:cups?|packets?|portions?|sides?|containers?|tubs?|pats?|"
+    r"dipping|small|large|medium|kids?)\s*$", re.I)
+
+#: Сегмент, который сам по себе говорит, что это добавка: «Agave,
+#: **Topping**», «Banana, Fresh, **Topping**». Голова тут — название
+#: продукта, а вид позиции стоит в хвосте, поэтому смотрим и туда.
+_ALONE = {"topping", "toppings", "add-on", "add on", "addon", "packet"}
+
+#: Позиция, названная одним словом-приправой: «Sugar», «Butter». Отдельно
+#: от хвостового правила: тут слово и есть всё имя целиком.
+_PLAIN = {"sugar", "honey", "butter", "salt", "pepper", "ice", "sweetener",
+          "creamer", "sour cream", "salsa", "ranch"}
+
+#: То, что сеть делает сама из чужого напитка: «Coke Float», «Coke
+#: Freezee», молочный коктейль. Это уже её блюдо, она его снимает,
+#: и чужой бренд в имени ничего не отменяет.
+_MADE_BY_CHAIN = re.compile(
+    r"\b(?:float|freeze|freezee|slush|slushie|icee|shakes?|frappe|"
+    r"frosty|blizzard|sundae|cake|pie)\b", re.I)
+
+#: Где кончается сама позиция и начинается уточнение: «Hollandaise
+#: Sauce**, for** Build Your Own Omelet», «Big Fish Sandwich **With**
+#: Tartar Sauce», «Spread **-** Hummus **-** Sandwich Portion».
+_QUALIFIER = re.compile(r",|\bfor\b|\bwith\b|\bw/|\(|\s-\s|\s–\s", re.I)
+#: Счёт в начале имени: «(30) Classic Bone-In Wings».
+_LEADING_COUNT = re.compile(r"^\s*\(?\d+\)?\s*")
+#: Канал подачи впереди имени: «**Drive Thru,** Fanta Orange, 20 fl oz».
+#: Это не позиция, а откуда её берут, — и если принять её за голову, то
+#: чужая бутылка станет блюдом Panera.
+_CHANNEL = re.compile(r"^\s*drive[\s-]*thru\s*,\s*", re.I)
+
+
+def _head(name: str) -> str:
+    """Начало имени — то, чем позиция является.
+
+    Без него правило читает упоминание соуса в составе блюда как сам
+    соус, и «Cheese Ravioli with Meat Sauce» перестаёт быть едой.
+    """
+    text = _CHANNEL.sub("", " ".join(name.split()))
+    text = _LEADING_COUNT.sub("", text)
+    head = _QUALIFIER.split(text, maxsplit=1)[0].strip(" -–")
+    return head or text
+
+
+def needs_own_photo(name: str) -> bool:
+    """Нужна ли позиции своя фотография.
+
+    Ложь — место в меню у карточки есть, а собственного снимка не будет
+    и не требуется: довольно общей картинки по архетипу. Так решено про
+    добавки и про бутылки чужих брендов: сеть их не снимает и не станет.
+    """
+    if any(part.strip().lower() in _ALONE for part in name.split(",")):
+        return False
+    if " ".join(name.split()).lower() in _PLAIN:
+        return False
+    head = _head(name)
+    if _MADE_BY_CHAIN.search(head):
+        return True
+    if _PACKAGED_BRANDS.search(head):
+        return False
+    # Мера подачи может стоять в несколько слоёв: «Sauce Dipping Cup».
+    while (trimmed := _PORTION_TAIL.sub("", head)) != head:
+        head = trimmed
+    return not _ADD_ON_TAIL.search(head)

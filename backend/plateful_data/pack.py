@@ -40,7 +40,7 @@ import zlib
 from collections import Counter
 from dataclasses import dataclass
 
-from .archetype import classify
+from .archetype import classify, needs_own_photo
 from .taxonomy import SECTION_ORDER, section
 from .variants import assign_groups
 from datetime import date
@@ -77,6 +77,13 @@ def _mode(values, fallback):
 # Порог не «всё до последней карточки»: у сети всегда найдётся напиток,
 # который она нигде не сфотографировала. Десятая часть — это то, что не
 # бросается в глаза при листании.
+#
+# **Снимки считаются по блюдам.** Пакетик сахара, помпа сиропа и бутылка
+# Pepsi — не блюда: сеть их не снимает и не станет, а человек и так знает,
+# как выглядит кола. Им довольно общей картинки по архетипу, поэтому в
+# знаменатель порога они не идут (`archetype.needs_own_photo`). Из меню
+# они при этом никуда не деваются. Свежесть — наоборот, спрашивается со
+# всех: этикетка есть у каждой позиции, включая пакетик сахара.
 PHOTO_SHARE = 0.90
 FRESH_SHARE = 0.90
 
@@ -88,6 +95,9 @@ class Readiness:
     items: int
     photos: float
     fresh: float
+    #: Из скольких карточек спрашивается снимок — блюда без добавок и
+    #: чужих бутылок. Знаменатель доли `photos`.
+    dishes: int = 0
 
     @property
     def ok(self) -> bool:
@@ -95,13 +105,15 @@ class Readiness:
 
     def __str__(self) -> str:
         return (f"{self.cards:>5} карт. ({self.items:>5} поз.)"
-                f"  снимки {self.photos:5.0%}  свежих {self.fresh:5.0%}")
+                f"  снимки {self.photos:5.0%} из {self.dishes:>4} блюд"
+                f"  свежих {self.fresh:5.0%}")
 
 
 def readiness(rows) -> dict[str, Readiness]:
     """Готовность каждой сети.
 
-    `rows` — (сеть, ключ карточки, есть снимок, свежая, снята с меню).
+    `rows` — (сеть, ключ карточки, есть снимок, свежая, снята с меню,
+    нужен ли ей свой снимок).
     Ключ карточки — группа вариантов, если позиция в ней состоит, иначе
     её собственный ключ: ровно то, что приложение показывает одной
     строкой меню.
@@ -120,23 +132,30 @@ def readiness(rows) -> dict[str, Readiness]:
     прошлое.
     """
     cards: dict[str, dict[str, list]] = {}
-    for chain, card, has_photo, fresh, off_menu in rows:
+    for chain, card, has_photo, fresh, off_menu, wants_photo in rows:
         if off_menu:
             continue
-        state = cards.setdefault(chain, {}).setdefault(card, [0, False, True])
+        state = cards.setdefault(chain, {}).setdefault(card, [0, False, True, False])
         state[0] += 1
         state[1] = state[1] or bool(has_photo)
         state[2] = state[2] and bool(fresh)
+        # Карточка — блюдо, если блюдо хоть один её вариант: у «Coke
+        # Float» и «Coke Float, Kids» группа общая, и снимок нужен ей.
+        state[3] = state[3] or bool(wants_photo)
 
     out: dict[str, Readiness] = {}
     for chain, by_card in cards.items():
         if not by_card:
             continue
-        photos = sum(1 for _, has_photo, _ in by_card.values() if has_photo)
-        fresh = sum(1 for _, _, is_fresh in by_card.values() if is_fresh)
-        items = sum(n for n, _, _ in by_card.values())
+        dishes = [card for card in by_card.values() if card[3]]
+        shot = sum(1 for _, has_photo, _, _ in dishes if has_photo)
+        fresh = sum(1 for _, _, is_fresh, _ in by_card.values() if is_fresh)
+        items = sum(n for n, _, _, _ in by_card.values())
+        # Сеть из одних добавок спрашивать не с чего — но и показывать
+        # нечего, так что доля единица, а решает свежесть.
         out[chain] = Readiness(len(by_card), items,
-                               photos / len(by_card), fresh / len(by_card))
+                               shot / len(dishes) if dishes else 1.0,
+                               fresh / len(by_card), len(dishes))
     return out
 
 
@@ -148,7 +167,8 @@ def pack_rows(built: dict):
         card = variant.get("group") or f'{item["chain"]}:{item["key"]}'
         yield (item["chain"], card, bool(item.get("photo")),
                not bool(item.get("stale", default_stale)),
-               bool(item.get("offMenu")))
+               bool(item.get("offMenu")),
+               needs_own_photo(item["name"]))
 
 
 def unready(built: dict) -> dict[str, Readiness]:
