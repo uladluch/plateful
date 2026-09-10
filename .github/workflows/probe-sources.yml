@@ -1,0 +1,40 @@
+name: probe-sources
+
+# Разведка источников снимков с американского адреса.
+#
+# Нужна отдельно от refresh-menus по двум причинам. Первая: сайты сетей
+# отдают американское меню только из США, а раннеры GitHub стоят там —
+# с машины разработчика половина сетей отвечает 403 или подсовывает
+# местную локаль. Вторая: разведка не трогает базу и не требует ни одного
+# секрета, поэтому её можно гонять свободно.
+#
+# Вывод — в логе запуска и файлом в артефактах.
+on:
+  workflow_dispatch:
+    inputs:
+      chains:
+        description: "Сети через пробел (пусто — все 96)"
+        required: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+
+      - name: Откуда смотрим
+        run: curl -s https://ipinfo.io/json | python3 -c "import json,sys; d=json.load(sys.stdin); print('выход:', d.get('country'), d.get('city'), d.get('org'))"
+
+      - name: Разведка
+        env:
+          CHAINS: ${{ inputs.chains }}
+        run: python3 backend/scripts/probe_photo_sources.py $CHAINS --json probe.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: probe
+          path: probe.json
