@@ -45,11 +45,21 @@ Supabase одновременно, роняют её предохранител�
 
 ## Где крутить
 
-Раннеры GitHub Actions стоят в США. Значит регулярному контуру география
-не мешает — VPN на Mac нужен только для ручной разведки. Первый же
-запуск должен это подтвердить: Akamai иногда режет адреса дата-центров.
-Если режет — self-hosted runner на американском VPS за пять долларов или
-этот Mac с launchd и включённым VPN. Код один и тот же.
+Раннеры GitHub Actions стоят в США — проверено 2026-09-10 запуском
+`probe-sources`: выход US Dulles (Azure), и Akamai его не режет. Оттуда
+Taco Bell отдаёт 445 снимков, Applebee's — 161, Olive Garden — 35, а с
+машины разработчика без VPN все три отвечают 403 или подсовывают местную
+локаль. Self-hosted runner не нужен; VPN на Mac — только для ручной
+разведки.
+
+Репозиторий публичный, минуты Actions бесплатны.
+
+**Что контур сейчас держит:** `SUPABASE_ACCESS_TOKEN` в секретах
+репозитория отвечает «Your account does not have the necessary
+privileges». Токен заводится в дашборде Supabase (Account → Access
+Tokens) и кладётся в Settings → Secrets репозитория — оба шага делает
+владелец проекта. До этого `refresh-menus` падает на `supabase link`, а
+`probe-sources` работает: ему секреты не нужны.
 
 ## Что защищает от порчи
 
@@ -118,6 +128,19 @@ refresh_chain.py --due --apply       обход по очереди: цифры 
 relink_photos.py --apply             после правки правила сопоставления
 readiness.py --record                кто готов, срез в readiness_runs
 ```
+
+То же самое из Actions, без машины разработчика:
+
+```
+gh workflow run probe-sources.yml -f chains="sonic arby-s"
+gh workflow run refresh-menus.yml -f chains="taco-bell" -f dry_run=true
+gh workflow run refresh-menus.yml                      # очередь + публикация auto
+```
+
+`--due` берёт только тех, у кого вышел срок (`crawl_every`: ядро 7 дней,
+хвост 30). Сразу после большого прогона очередь пуста, и запуск честно
+ничего не делает — это не поломка. Чтобы проверить контур, называйте сети
+явно.
 
 Подключить сеть на известной платформе = строка в `chains`:
 `photo_source_kind` (из `adapters/photo_sources.KINDS`), `photo_source_url`,
@@ -219,8 +242,8 @@ readiness.py --record                кто готов, срез в readiness_ru
 
 1. ~~`refresh_chain.py`: шаги из `source_kind`, обход по `crawl_queue`~~ — сделано.
 2. ~~В workflow: `relink_photos`, `readiness --record`, `--publish auto`~~ — сделано.
-3. Первый запуск руками из Actions: убедиться, что раннер отдаёт
-   Taco Bell и Applebee's (проверка географии).
+3. ~~Проверить географию на раннере~~ — сделано, см. «Где крутить».
+   Осталось обновить `SUPABASE_ACCESS_TOKEN`, и контур поедет целиком.
 4. ~~Таблица `readiness_runs`~~ — сделано.
 5. ~~Чеклист подключения новой сети~~ — выше.
 6. Идти по очереди подключения сверху вниз: Olo-сети — строками, дальше
