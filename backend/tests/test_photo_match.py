@@ -169,6 +169,61 @@ class NearMiss(unittest.TestCase):
 
 
 
+class WordsMustAgree(unittest.TestCase):
+    """Буквенное сходство пропускает подмену слова — слова её ловят."""
+
+    class Shot:
+        def __init__(self, name):
+            self.ext_key = name.lower().replace(" ", "-")
+            self.name = name
+
+    def pairs(self, catalog_name, *shots):
+        return matching.photo_pairs([self.Shot(s) for s in shots],
+                                    {"x": {"ext_key": "x", "name": catalog_name}})
+
+    def test_подмена_одного_слова_не_проходит(self):
+        """«Farmhouse Egg Sandwich» и «Maplehouse Egg Sandwich» набирают
+        0.82 по буквам — и это разные блюда."""
+        self.assertEqual(self.pairs("Farmhouse Egg Sandwich", "Maplehouse Egg Sandwich"), {})
+        self.assertEqual(self.pairs("Steamed Broccoli", "Seasoned Broccoli"), {})
+
+    def test_форма_слова_проходит(self):
+        """Множественное число, ударение, «steak/steakhouse» — одно слово."""
+        self.assertIn("x", self.pairs("Nacho Cheese Doritos Locos Taco",
+                                      "Nacho Cheese Doritos Locos Tacos"))
+        self.assertIn("x", self.pairs("Iced Caffe Americano, Venti", "Iced Caffè Americano"))
+
+    def test_сначала_согласие_по_словам_потом_буквы(self):
+        """«Pastry - Chocolate Croissant»: по буквам ближе «chocolate
+        croissant straight», но это чужое; годится «chocolate croissant»."""
+        found = self.pairs("Pastry - Chocolate Croissant",
+                           "Chocolate Croissant Straight", "Chocolate Croissant")
+        self.assertEqual(found["x"].name, "Chocolate Croissant")
+
+    def test_двойной_чизбургер_не_одинарный(self):
+        """«Double» — не форма подачи, а другое блюдо: при двух снимках
+        «Whopper» получает свой, а не «Double Whopper». (Когда у сети
+        есть только одинарный, двойной его всё же берёт — лишнее слово
+        в каталоге правило прощает намеренно, см. NearMiss.)"""
+        found = self.pairs("Whopper", "Double Whopper", "Whopper")
+        self.assertEqual(found["x"].name, "Whopper")
+        found = self.pairs("Double Whopper", "Double Whopper", "Whopper")
+        self.assertEqual(found["x"].name, "Double Whopper")
+
+    def test_из_снимков_с_одним_ключом_берётся_ближайший_по_имени(self):
+        """«Brownie» и «Kids Brownie» делят ключ — размер вычищен, — и
+        брауни для взрослых должен получить свой снимок, а не детский."""
+        found = self.pairs("Brownie", "Kids Brownie", "Brownie")
+        self.assertEqual(found["x"].name, "Brownie")
+
+    def test_мера_в_начале_не_съедает_имя(self):
+        """От «20oz Bottle Coca-Cola» после вычистки меры должно остаться
+        блюдо, а не пустая строка."""
+        self.assertEqual(matching.dish("20oz Bottle Coca-Cola®"), "coca cola")
+        self.assertEqual(matching.dish("Chocolate Shake (Large)"), "chocolate shake")
+
+
+
 class Shortenings(unittest.TestCase):
     """Этикетка перечисляет хлеб и размер, снимок — нет."""
 

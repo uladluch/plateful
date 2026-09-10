@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import difflib
 import re
+import unicodedata
 
 # Ниже этого сходства имён считаем, что позиция не найдена.
 MATCH_THRESHOLD = 0.82
@@ -42,8 +43,10 @@ _SIZE_WORDS = {"small", "medium", "large", "kids", "jr", "giant", "mini",
 # блюдо один раз, а не отдельно в обёртке и в миске. Отбрасываем только
 # при сопоставлении снимков: для цифр обёртка и миска — разные позиции с
 # разной этикеткой.
-_SERVING_SHAPES = {"regular", "wrap", "bowl", "tub", "sub", "half", "whole",
-                   "single", "double", "combo"}
+# «Single» и «double» сюда не входят: двойной чизбургер выглядит иначе,
+# чем одинарный, и пока они здесь были, «Whopper» получал снимок
+# «Double Whopper».
+_SERVING_SHAPES = {"regular", "wrap", "bowl", "tub", "sub", "half", "whole", "combo"}
 
 # Единица счёта. Блюдо отличает число, а не слово при нём: «8 ct Nuggets»
 # и «8 Nuggets» — одно и то же, и пока «ct» попадало в размер, сайт и
@@ -56,7 +59,11 @@ _SYNONYMS = {"kid": "kids", "childs": "kids", "child": "kids"}
 
 
 def normalized(name: str) -> str:
-    text = name.lower().replace("®", " ").replace("™", " ").replace("’", "'")
+    # Ударения долой: «Caffè Americano» у Starbucks и «Caffe Americano» в
+    # каталоге — одно слово, а без этого «caffè» превращалось в «caff».
+    text = unicodedata.normalize("NFKD", name)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.lower().replace("®", " ").replace("™", " ").replace("’", "'")
     text = _PAGE_SUFFIX.sub("", text)
     # Притяжательное съедаем вместе с апострофом, иначе «kid's» даёт «kid s».
     text = re.sub(r"'s\b", "s", text)
@@ -94,12 +101,28 @@ def similarity(left: str, right: str) -> float:
 # делать нельзя — там подмена размера означает выдуманное расхождение.
 
 #: Мера в названии: «16 fl oz», «(473 mL)», «2 oz», «12 inch».
+#: Хвост `[^,()]*` тут был ошибкой: он съедал всё до конца имени, и от
+#: «20oz Bottle Coca-Cola» не оставалось ничего — пустой ключ совпадал
+#: «точно» с любым другим пустым.
 _MEASURE = re.compile(
-    r"\(?\b\d+(?:\.\d+)?\s*(?:fl\s*)?(?:oz|ml|l|g|kg|lb|inch|in|cal)\b[^,()]*\)?",
+    r"\(?\b\d+(?:\.\d+)?\s*(?:fl\s*)?(?:oz|ml|l|g|kg|lb|inch|in|cal)\b\.?\)?",
     re.I)
 #: Довески подачи, которые к самому блюду отношения не имеют.
 _SERVING_WORDS = re.compile(
-    r"\b(?:with\s+ice|bottle|can|jug|group|serves\s+\d+|drive\s*-?\s*thru)\b", re.I)
+    r"\b(?:with\s+ice|bottle|can|jug|jugs|gallon|group|serves\s+\d+|"
+    r"drive\s*-?\s*thru|"
+    # «Naturally Flavored» — обязательная пометка этикетки, а не блюдо.
+    # У Panera она стоит у половины напитков, и из-за неё «Blueberry
+    # Lavender Lemonade» не сходился со своим же снимком.
+    r"naturally\s+flavored)\b", re.I)
+
+
+#: Служебные слова, которыми сеть склеивает перечисление: «Grilled
+#: Cheese **and** Tomato Soup Duet» против «Value Duet, Grilled Cheese &
+#: Creamy Tomato Soup». Амперсанд исчезает сам при вычистке знаков, а
+#: слово остаётся и штрафует верную пару. Только для снимков: цифрам
+#: перечисление важно, там имя сравнивается строже.
+_STOPWORDS = {"and", "the", "of", "a", "an"}
 
 
 def dish(name: str) -> str:
@@ -115,7 +138,8 @@ def dish(name: str) -> str:
     text = _SERVING_WORDS.sub(" ", text)
     # Пустые скобки и повисшие разделители после вычистки.
     text = re.sub(r"\(\s*\)|\s+-\s+$|,\s*$", " ", text)
-    words = [w for w in comparable(text).split() if w not in _SERVING_SHAPES]
+    words = [w for w in comparable(text).split()
+             if w not in _SERVING_SHAPES and w not in _STOPWORDS]
     return " ".join(sorted(words))
 
 
@@ -123,6 +147,29 @@ def dish(name: str) -> str:
 #: Между ним и обычным порогом лежат промахи на волосок: «Muffin —
 #: Blueberry» против «blueberry muffin paradise» — 0.78, и это одно блюдо.
 NEAR_THRESHOLD = 0.75
+
+
+#: Насколько похожи два слова, чтобы считаться одним в разном написании:
+#: «tacos/taco», «steakhouse/steak» проходят, «farmhouse/maplehouse»,
+#: «steamed/seasoned», «garlic/garden» — нет.
+WORD_ALIKE = 0.8
+
+
+def _words_agree(left: str, right: str) -> bool:
+    """У каждого слова короткого имени есть пара в длинном.
+
+    Буквенное сходство целых строк пропускает подмену одного слова:
+    «Farmhouse Egg Sandwich» и «Maplehouse Egg Sandwich» набирают 0.82,
+    а это разные блюда. Слова же врать не умеют: у «farmhouse» пары в
+    другом имени нет. Допуск на написание нужен для форм одного слова —
+    множественного числа, ударений, «steak/steakhouse».
+    """
+    a, b = left.split(), right.split()
+    if len(a) > len(b):
+        a, b = b, a
+    return bool(a) and all(
+        any(w == v or difflib.SequenceMatcher(None, w, v).ratio() >= WORD_ALIKE for v in b)
+        for w in a)
 
 
 def _covers(short: str, long: str) -> bool:
@@ -149,6 +196,12 @@ _ON_QUALIFIER = re.compile(r"\s+on\s+.*$", re.I)
 _WITH_QUALIFIER = re.compile(r"\s+(?:w/|with)\s+.*$", re.I)
 
 
+#: Чем сеть отделяет уточнение от названия: запятая у большинства,
+#: « - » у Panera («Cookie - Tulip Shaped Shortbread»).
+_SEGMENT = re.compile(r",|\s+-\s+|\s+–\s+")
+_SEGMENT_JOIN = ", "
+
+
 def shortenings(name: str) -> list[str]:
     """Имя блюда, от полного к самому короткому.
 
@@ -157,12 +210,18 @@ def shortenings(name: str) -> list[str]:
     без уточнений — до первой запятой и до «on». Годится первое, что
     совпало **точно**: укороченное имя легко спутать с чужим блюдом.
     """
-    head = name.split(",", 1)[0]
-    forms = [name, head]
+    # Не одна голова, а все начала подряд. Первый сегмент не всегда
+    # блюдо: у Panera это канал («Drive Thru, Blueberry Lavender
+    # Lemonade, 20 fl oz»), и по нему не найти ничего. Прибавляя
+    # сегменты слева направо, мы проходим и «Drive Thru», и «Drive Thru,
+    # Blueberry Lavender Lemonade» — второе и есть блюдо.
+    segments = _SEGMENT.split(name)
+    heads = [_SEGMENT_JOIN.join(segments[:n]) for n in range(1, len(segments))]
+    forms = [name, *heads]
     for cut in (_ON_QUALIFIER, _WITH_QUALIFIER):
-        forms += [cut.sub("", name), cut.sub("", head)]
+        forms += [cut.sub("", form) for form in (name, *heads)]
     # И то и другое сразу: «Latte Macchiato w/ Whole Milk, Tall».
-    forms.append(_WITH_QUALIFIER.sub("", _ON_QUALIFIER.sub("", head)))
+    forms += [_WITH_QUALIFIER.sub("", _ON_QUALIFIER.sub("", form)) for form in heads]
     return list(dict.fromkeys(d for form in forms if (d := dish(form))))
 
 
@@ -183,25 +242,42 @@ def photo_pairs(shots, stored: dict[str, dict], *,
             # Только точное совпадение: укороченное имя рискует совпасть
             # с чужим блюдом, и нестрогое сравнение тут ошибётся молча.
             if exact := by_dish.get(wanted):
-                chosen[key] = exact[0]
+                # Под одним ключом бывает несколько снимков — «Brownie»
+                # и «Kids Brownie» (размер из ключа вычищен). Берём тот,
+                # чьё имя ближе всего к имени позиции, а не первый.
+                own = normalized(record["name"])
+                chosen[key] = min(exact, key=lambda shot: (
+                    normalized(shot.name) != own,
+                    -difflib.SequenceMatcher(None, own, normalized(shot.name)).ratio()))
                 break
         if key in chosen:
             continue
-        # Точного совпадения нет — ищем ближайшее, и по самому короткому
-        # имени: у длинного лишние слова про хлеб и размер только мешают.
-        forms = shortenings(record["name"])
-        if not forms:
-            continue
-        wanted = forms[-1]
-        best_shot, best_ratio, best_name = None, 0.0, ""
-        for name, group in by_dish.items():
-            ratio = difflib.SequenceMatcher(None, wanted, name).ratio()
-            if ratio > best_ratio:
-                best_shot, best_ratio, best_name = group[0], ratio, name
-        if best_shot is None:
-            continue
-        if best_ratio >= threshold or (best_ratio >= NEAR_THRESHOLD
-                                       and _covers(wanted, best_name)):
+        # Точного совпадения нет — ищем ближайшее, и **по всем формам**
+        # имени, а не только по самой короткой. «Croque Monsieur on
+        # Croissant Toast» и слаг «croissant-croque-monsieur-toast» —
+        # одно и то же блюдо, но после отрезания «on» от него остаётся
+        # половина, и по ней сходство выходит 0.65 вместо 0.97.
+        best_shot, best_ratio, best_pair = None, 0.0, ("", "")
+        # Односложную форму в нестрогое сравнение не пускаем, **если
+        # есть длиннее**: по одному слову судить нельзя. «Cookie»
+        # набирает 0.80 с «Coke» и перебивает верную пару «cookie
+        # tulip». Но у Moe's блюда так и называются — «Homewrecker», —
+        # и там одно слово это всё имя, а не огрызок.
+        every = shortenings(record["name"])
+        forms = [f for f in every if " " in f] or every
+        for wanted in forms:
+            for name, group in by_dish.items():
+                # Сначала согласие по словам, потом сходство по буквам —
+                # не наоборот. Иначе «Pastry - Chocolate Croissant»
+                # выбирает по буквам «chocolate croissant straight»
+                # (0.85), отвергает его по словам и уходит ни с чем, хотя
+                # «chocolate croissant» (0.84) подходит по всем статьям.
+                if not _words_agree(wanted, name):
+                    continue
+                ratio = difflib.SequenceMatcher(None, wanted, name).ratio()
+                if ratio > best_ratio:
+                    best_shot, best_ratio, best_pair = group[0], ratio, (wanted, name)
+        if best_shot is not None and best_ratio >= NEAR_THRESHOLD:
             chosen[key] = best_shot
     return chosen
 

@@ -252,10 +252,15 @@ def curl_get(url: str, headers: dict[str, str], timeout: int = 45,
     # `binary` — для файлов: у PDF по первым байтам видно, файл это или
     # страница «404», отданная с кодом 200. В текстовом режиме такая
     # проверка невозможна, декодирование её уже испортило.
-    result = subprocess.run(command, capture_output=True, text=not binary)
+    result = subprocess.run(command, capture_output=True)
     if result.returncode != 0 or not result.stdout:
         return None
-    return result.stdout
+    if binary:
+        return result.stdout
+    # Не все сайты честны про кодировку: у части тире и кавычки лежат в
+    # cp1252 при объявленном UTF-8, и строгое декодирование роняло весь
+    # обход на пятьдесят четвёртой сети. Один битый символ дешевле.
+    return result.stdout.decode("utf-8", errors="replace")
 
 
 def to_number(value) -> float | None:
