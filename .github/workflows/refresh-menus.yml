@@ -7,9 +7,16 @@ on:
     - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
-      version:
-        description: "Версия пака (пусто — только обновить базу, без публикации)"
+      chains:
+        description: "Сети через пробел (пусто — кому пора по crawl_queue)"
         required: false
+      version:
+        description: "Версия пака (пусто — auto: только если готовых не убыло)"
+        required: false
+      dry_run:
+        description: "Не писать в базу — только показать план и готовность"
+        type: boolean
+        default: false
 
 env:
   SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -41,12 +48,14 @@ jobs:
       # и chains.photo_source_kind. Пак публикуется сам, если готовых сетей
       # не стало меньше, чем в прошлый раз (readiness_runs).
       - name: Обновить сети
+        env:
+          CHAINS: ${{ inputs.chains }}
+          VERSION: ${{ inputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            python3 backend/scripts/refresh_chain.py --due --apply --publish "${{ inputs.version }}"
-          else
-            python3 backend/scripts/refresh_chain.py --due --apply --publish auto
-          fi
+          set -- ${CHAINS:---due}
+          [ "$DRY_RUN" = "true" ] || set -- "$@" --apply --publish "${VERSION:-auto}"
+          python3 backend/scripts/refresh_chain.py "$@"
 
       # Отчёт видно в логе запуска: сколько блюд снято и сколько снимков есть.
       - name: Сводка
