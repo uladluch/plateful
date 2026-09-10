@@ -66,31 +66,30 @@ def main() -> int:
                   (r["chain"], r["card"], r["photo"], r["fresh"], False,
                    archetype.needs_own_photo(r["item"]))
                   for r in rows).items()]
-    scored.sort(key=lambda pair: (-pair[0].photos, -pair[0].fresh))
+    scored.sort(key=lambda pair: (not pair[0].ok, -pair[0].photos, -pair[0].fresh))
 
-    print(f"── Порог: снимки {pack.PHOTO_SHARE:.0%}, свежих {pack.FRESH_SHARE:.0%} ──")
+    print(f"── Порог: свежих {pack.FRESH_SHARE:.0%}. Снимки не держат — "
+          "показаны, чтобы видеть, за кого браться ──")
     ready = shown = 0
     for score, row in scored:
         if score.ok:
             ready += 1
-        # Безнадёжные — ни одного снимка — прячем: их сотня, и они все
-        # ждут одного и того же, источника изображений.
+        # Прячем только тех, кто и не готов, и без единого снимка:
+        # сказать про них нечего, кроме «нужен источник».
         elif not args.all and score.photos == 0:
             continue
         shown += 1
         need = []
-        if score.photos < pack.PHOTO_SHARE:
-            # Считаем от блюд: знаменатель порога снимков — они, а не
-            # все карточки меню.
-            need.append("снимков ещё "
-                        f"{int(score.dishes * pack.PHOTO_SHARE - score.dishes * score.photos) + 1}")
+        without = round(score.dishes * (1 - score.photos))
+        if without:
+            need.append(f"без снимка {without} блюд")
         if score.fresh < pack.FRESH_SHARE:
             need.append("обновить ещё "
                         f"{int(score.cards * pack.FRESH_SHARE - score.cards * score.fresh) + 1}")
         print(f"  {'✓' if score.ok else '·'} {row['slug'][:24]:24} {score}"
               f"   {', '.join(need)}")
     hidden = len(scored) - shown
-    print(f"\nГотовы: {ready}. Без единого снимка и потому скрыто: {hidden}.")
+    print(f"\nГотовы: {ready}. Не готовы и без единого снимка: {hidden}.")
     if args.record:
         snapshot = {row["slug"]: {"photos": round(score.photos, 3), "fresh": round(score.fresh, 3),
                                   "cards": score.cards, "dishes": score.dishes, "ok": score.ok}

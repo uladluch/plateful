@@ -55,21 +55,17 @@ class Threshold(unittest.TestCase):
         [score] = pack.readiness(rows("McDonald's", 100, photos=100, fresh=100)).values()
         self.assertTrue(score.ok)
 
-    def test_треть_без_снимка_ещё_допустима(self):
-        """Карточка без фотографии не врёт — она просто беднее."""
-        [score] = pack.readiness(rows("Popeyes", 100, photos=71, fresh=100)).values()
+    def test_снимки_сеть_не_держат(self):
+        """Порог по снимкам снят: карточка без фотографии не врёт."""
+        [score] = pack.readiness(rows("Popeyes", 100, photos=0, fresh=100)).values()
         self.assertTrue(score.ok)
+        self.assertEqual(score.photos, 0.0)
 
-    def test_две_трети_со_снимком_уже_нет(self):
-        [score] = pack.readiness(rows("Firehouse", 100, photos=65, fresh=100)).values()
-        self.assertFalse(score.ok)
-
-    def test_свежесть_держит_строже_снимков(self):
-        """Устаревшая цифра врёт молча, и спрос с неё другой: сеть, где
-        снимков хватает, а десятая часть цифр протухла, не едет."""
+    def test_держит_одна_свежесть(self):
+        """Устаревшая цифра врёт молча — человек считает по ней."""
         [score] = pack.readiness(rows("Chick-Fil-A", 100, photos=100, fresh=85)).values()
         self.assertFalse(score.ok)
-        [score] = pack.readiness(rows("Chick-Fil-A", 100, photos=85, fresh=100)).values()
+        [score] = pack.readiness(rows("Chick-Fil-A", 100, photos=100, fresh=90)).values()
         self.assertTrue(score.ok)
 
     def test_архив_не_учитывается(self):
@@ -92,7 +88,9 @@ class InPack(unittest.TestCase):
         return {"stale": False, "items": [
             {"chain": "McDonald's", "key": "big-mac", "name": "Big Mac",
              "photo": {"url": "a.png"}},
-            {"chain": "Panera Bread", "key": "bagel", "name": "Plain Bagel"},
+            # Снимка нет и цифры протухли: держит второе, не первое.
+            {"chain": "Panera Bread", "key": "bagel", "name": "Plain Bagel",
+             "stale": True},
         ], **kwargs}
 
     def test_неготовую_сеть_видно_в_собранном_паке(self):
@@ -102,6 +100,11 @@ class InPack(unittest.TestCase):
         """Позиция несёт `stale` только если отличается от умолчания."""
         self.assertEqual(sorted(pack.unready(self.built(stale=True))),
                          ["McDonald's", "Panera Bread"])
+
+    def test_отсутствие_снимка_сеть_не_держит(self):
+        """У бейгла снимка нет, но цифры свежие — сеть едет."""
+        self.assertEqual(list(pack.unready(self.built(items=[
+            {"chain": "Panera Bread", "key": "bagel", "name": "Plain Bagel"}]))), [])
 
     def test_группа_вариантов_склеивает_строки_пака(self):
         built = {"stale": False, "items": [

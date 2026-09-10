@@ -207,8 +207,7 @@ def main() -> int:
         return 1
 
     rows, report = ready(rows)
-    print(f"\n── Готовность сетей ── порог: снимки {pack.PHOTO_SHARE:.0%},"
-          f" свежих {pack.FRESH_SHARE:.0%}")
+    print(f"\n── Готовность сетей ── порог: свежих {pack.FRESH_SHARE:.0%}")
     for line in report[:12]:
         print(line)
     if len(report) > 12:
