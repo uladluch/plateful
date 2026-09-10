@@ -37,12 +37,15 @@ jobs:
         run: gh release download menustat-2018 -p menustat-2018.tab -D backend/data/raw
       - run: python3 backend/scripts/build_seed.py
 
+      # Кого обновлять, решает crawl_queue в базе; как — chains.source_kind
+      # и chains.photo_source_kind. Пак публикуется сам, если готовых сетей
+      # не стало меньше, чем в прошлый раз (readiness_runs).
       - name: Обновить сети
         run: |
           if [ -n "${{ inputs.version }}" ]; then
-            python3 backend/scripts/refresh_chain.py --all --publish "${{ inputs.version }}"
+            python3 backend/scripts/refresh_chain.py --due --apply --publish "${{ inputs.version }}"
           else
-            python3 backend/scripts/refresh_chain.py --all
+            python3 backend/scripts/refresh_chain.py --due --apply --publish auto
           fi
 
       # Отчёт видно в логе запуска: сколько блюд снято и сколько снимков есть.
