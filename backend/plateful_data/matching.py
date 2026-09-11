@@ -124,6 +124,11 @@ _SERVING_WORDS = re.compile(
 #: перечисление важно, там имя сравнивается строже.
 _STOPWORDS = {"and", "the", "of", "a", "an"}
 
+#: Сокращения и синонимы, которые сети пишут в меню: Chili's то «Marg», то
+#: «Margarita», и в обе стороны. Только для снимков — сверка цифр живёт
+#: на `normalized` и этих подмен не знает.
+_PHOTO_SYNONYMS = {"marg": "margarita", "margs": "margarita", "cocoa": "chocolate"}
+
 
 def dish(name: str) -> str:
     """Имя блюда без мер, подачи и размера — то, что видно на фотографии.
@@ -138,7 +143,7 @@ def dish(name: str) -> str:
     text = _SERVING_WORDS.sub(" ", text)
     # Пустые скобки и повисшие разделители после вычистки.
     text = re.sub(r"\(\s*\)|\s+-\s+$|,\s*$", " ", text)
-    words = [w for w in comparable(text).split()
+    words = [_PHOTO_SYNONYMS.get(w, w) for w in comparable(text).split()
              if w not in _SERVING_SHAPES and w not in _STOPWORDS]
     return " ".join(sorted(words))
 
@@ -164,12 +169,29 @@ def _words_agree(left: str, right: str) -> bool:
     другом имени нет. Допуск на написание нужен для форм одного слова —
     множественного числа, ударений, «steak/steakhouse».
     """
-    a, b = left.split(), right.split()
+    a, b = _joined(left.split(), right.split()), _joined(right.split(), left.split())
     if len(a) > len(b):
         a, b = b, a
     return bool(a) and all(
         any(w == v or difflib.SequenceMatcher(None, w, v).ratio() >= WORD_ALIKE for v in b)
         for w in a)
+
+
+def _joined(words: list[str], other: list[str]) -> list[str]:
+    """Слить пару слов, если слитно они — слово другого имени.
+
+    «Dragon Fruit Lemonade» и «Dragonfruit Lemonade», «Cole Slaw» и
+    «Coleslaw» — одно блюдо, написанное то раздельно, то слитно. Сливаем
+    только при точном равенстве склейки слову другого имени: подстрока
+    здесь опасна — «ham» лежит в «hamburger».
+    """
+    target = set(other)
+    words = list(words)
+    for i in range(len(words)):
+        for j in range(len(words)):
+            if i != j and words[i] and words[j] and words[i] + words[j] in target:
+                words[i], words[j] = words[i] + words[j], ""
+    return [w for w in words if w]
 
 
 def _covers(short: str, long: str) -> bool:

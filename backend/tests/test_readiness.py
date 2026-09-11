@@ -155,7 +155,8 @@ class WhatCountsAsADish(unittest.TestCase):
         for name in ("Blue Packet Sweetener", "Agave, Topping", "Sugar",
                      "Hollandaise Sauce, for Build Your Own Omelet",
                      "Spread - Hummus - Sandwich Portion", "Spinach Boost",
-                     "Diet Coke", "Pepsi, 20 oz", "1 pump of Cane Sugar Syrup"):
+                     "Diet Coke", "Pepsi, 20 oz", "1 pump of Cane Sugar Syrup",
+                     "Life Water, 20 oz"):
             with self.subTest(name):
                 self.assertFalse(archetype.needs_own_photo(name))
 

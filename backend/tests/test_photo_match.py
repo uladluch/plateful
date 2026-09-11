@@ -224,6 +224,36 @@ class WordsMustAgree(unittest.TestCase):
 
 
 
+class SpellingVariants(unittest.TestCase):
+    """Одно блюдо, написанное то раздельно, то слитно, то сокращённо."""
+
+    class Shot:
+        def __init__(self, name):
+            self.ext_key = name.lower().replace(" ", "-")
+            self.name = name
+
+    def pairs(self, catalog_name, *shots):
+        return matching.photo_pairs([self.Shot(s) for s in shots],
+                                    {"x": {"ext_key": "x", "name": catalog_name}})
+
+    def test_раздельно_и_слитно_одно_слово(self):
+        self.assertIn("x", self.pairs("Dragon Fruit Lemonade, Regular Cup", "Dragonfruit Lemonade"))
+        self.assertIn("x", self.pairs("Cole Slaw, Large", "Coleslaw"))
+
+    def test_склейка_только_точная(self):
+        """Подстрока опасна: «ham» лежит в «hamburger», а это другое блюдо."""
+        self.assertEqual(self.pairs("Ham & Cheese", "Hamburger Cheese"), {})
+
+    def test_сокращение_маргариты(self):
+        """Chili's пишет то «Marg», то «Margarita» — и в обе стороны."""
+        self.assertIn("x", self.pairs("El Nino Margarita", "El Niño Marg"))
+        self.assertIn("x", self.pairs("Presidente Marg", "Presidente Margarita"))
+
+    def test_какао_это_горячий_шоколад(self):
+        self.assertIn("x", self.pairs("Hot Cocoa, 12 fl oz", "Hot Chocolate"))
+
+
+
 class Shortenings(unittest.TestCase):
     """Этикетка перечисляет хлеб и размер, снимок — нет."""
 

@@ -166,7 +166,7 @@ _PACKAGED_BRANDS = re.compile(
     r"tropicana|minute maid|simply (?:orange|lemonade|apple)|dole|"
     r"ocean spray|naked juice|izze|snapple|honest tea|gold peak|"
     r"pure leaf|lipton|sobe|bubly|core power|hi-?c|nestea|"
-    r"bai|essentia|life ?wtr|propel|a&w|"
+    r"bai|essentia|life ?wtr|life ?water|propel|a&w|"
     # Пиво и сидр чужих пивоварен: Cantina у Taco Bell, бары Hooters,
     # Chili's и Red Robin. Сеть наливает, а не готовит.
     r"blue moon|angry orchard|modelo|corona|dos equis|michelob|bud light|"
