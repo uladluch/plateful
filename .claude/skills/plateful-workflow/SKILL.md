@@ -45,8 +45,12 @@ UI, выносить в чистые типы и покрывать напрям
 
 ```bash
 xcodebuild test -project plateful.xcodeproj -scheme plateful \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+  -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+Симулятор не прибивать к имени намертво: у `iPhone 17 Pro` на этой машине
+рантайм iOS 26.5, и Xcode 27 его не берёт вовсе. Совместимые назначения —
+`xcodebuild -project plateful.xcodeproj -scheme plateful -showdestinations`.
 
 ## Хук перед пушем
 
@@ -65,6 +69,12 @@ iOS-тесты при правках приложения, сверку сид-�
 До него единственной проверкой был CI, то есть о поломке узнавали уже
 после пуша.
 
+Симулятор для iOS-тестов хук выбирает сам — первый айфон, который
+`xcodebuild -showdestinations` назвал совместимым, — и пишет, какой. Если
+хук сказал «✗ тесты iOS», сначала смотреть `/tmp/plateful-ios-tests.log`:
+«Unable to find a device» значит, что тесты не запускались, а не упали.
+`--no-verify` в этом случае не выход — чинить выбор симулятора.
+
 ## CI
 
 - `backend-ci` — на изменения в `backend/`: собрать пак, сверить с файлом в бандле.
@@ -75,8 +85,35 @@ iOS-тесты при правках приложения, сверку сид-�
 CI уже ловил то, что локальный прогон пропускал (разное поведение повреждённых
 байтов). Красный CI — чинить сразу, не откладывая.
 
+## Публикация пака
+
+```bash
+./backend/scripts/publish_pack.sh 33
+git add plateful/Resources/seed-pack.json && git commit -m "…" && git push
+```
+
+`publish_pack.sh` собирает пак из базы, выкладывает в Storage, проверяет
+публичную ссылку по sha256, пишет `releases` и кладёт пак в бандл. Бандл —
+тот же пак, его коммитят сразу после публикации. Клиент подхватывает новый
+манифест на следующем запуске: он кэшируется 60 секунд.
+
+**Если `publish_pack.sh` в дереве изменён чужой незакоммиченной правкой** —
+не править и не прятать его, а публиковать закоммиченной версией из копии:
+
+```bash
+git show HEAD:backend/scripts/publish_pack.sh > <scratchpad>/publish.sh
+# в копии заменить строку ROOT=… на абсолютный путь к репозиторию
+bash <scratchpad>/publish.sh 33
+```
+
+Так 2026-09-11 вышел v32: в дереве лежал недоделанный шаг превью соседней
+сессии.
+
 ## Секреты
 
-`SUPABASE_ACCESS_TOKEN` — в GitHub Secrets, для `publish-pack`. Локально ничего
-не нужно: `supabase` CLI авторизован и линкован, `db query`/`storage cp`
-работают по его токену.
+`SUPABASE_ACCESS_TOKEN` — в GitHub Secrets, для `refresh-menus` и
+`publish-pack`. **2026-09-10 он отвечает «нет прав»** — новый заводит
+владелец (Supabase → Account → Access Tokens, затем Settings → Secrets and
+variables → Actions). Агент токены не заводит и в поля не вписывает.
+Локально ничего не нужно: `supabase` CLI авторизован и линкован, `db
+query`/`storage cp` работают по его токену.

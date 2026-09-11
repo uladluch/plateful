@@ -1,6 +1,6 @@
 ---
 name: plateful-vacuum
-description: Регулярный сбор данных по сетям — очередь работ, разведка сайтов, кроул по расписанию. Использовать, когда просят «собрать данные по сетям», «пропылесосить», обновить каталог, подключить новые сети или разобрать очередь crawl_queue.
+description: Регулярный сбор и поддержка базы по сетям — недельный контур refresh_chain, очередь crawl_queue, разведка сайтов, снимки блюд (реестр платформ chains.photo_source_kind, сопоставление, relink), география. Использовать, когда просят «собрать данные по сетям», «пропылесосить», «наполнить базу картинками/снимками», обновить каталог, подключить новую сеть, поправить сопоставление снимков или разобрать очередь.
 ---
 
 # Сбор данных по сетям
@@ -13,6 +13,39 @@ python3 backend/scripts/vacuum.py                      # что в очеред�
 python3 backend/scripts/vacuum.py --probe 5            # разведать 5 сетей
 python3 backend/scripts/vacuum.py --crawl 2 --apply    # обойти 2 и записать
 ```
+
+## Недельный контур — один вход
+
+```bash
+python3 backend/scripts/refresh_chain.py                  # план: кому пора и чем
+python3 backend/scripts/refresh_chain.py --due --apply    # кому пора (так крутит крон)
+python3 backend/scripts/refresh_chain.py taco-bell --apply
+python3 backend/scripts/refresh_chain.py --due --apply --publish auto
+```
+
+`refresh_chain.py` берёт очередь из `crawl_queue`, маршрут цифр — из
+`chains.source_kind` (`label_provider` → Nutritionix, бренды RBI → Sanity,
+McDonald's → снимок браузером), маршрут снимков — из
+`chains.photo_source_kind`. Дальше `relink_photos.py --apply`,
+`readiness.py --record`, и с `--publish auto` пак собирается, только если
+готовых сетей не стало меньше, чем в прошлом срезе (`readiness_runs`).
+
+По понедельникам это крутит `.github/workflows/refresh-menus.yml` на
+раннере GitHub. Ручной запуск принимает сети и сухой прогон:
+
+```bash
+gh workflow run refresh-menus.yml -f chains="taco-bell applebee-s" -f dry_run=true
+gh workflow run probe-sources.yml -f chains="sonic arby-s"   # разведка, секреты не нужны
+```
+
+`--due` берёт только тех, у кого вышел срок (`crawl_every`: ядро 7 дней,
+хвост 30). Сразу после большого прогона очередь пуста — это не поломка.
+Проверяя контур, называйте сети явно.
+
+Стратегия целиком — что меняется и как часто, чем защищены данные, что
+не автоматизируется, **состояние базы, очередь подключения оставшихся
+сетей и запаркованные с причинами** — в `backend/MAINTENANCE.md`.
+Начинать заход с него.
 
 ## Очередь решает, а не ты
 
@@ -63,6 +96,11 @@ python3 backend/scripts/vacuum.py --crawl 2 --apply    # обойти 2 и за�
 
 ## Чего ждать по правде
 
+**Цифры для 90 сетей из 96 даёт подрядчик этикетки** — Nutritionix, у
+которого сети сами выкладывают этикетку: `crawl_chain.py <сеть>
+--nutritionix --replace --apply`, память `plateful-label-provider`. Всё
+ниже — для шести сетей без страницы у подрядчика и для истории.
+
 Общий читатель (`adapters/site.py`) берёт сеть только если этикетка лежит
 в HTML. Проверка двенадцати крупнейших сетей показала, что так устроено
 меньшинство: большинство рисует меню скриптом, и в исходном HTML нет ни
@@ -92,7 +130,7 @@ python3 backend/scripts/chain_photos.py burger-king --apply
 в памяти `plateful-rbi-sanity`.
 
 Снимки перекладываются в наш бакет, а не хотлинкуются, и каждый несёт
-строку прав из `RIGHTS` в `chain_photos.py`.
+строку прав из `chains.photo_rights`.
 
 ### Снимок, снятый браузером (McDonald's)
 
@@ -148,6 +186,92 @@ python3 backend/scripts/crawl_chain.py subway --guide <адрес PDF>
 
 Приоритет — по размеру каталога и по `search_events` с `matched=false`,
 когда телеметрия появится.
+
+## Снимки: платформа — строка в базе
+
+Откуда у сети снимки, записано в `chains`: `photo_source_kind`,
+`photo_source_url`, `photo_rights`. Чтение по виду —
+`backend/plateful_data/adapters/photo_sources.KINDS`. Подключить сеть на
+известной платформе = одна строка, код не трогается.
+
+| вид | платформа | сети | что нужно для новой |
+|---|---|---|---|
+| `olo` | Olo, CDN `olo-images-live.imgix.net` | Chili's, Applebee's, Hardee's, Carl's Jr, Krystal, Papa Murphy's | адрес меню; адаптер знает четыре выкладки и меню-оглавление с разделами |
+| `sanity-products` | публичный GROQ Sanity | Krispy Kreme | адрес `https://<проект>.apicdn.sanity.io/v2021-10-21/data/query/<набор>` — проект и набор видны в разметке как `cdn.sanity.io/images/<проект>/<набор>/`; тип документа после `#`, по умолчанию `product` |
+| `sanity-rbi` | Sanity со схемой RBI | Burger King, Popeyes, Firehouse, Tim Hortons | запись в `sanity_rbi.BRANDS` |
+| `contentful-gotofoods` | flight-данные Next.js | Auntie Anne's, Jamba, McAlister's, Moe's | запись в `gotofoods.BRANDS` |
+| `wordpress-cards` | WordPress, регулярка карточки на сеть | Ruby Tuesday, Round Table, Sbarro, Five Guys | строка в `wordpress_menus.LAYOUTS` |
+| именные | своё устройство сайта | McDonald's, Panera, Starbucks, Jersey Mike's, Quiznos, Subway, Chick-fil-A, Taco Bell, Culver's, Einstein Bros, Dickey's, White Castle | свой адаптер; когда на одной платформе их двое — в платформенный |
+
+Порядок подключения новой сети:
+
+1. `probe_photo_sources.py <slug>` — платформа и сколько снимков видно;
+   с `--apply` вывод пишется в `chains.photo_probe`, и следующий заход
+   читает его, а не разведывает заново.
+2. Платформа известна — проверить, что адаптер отдаёт снимки, прямо
+   через `photo_sources.shots(...)`, без базы.
+3. **Строка в `chains` — миграцией, не прямым `update`.** Hardee's, Carl's
+   Jr и Krystal подключали прямым апдейтом, и свежая база из миграций про
+   них не знала. Новый вид — ещё и в ограничение
+   `chains_photo_source_kind_check`, список даёт `photo_sources.sql_check()`.
+4. `chain_photos.py <slug> --apply`, потом `readiness.py`.
+
+Разрешение владельца: снимки сетей можно использовать с упоминанием сети
+— откуда бы их ни брать с её сайта, CDN, пресс-комнаты или архивной копии
+сайта. Площадки доставки (Uber Eats, DoorDash) — нельзя: разрешение сети
+не покрывает их правила.
+
+## Сопоставление снимков — менять только с замером
+
+`matching.photo_pairs` мягче правила цифр: один снимок отдаётся всем
+размерам блюда. На нём держатся все снимки, и любая правка двигает сотни
+привязок сразу.
+
+1. Правку делать **в копии `matching.py` вне репозитория**, если в базе
+   идёт заливка: `chain_photos.py` перечитывает файл на каждой сети, и
+   правка посреди прогона применила бы непроверенное правило.
+2. Замерить старое против нового **по всем сетям со снимками**. Каталог —
+   из выложенного пака (`backend/data/pack-vN.json`), снимки —
+   `photo_sources.shots`, база не нужна. Смотреть три числа: пришло, ушло,
+   сменили снимок. Уходов быть не должно, сменившие — глазами.
+3. Перенести в рабочий файл, на каждый пойманный промах — тест в
+   `test_photo_match.py`, коммит.
+4. `relink_photos.py --apply` снимает привязки прежнего правила, потом
+   `chain_photos.py <сеть> --apply` по сетям с прибавкой.
+
+Правила, оплаченные ошибками (все закреплены тестами): слова обязаны
+согласоваться, а не только буквы — «Farmhouse» не «Maplehouse»; «double»
+не форма подачи; из снимков под одним ключом берётся ближайший по имени —
+«Brownie», не «Kids Brownie»; запятая, « - » и скобки — разделители
+уточнения; пара слов сливается, только если слитно она — слово другого
+имени («dragon fruit» = «dragonfruit», но «ham» не «hamburger»);
+сокращения — только для снимков («marg» → «margarita»).
+
+Чего не делать: одно правило «ищи заголовок после картинки» на все
+WordPress-сайты. У Five Guys имя стоит до снимка, и снимок уехал бы к
+следующему блюду.
+
+## База — по одной задаче
+
+Каждый скрипт с `supabase db query` заводит временную роль. Две сразу —
+срабатывает предохранитель, и база минут десять отвечает «password
+authentication failed». Заливки гнать **строго по одной**, цепочкой через
+ожидание в фоне; чтение для анализа — из пака на диске, а не из базы.
+
+## География
+
+Сайты сетей отдают американское меню только из США. Без VPN половина
+отвечает 403 или подсовывает свою локаль — Papa John's отдавал польский
+сайт. На Mac включается VPN (New York). Раннер GitHub стоит в США, и
+Akamai его не режет — проверено `probe-sources`. Но Darden (Olive Garden,
+LongHorn, Capital Grille, Yard House) и Sheetz режут адреса VPN: их
+брать только с раннера.
+
+**Чего не хватает, чтобы контур ехал сам:** `SUPABASE_ACCESS_TOKEN` в
+секретах репозитория отвечает «нет прав» (2026-09-10). Токен заводит
+владелец проекта; агент токены не заводит и в поля не вписывает. До
+этого `refresh-menus` падает на `supabase link`, а `probe-sources`
+работает — ему секреты не нужны.
 
 ## Границы
 

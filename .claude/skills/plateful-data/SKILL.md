@@ -16,8 +16,9 @@ description: Данные и бэкенд Plateful — MenuStat как seed, и�
 `supabase db push`, `supabase db query --linked -f file.sql`, `supabase migration list --linked`.
 Это основной рабочий путь, паролей и service-ключей не требует.
 
-Состояние: 7 миграций, **96 сетей и 25 366 позиций загружены**, бакет Storage `packs`
-публичный на чтение.
+Состояние на 2026-09-11: 96 сетей в базе, в проде пак **v32 — 90 сетей, 50 495
+позиций** (1,9 МБ deflate). Бакеты Storage `packs` и `photos` публичные на чтение.
+Состояние, очередь и запаркованные сети — `backend/MAINTENANCE.md`.
 
 **Производные значения материализуются в базу.** `items.section`,
 `items.variant_*` заполняет `sync_taxonomy.py` по тем же правилам, что и пак, —
@@ -34,11 +35,15 @@ Service key — только в GitHub Secrets / локальном `.env`, ни
 сайты сетей → адаптеры → нормализация → валидация → Postgres (истина)
                                                       ↓ экспорт
 сеть попадает в приложение целиком или не попадает вовсе:
-`export_pack.py` берёт только те, у кого снимки ≥90% и свежие цифры ≥90%
-живого меню (`plateful_data.pack.readiness`). Полный каталог конвейера —
-`backend/data/catalog.json`, в бандл едет опубликованный пак.
+`export_pack.py` берёт только те, у кого свежие цифры ≥90% живого меню
+(`plateful_data.pack.readiness`). **Снимки сеть не держат**: порог по ним
+снят владельцем 2026-09-10 (90 % → 70 % → ничего). Доля снимков считается
+по блюдам — `archetype.needs_own_photo` не требует снимка у добавок, соусов,
+пива и бутылок чужих брендов — и показывается, чтобы видеть, за кого
+браться. Полный каталог конвейера — `backend/data/catalog.json`, в бандл
+едет опубликованный пак.
 
-приложение ← Storage: packs/v{N}.deflate (0.56 MB) + manifest.json
+приложение ← Storage: packs/v{N}.deflate + manifest.json (v32 — 1,9 MB)
 ```
 Клиент читает только `manifest.json` и пак. Пишет только `search_events` (anon key, RLS INSERT-only).
 Seed-пак зашит в бандл — без сети и при лежащем Supabase приложение работает.
@@ -91,7 +96,12 @@ vegetarian, vegan or gluten-free».
 ## USDA не использовать
 
 `dataType=Branded` — упакованные товары с UPC, позиций меню нет. `totalHits` — OR по словам.
-`DEMO_KEY` = 10 запросов/час. Nutritionix — $299/мес, не берём и не парсим (ToS, конкурент).
+`DEMO_KEY` = 10 запросов/час.
+
+Nutritionix как API — $299/мес, не берём. **Но этикетку сетей читаем с их
+страниц у подрядчика** (`nutritionix.com/<сеть>/menu/premium`): туда сеть сама
+выкладывает свою этикетку, и это источник свежих цифр для 90 сетей из 96.
+Адаптер `adapters/nutritionix.py`, права и оговорки — память `plateful-label-provider`.
 
 ## Подключение новой сети — с разведки, не с адаптера
 
@@ -139,17 +149,17 @@ Starbucks, Taco Bell — ничего: индексы меню пустые об
 
 Сопоставление снимка с позицией — самое хрупкое место конвейера. Все правила, на
 которых матчер уже ошибался, закреплены в `backend/tests/test_photo_match.py`;
-трогать матчер только через них.
+трогать матчер только через них. Порядок правки с замером по всем сетям —
+скилл `plateful-vacuum`, раздел «Сопоставление снимков».
 
-## Источники сетей (проверено 2026-09-07)
+## Источники сетей
 
-| Сеть | Источник | Статус |
-|---|---|---|
-| Chick-fil-A | страница позиции `/menu/<slug>`, в HTML JSON `"nutrition":[{"key":"calories","value":420},…]` | ✅ работает curl'ом |
-| Taco Bell | `/food` → `__NEXT_DATA__`, 589 позиций с `calories`; макросы на лейбле позиции (хостится на nutritionix.com — использовать в крайнем случае) | ✅ |
-| Panera | 403 Akamai | Playwright или PDF-гайд |
-| McDonald's | TLS-обрыв (бот-защита); есть `dnaapp/itemDetails` JSON | Playwright с браузерными заголовками |
-| Subway, BK, Wendy's, хвост | PDF nutrition guide | pdfplumber → при кривой таблице LLM-экстракция в схему |
+Живая карта — в базе. Откуда цифры, говорит `chains.source_kind`:
+`label_provider` у 85 сетей (Nutritionix), `json_api` — Sanity у RBI и снимок
+у McDonald's, `rendered`/`blocked` — источника нет. Откуда снимки —
+`chains.photo_source_kind`. Как подключать и чем проверять — скилл
+`plateful-vacuum`; очередь оставшихся и запаркованные с причинами —
+`backend/MAINTENANCE.md`.
 
 Вежливость: 1 req/s, честный UA с контактом, robots.txt, без обхода CAPTCHA и логинов.
 Только с домена сети. Пищевые факты не защищены копирайтом (Feist), публикация обязательна (21 CFR 101.11).
@@ -285,8 +295,21 @@ zlib-контейнер: у Apple `Data.decompressed(using: .zlib)` понима
 
 ## Два пака
 
-- `build_seed.py`: MenuStat → `plateful/Resources/seed-pack.json`. Детерминирован, в бандле, CI сверяет.
+- `build_seed.py`: MenuStat → `backend/data/catalog.json` — полный каталог конвейера.
+  Детерминирован, хук `pre-push` сверяет его с пересборкой.
 - `export_pack.py --version N`: `items_export` (с overrides) → `pack-vN.deflate` для Storage.
+  Его же `publish_pack.sh` кладёт в бандл `plateful/Resources/seed-pack.json`:
+  **бандл = опубликованный пак**. После снятия порога по снимкам он вырос с 1,4
+  до 21,9 МБ — решение владельца 2026-09-11 коммитить как есть.
+
+## Превью снимков — ждут клиента
+
+Параллельная сессия готовит превью снимков (`make_photo_variants.py`,
+`DishPhotoURL.swift`, шаг в `publish_pack.sh`) — на 2026-09-11 не закоммичено.
+Нынешний клиент берёт оригинал по ссылке (`AsyncImage(url: photo.url)`), превью
+ему не нужны. Но до выпуска клиента с превью их надо сгенерировать для всех
+снимков в бакете — на пяти тысячах это часы: иначе список покажет пустые плитки.
+Про размеры и почему не `/render/` — память `plateful-photo-serving`.
 
 Проверка, что overrides доезжают: Big Mac — 540 ккал в сиде, 580 в паке из базы,
 сырая строка кроула не изменена.
