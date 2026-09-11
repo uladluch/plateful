@@ -16,8 +16,8 @@ description: Данные и бэкенд Plateful — MenuStat как seed, и�
 `supabase db push`, `supabase db query --linked -f file.sql`, `supabase migration list --linked`.
 Это основной рабочий путь, паролей и service-ключей не требует.
 
-Состояние на 2026-09-11: 96 сетей в базе, в проде пак **v32 — 90 сетей, 50 495
-позиций** (1,9 МБ deflate). Бакеты Storage `packs` и `photos` публичные на чтение.
+Состояние на 2026-09-11: 96 сетей в базе, в проде пак **v33 — 90 сетей, 50 495
+позиций** (1,9 МБ deflate), снимки у 32 сетей — 6 587 фотографий. Бакеты Storage `packs` и `photos` публичные на чтение.
 Состояние, очередь и запаркованные сети — `backend/MAINTENANCE.md`.
 
 **Производные значения материализуются в базу.** `items.section`,
