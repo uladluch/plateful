@@ -17,9 +17,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from . import (chickfila, collected, culvers, einstein_bros, gotofoods, jersey_mikes,
-               mcdonalds, olo_menu, panera, quiznos, sanity_rbi, starbucks,
-               subway_newsroom, tacobell)
+from . import (chickfila, collected, culvers, dickeys, einstein_bros, gotofoods,
+               jersey_mikes, mcdonalds, olo_menu, panera, quiznos, sanity_products,
+               sanity_rbi, starbucks, subway_newsroom, tacobell, wordpress_menus)
 
 
 @dataclass(frozen=True)
@@ -40,6 +40,8 @@ def _with_image(items) -> list:
 KINDS: dict[str, Callable[[Source], list]] = {
     "olo": lambda s: olo_menu.catalog(olo_menu.Brand(s.slug, s.name, s.url)),
     "sanity-rbi": lambda s: _with_image(sanity_rbi.fetch(sanity_rbi.BRANDS[s.slug])),
+    "sanity-products": lambda s: sanity_products.catalog(s.url, s.name),
+    "wordpress-cards": lambda s: wordpress_menus.catalog(s.slug, s.name, s.url),
     "contentful-gotofoods": lambda s: _with_image(gotofoods.catalog(gotofoods.BRANDS[s.slug])),
     "collected": lambda s: collected.catalog(s.slug, s.name, s.url),
     "mcdonalds-snapshot": lambda s: _with_image(mcdonalds.load()),
@@ -52,6 +54,7 @@ KINDS: dict[str, Callable[[Source], list]] = {
     "tacobell-nextjs": lambda s: tacobell.catalog(),
     "culvers-nextjs": lambda s: culvers.catalog(),
     "einstein-wordpress": lambda s: einstein_bros.catalog(),
+    "dickeys-json": lambda s: dickeys.catalog(),
 }
 
 

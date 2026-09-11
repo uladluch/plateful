@@ -43,6 +43,13 @@ _IMAGE = re.compile(r"https://olo-images-live\.imgix\.net/\S+?\.jpg\?[^\"'\\ ]+"
 _WIDTH = re.compile(r"[?&]w=(\d+)")
 
 _DECODER = json.JSONDecoder()
+#: Четвёртая выкладка — плитка списка у Papa Murphy's: ссылка на продукт
+#: со снимком, следом та же ссылка с именем.
+_TILE = re.compile(
+    r'<a href="(/menu/products/\d+/)"><img[^>]+src="(https://olo-images-live\.imgix\.net/[^"]+)"'
+    r'.*?<a class="body-1[^"]*" href="\1">(.*?)</a>', re.S)
+#: Страница меню, которая только перечисляет разделы, а блюда держит в них.
+_CATEGORY = re.compile(r'href="(/menu/categories/\d+/?)"')
 #: Карточка продукта в разметке: снимок, следом имя. Две выкладки:
 #: у Hardee's и Carl's Jr — `<img>` и `<h3>`, у Krystal (Nuxt) — фон
 #: `background-image` и `.item-title-text`.
@@ -108,6 +115,12 @@ def catalog(brand: Brand) -> list[Shot]:
     page = curl_get(brand.menu_url, BROWSER_HEADERS, timeout=90)
     if not page:
         raise SystemExit(f"меню {brand.name} не открылось")
+    # Меню-оглавление: у Papa Murphy's на /menu только плитки разделов, а
+    # блюда — на страницах разделов. Склеиваем их в одну страницу: читать
+    # её дальше умеют те же выкладки.
+    origin = "/".join(brand.menu_url.split("/")[:3])
+    for category in sorted(set(_CATEGORY.findall(page))):
+        page += curl_get(origin + category, BROWSER_HEADERS, timeout=90) or ""
 
     shots: list[Shot] = []
     seen: set[str] = set()
@@ -121,6 +134,14 @@ def catalog(brand: Brand) -> list[Shot]:
         # подпись снимка читалась как имя, а не как вывеска.
         if name.isupper():
             name = name.title()
+        key = slugify(name)
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        shots.append(Shot(chain=brand.name, ext_key=key, name=name,
+                          image_url=html.unescape(image), source_url=brand.menu_url))
+    for _, image, name in _TILE.findall(page):
+        name = " ".join(html.unescape(name).replace("®", " ").split())
         key = slugify(name)
         if not name or key in seen:
             continue
