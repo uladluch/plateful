@@ -166,7 +166,13 @@ _PACKAGED_BRANDS = re.compile(
     r"tropicana|minute maid|simply (?:orange|lemonade|apple)|dole|"
     r"ocean spray|naked juice|izze|snapple|honest tea|gold peak|"
     r"pure leaf|lipton|sobe|bubly|core power|hi-?c|nestea|"
-    r"bai|essentia|life ?wtr|propel)\b", re.I)
+    r"bai|essentia|life ?wtr|propel|a&w|"
+    # Пиво и сидр чужих пивоварен: Cantina у Taco Bell, бары Hooters,
+    # Chili's и Red Robin. Сеть наливает, а не готовит.
+    r"blue moon|angry orchard|modelo|corona|dos equis|michelob|bud light|"
+    r"budweiser|coors|miller lite|stella artois|heineken|pacifico|yuengling|"
+    r"guinness|sam adams|samuel adams|lagunitas|sierra nevada|goose island|"
+    r"white claw|truly hard)\b", re.I)
 
 #: Добавка, а не блюдо. Слово обязано стоять **в конце** имени: позиция
 #: должна добавкой быть, а не упоминать её. «Yellow Mustard» — горчица,
@@ -177,6 +183,15 @@ _ADD_ON_TAIL = re.compile(
     r"vinaigrette|syrup|jam|jelly|preserves|creamer|sweetener|splenda|"
     r"stevia|seasoning|boost|booster|topping|toppings|sugar|butter|"
     r"half\s*(?:&|and)\s*half)\s*$", re.I)
+
+#: Пиво по общему слову — только **последним** словом головы, как соус:
+#: «Bell's Oberon **Ale**», «Angel Island **IPA** (12 oz)» — пиво, а
+#: «**Beer** Battered Fish Tacos» и «**Beer** Cheese & Pretzels» — еда, где
+#: пиво лишь ингредиент. Корневое пиво и имбирный эль — газировки, им
+#: снимок не нужен так же; «Root Beer **Float**» ловит правило выше.
+_DRINK_TAIL = re.compile(
+    r"\b(?:beer|ale|ipa|lager|pilsner|stout|porter|cerveza|cider|seltzer|"
+    r"hefeweizen|draft|draught)\s*$", re.I)
 
 #: Мера подачи в хвосте: «BBQ Sauce Dipping **Cup**», «Hummus **Portion**».
 #: Снимаем её, чтобы добраться до слова, которым позиция названа.
@@ -244,4 +259,4 @@ def needs_own_photo(name: str) -> bool:
     # Мера подачи может стоять в несколько слоёв: «Sauce Dipping Cup».
     while (trimmed := _PORTION_TAIL.sub("", head)) != head:
         head = trimmed
-    return not _ADD_ON_TAIL.search(head)
+    return not (_ADD_ON_TAIL.search(head) or _DRINK_TAIL.search(head))

@@ -197,8 +197,10 @@ _WITH_QUALIFIER = re.compile(r"\s+(?:w/|with)\s+.*$", re.I)
 
 
 #: Чем сеть отделяет уточнение от названия: запятая у большинства,
-#: « - » у Panera («Cookie - Tulip Shaped Shortbread»).
-_SEGMENT = re.compile(r",|\s+-\s+|\s+–\s+")
+#: « - » у Panera («Cookie - Tulip Shaped Shortbread»), скобки у
+#: Applebee's («(30) Classic Bone-In Wings (no flavor or dipping sauce)»):
+#: в скобках — то же уточнение подачи, что и после запятой.
+_SEGMENT = re.compile(r",|\s+-\s+|\s+–\s+|\s*\(")
 _SEGMENT_JOIN = ", "
 
 

@@ -177,5 +177,24 @@ class WhatCountsAsADish(unittest.TestCase):
                 self.assertTrue(archetype.needs_own_photo(name))
 
 
+class BeerIsNotADish(unittest.TestCase):
+    """Пиво чужих пивоварен снимка не требует — но пиво в составе блюда
+    не делает блюдо пивом."""
+
+    def test_пиво_и_сидр_освобождены(self):
+        for name in ("Bell's Oberon Ale, 14 fl oz", "Angel Island IPA (12 oz)",
+                     "Blue Moon (Grande)", "Angry Orchard Hard Cider, 12 oz",
+                     "Beer, 6% ABV & Up, 23 oz", "Modelo Especial", "Barqs Root Beer"):
+            with self.subTest(name):
+                self.assertFalse(archetype.needs_own_photo(name))
+
+    def test_пиво_в_составе_блюда_не_освобождает(self):
+        for name in ("2 Beer Battered Fish Tacos Plato", "Beer Cheese & Pretzels",
+                     "A La Carte, Beer-Battered Onion Rings",
+                     "3 Rib Combo, Choose One Side and One Beverage, Beverage Choice Barq's Root Beer",
+                     "Barq's Root Beer Float, 16 oz", "Add On Warm Pretzels w/ Craft Beer Cheese Dipping Sauce"):
+            with self.subTest(name):
+                self.assertTrue(archetype.needs_own_photo(name))
+
 if __name__ == "__main__":
     unittest.main()
