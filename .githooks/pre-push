@@ -33,10 +33,18 @@ if grep -qE '^(plateful/|platefulTests/|plateful\.xcodeproj/)' <<<"$changed"; th
     # xcodebuild его не берёт — а хук читается как «тесты упали», хотя
     # они и не запускались. Берём первый айфон, который сам xcodebuild
     # назвал совместимым со схемой.
-    device=$(xcodebuild -project plateful.xcodeproj -scheme plateful -showdestinations 2>/dev/null \
-        | sed -n '/Destinations compatible/,/Destinations incompatible/p' \
-        | grep 'platform:iOS Simulator' | grep -o 'name:iPhone [^}]*' \
-        | sed 's/name://; s/ *$//' | head -1)
+    # Три попытки: пока другая сессия поднимает или гасит симуляторы,
+    # список назначений бывает на миг пуст, и хук отменял пуш бандла
+    # из автоматической публикации (v33, 2026-09-11).
+    device=""
+    for attempt in 1 2 3; do
+        device=$(xcodebuild -project plateful.xcodeproj -scheme plateful -showdestinations 2>/dev/null \
+            | sed -n '/Destinations compatible/,/Destinations incompatible/p' \
+            | grep 'platform:iOS Simulator' | grep -o 'name:iPhone [^}]*' \
+            | sed 's/name://; s/ *$//' | head -1)
+        [ -n "$device" ] && break
+        sleep 10
+    done
     [ -n "$device" ] || fail "нет ни одного симулятора iPhone для схемы"
     xcodebuild test -project plateful.xcodeproj -scheme plateful \
         -destination "platform=iOS Simulator,name=$device" -quiet \
