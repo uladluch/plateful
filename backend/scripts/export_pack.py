@@ -26,6 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from plateful_data import pack, variants
+from plateful_data.archetype import needs_own_photo
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "backend" / "data"
@@ -137,12 +138,12 @@ def ready(rows: list[Row]) -> tuple[list[Row], list[str]]:
     scored = pack.readiness(
         (r.chain,
          (groups.get((r.chain, r.ext_key)) or (f"{r.chain}:{r.ext_key}",))[0],
-         bool(r.photo), not r.stale, r.off_menu)
+         bool(r.photo), not r.stale, r.off_menu, needs_own_photo(r.name))
         for r in rows)
     passed = {chain for chain, score in scored.items() if score.ok}
     lines = [f"  {'✓' if chain in passed else '×'} {chain[:26]:26} {score}"
              for chain, score in sorted(scored.items(),
-                                        key=lambda kv: (-kv[1].photos, -kv[1].fresh))]
+                                        key=lambda kv: (not kv[1].ok, -kv[1].photos))]
     return [r for r in rows if r.chain in passed], lines
 
 
@@ -211,7 +212,7 @@ def main() -> int:
     for line in report[:12]:
         print(line)
     if len(report) > 12:
-        print(f"  … ещё {len(report) - 12} сетей ниже порога")
+        print(f"  … ещё {len(report) - 12} сетей")
     if not rows:
         print("Ни одна сеть не готова — публиковать нечего.", file=sys.stderr)
         return 1
