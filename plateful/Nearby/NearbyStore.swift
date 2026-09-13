@@ -55,9 +55,24 @@ final class NearbyStore: NSObject {
     /// помечены `NS_SWIFT_UI_ACTOR`), и читаем мы их тоже только там —
     /// поэтому обещание честное, а не для компилятора.
     nonisolated private struct Answer: @unchecked Sendable {
+
+        /// Что ответила карта. Три отказа — три разные вещи, и сваливать их в
+        /// одно «не ответила» нельзя: `MKLocalSearch` на «такой сети рядом
+        /// нет» не возвращает пустой список, а бросает `placemarkNotFound`.
+        /// С каталогом в 90 сетей это обычный ответ для большинства из них, и
+        /// пока он считался отказом, в лог писалось «не ответили 40», а экран
+        /// без единой нашей сети вокруг говорил бы «карта не отвечает».
+        nonisolated enum Outcome {
+            case found([MKMapItem])
+            /// Ответила: этой сети в радиусе нет.
+            case none
+            /// Попросила спрашивать реже.
+            case throttled
+            case failed
+        }
+
         let chain: String
-        /// `nil` — карта не ответила; пустой список — ответила, что нет.
-        let items: [MKMapItem]?
+        let outcome: Outcome
     }
 
     override init() {
@@ -101,6 +116,8 @@ final class NearbyStore: NSObject {
         let index = NearbyCatalog(catalog)
 
         var found: [Venue] = []
+        var none = 0
+        var throttled = 0
         var failed = 0
         // По `width` сетей за раз: результаты каждой публикуются сразу,
         // чтобы с девяноста шестью сетями экран не ждал последнюю.
@@ -114,7 +131,13 @@ final class NearbyStore: NSObject {
                 }
                 for await answer in group {
                     let chain = answer.chain
-                    guard let result = answer.items else { failed += 1; continue }
+                    let result: [MKMapItem]
+                    switch answer.outcome {
+                    case .found(let items): result = items
+                    case .none: none += 1; continue
+                    case .throttled: throttled += 1; continue
+                    case .failed: failed += 1; continue
+                    }
                     for item in result {
                         guard let place = Self.place(from: item, origin: origin),
                               let matched = index.chain(of: place.name),
@@ -135,8 +158,11 @@ final class NearbyStore: NSObject {
             state = .ready(NearbyMatch.chains(from: venues))
         }
 
-        log.info("Рядом: \(found.count) точек у \(Set(found.map(\.chain)).count) сетей из \(self.catalog.count); не ответили \(failed)")
-        if found.isEmpty, failed == catalog.count, !catalog.isEmpty {
+        log.info("Рядом: \(found.count) точек у \(Set(found.map(\.chain)).count) сетей из \(self.catalog.count); рядом нет \(none), отказ по частоте \(throttled), сбой \(failed)")
+        // «Карта не отвечает» — только если не ответила ни на один вопрос.
+        // Если на все ответила «рядом нет», это пустой список, а не сбой.
+        let answered = catalog.count - throttled - failed
+        if found.isEmpty, answered == 0, !catalog.isEmpty {
             state = .failed("The map didn't answer. Try again in a moment.")
         }
     }
@@ -156,10 +182,13 @@ final class NearbyStore: NSObject {
             including: [.restaurant, .cafe, .bakery])
         do {
             return Answer(chain: chain,
-                          items: try await MKLocalSearch(request: request).start().mapItems)
+                          outcome: .found(try await MKLocalSearch(request: request).start().mapItems))
         } catch {
-            // Чаще всего карта просит спрашивать не так часто.
-            return Answer(chain: chain, items: nil)
+            switch (error as? MKError)?.code {
+            case .placemarkNotFound: return Answer(chain: chain, outcome: .none)
+            case .loadingThrottled: return Answer(chain: chain, outcome: .throttled)
+            default: return Answer(chain: chain, outcome: .failed)
+            }
         }
     }
 
