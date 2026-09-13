@@ -17,6 +17,11 @@ struct platefulApp: App {
     /// бандла или из скачанного пака.
     @State private var menu = MenuRepository()
 
+    /// Что рядом — тоже один на приложение. Главный экран и вкладка «рядом»
+    /// раньше заводили по своему и слали карте по залпу в 90 запросов; карта
+    /// ограничивает частоту, и второй залп почти целиком получал отказ.
+    @State private var nearby = NearbyStore()
+
     /// История, сохранённые заказы и цели.
     ///
     /// Конфигурация по умолчанию идёт с `cloudKitDatabase: .automatic`: при
@@ -62,6 +67,7 @@ struct platefulApp: App {
         WindowGroup {
             RootView()
                 .environment(menu)
+                .environment(nearby)
                 .task {
                     await menu.load()
                     // Обновление — после того, как каталог уже показан:

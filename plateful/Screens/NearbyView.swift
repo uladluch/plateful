@@ -10,7 +10,9 @@ import SwiftUI
 struct NearbyView: View {
 
     @Environment(MenuRepository.self) private var menu
-    @State private var nearby = NearbyStore()
+    /// Общее на приложение: ответ, полученный главным экраном, видит и
+    /// вкладка «рядом» — без второго залпа запросов к карте.
+    @Environment(NearbyStore.self) private var nearby
     @State private var filter = MenuFilter.none
     /// Выбранная булавка. Она же открывает карточку заведения.
     @State private var selected: Venue?
@@ -243,5 +245,5 @@ struct NearbyView: View {
 }
 
 #Preview {
-    NearbyView().environment(MenuRepository.preview)
+    NearbyView().environment(MenuRepository.preview).environment(NearbyStore())
 }

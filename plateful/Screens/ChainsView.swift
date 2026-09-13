@@ -12,9 +12,9 @@ struct ChainsView: View {
     @Environment(MenuRepository.self) private var menu
     @State private var query = ""
 
-    /// Своя копия, не общая с вкладкой «Nearby»: витрина здесь — тизер,
-    /// полный список с картой и часами остаётся её работой.
-    @State private var nearby = NearbyStore()
+    /// Общее на приложение: ответ, полученный главным экраном, видит и
+    /// вкладка «рядом» — без второго залпа запросов к карте.
+    @Environment(NearbyStore.self) private var nearby
 
     var body: some View {
         NavigationStack {
@@ -201,5 +201,5 @@ struct ChainsView: View {
 }
 
 #Preview {
-    ChainsView().environment(MenuRepository.preview)
+    ChainsView().environment(MenuRepository.preview).environment(NearbyStore())
 }

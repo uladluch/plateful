@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import plateful
 
@@ -132,6 +133,45 @@ struct NearbyTests {
 
         #expect(index.chain(of: "Panda Express") == "Panda Express")
         #expect(index.chain(of: "Panda Inn") == "Panda")
+    }
+
+    // MARK: - Частота запросов к карте
+    //
+    // Карта ограничивает частоту: на 90 сетях один залп получил отказ у 48.
+
+    @Test("пока ответ идёт или свежий, второй экран не шлёт второй залп")
+    func reusesFreshSearch() {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+
+        #expect(NearbyStore.reuses(.searching, sameCatalog: true,
+                                   startedAt: now, now: now))
+        #expect(NearbyStore.reuses(.locating, sameCatalog: true,
+                                   startedAt: nil, now: now))
+        #expect(NearbyStore.reuses(.ready([]), sameCatalog: true,
+                                   startedAt: now.addingTimeInterval(-60), now: now))
+    }
+
+    @Test("устаревший ответ, другой каталог, отказ или сбой — ищем заново")
+    func searchesAgainWhenNeeded() {
+        let now = Date(timeIntervalSince1970: 1_000_000)
+        let old = now.addingTimeInterval(-(NearbyStore.freshFor + 1))
+
+        #expect(!NearbyStore.reuses(.ready([]), sameCatalog: true, startedAt: old, now: now))
+        #expect(!NearbyStore.reuses(.searching, sameCatalog: false, startedAt: now, now: now))
+        // Человек мог включить геопозицию в настройках — надо спросить снова.
+        #expect(!NearbyStore.reuses(.denied, sameCatalog: true, startedAt: now, now: now))
+        #expect(!NearbyStore.reuses(.failed("x"), sameCatalog: true, startedAt: now, now: now))
+        #expect(!NearbyStore.reuses(.idle, sameCatalog: true, startedAt: nil, now: now))
+    }
+
+    @Test("отказанные сети спрашиваются снова с паузой, и проходов конечное число")
+    func retrySchedule() {
+        #expect(NearbyStore.delay(beforePass: 0) == 0)
+        // Замер: повтор через 30 секунд получает тот же отказ.
+        #expect(NearbyStore.delay(beforePass: 1) >= 60)
+        #expect(NearbyStore.delay(beforePass: 3) == 60)
+        #expect(NearbyStore.passes > 1)
+        #expect(NearbyStore.passes <= 5)
     }
 
     @Test("расстояние показывается в единицах системы")

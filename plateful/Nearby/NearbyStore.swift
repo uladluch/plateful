@@ -16,6 +16,12 @@ import OSLog
 /// Разрешение спрашиваем в момент, когда человек сам открыл экран, — не на
 /// старте. Приложение обещает работать без онбординга, и диалог о геопозиции
 /// при первом запуске это обещание нарушал бы.
+///
+/// **Карта ограничивает частоту.** С каталогом в 90 сетей один залп
+/// получил отказ `loadingThrottled` у 48 сетей — на Таймс-сквер показывались
+/// 30 сетей из 90, и каждый раз другие. Отсюда два правила: хранилище одно
+/// на приложение (главный экран и вкладка «рядом» раньше слали по своему
+/// залпу), и отказанные сети спрашиваются снова, с паузой, пока не ответят.
 @MainActor
 @Observable
 final class NearbyStore: NSObject {
@@ -41,7 +47,47 @@ final class NearbyStore: NSObject {
     /// вопросов получили бы отказ вместо ответа.
     static let width = 4
 
+    /// Сколько раз спрашивать сети, которым карта отказала по частоте.
+    /// Замер на 90 сетях: первый проход — отказ у 48, после паузы ≥ минуты
+    /// ответили все. Хватает одного повтора; остальные два — запас на случай,
+    /// если карта в этот раз строже.
+    static let passes = 4
+
+    /// Сколько ответ считается свежим для второго экрана. За пять минут
+    /// человек не уходит из радиуса в пять километров, а второй залп в
+    /// девяносто запросов карта почти целиком отклонила бы.
+    static let freshFor: TimeInterval = 5 * 60
+
+    /// Пауза перед повтором. Окно ограничения карта не публикует, замерено:
+    /// повтор через 30 секунд получил отказ у тех же 48 сетей, через 90 от
+    /// первого прохода ответили все. Поэтому сразу минута — полминуты это
+    /// проход, потраченный на тот же отказ.
+    static func delay(beforePass pass: Int) -> TimeInterval {
+        pass < 1 ? 0 : 60
+    }
+
+    /// Можно ли отдать уже идущий или свежий ответ вместо нового поиска.
+    ///
+    /// Отказ в геопозиции и сбой — не ответ: человек мог включить геопозицию
+    /// в настройках, а сеть — вернуться, и спросить надо заново.
+    static func reuses(_ state: State, sameCatalog: Bool,
+                       startedAt: Date?, now: Date) -> Bool {
+        guard sameCatalog else { return false }
+        switch state {
+        case .locating, .searching:
+            return true
+        case .ready:
+            guard let startedAt else { return false }
+            return now.timeIntervalSince(startedAt) < freshFor
+        case .idle, .denied, .failed:
+            return false
+        }
+    }
+
     private let manager = CLLocationManager()
+    /// Когда начался последний поиск — по нему второй экран понимает, что
+    /// ответ свежий.
+    private var startedAt: Date?
     private let log = Logger(subsystem: "com.anluch.plateful", category: "nearby")
     private var catalog: [String] = []
     private var pending = false
@@ -84,6 +130,11 @@ final class NearbyStore: NSObject {
     /// Спрашивает, что рядом. Каталог передаётся снаружи: хранилище знает
     /// про карту, но не про меню.
     func find(chains: [String]) {
+        if Self.reuses(state, sameCatalog: chains == catalog,
+                       startedAt: startedAt, now: .now) {
+            log.info("Рядом: ответ уже есть или в пути — второй залп не шлю")
+            return
+        }
         catalog = chains
         pending = true
         venues = []
@@ -108,6 +159,7 @@ final class NearbyStore: NSObject {
 
     private func search(around coordinate: CLLocationCoordinate2D) async {
         state = .searching
+        startedAt = .now
         let origin = CLLocation(latitude: coordinate.latitude,
                                 longitude: coordinate.longitude)
         let region = MKCoordinateRegion(center: coordinate,
@@ -117,51 +169,70 @@ final class NearbyStore: NSObject {
 
         var found: [Venue] = []
         var none = 0
-        var throttled = 0
+        /// Ответила, но чужими заведениями: на «Firehouse Subs» в месте без
+        /// Firehouse карта отдаёт соседние сэндвичные. Без этого счётчика
+        /// сети в логе не сходились с каталогом — 70 найдено, «рядом нет 0»,
+        /// а ещё двадцать будто пропали.
+        var unmatched = 0
         var failed = 0
-        // По `width` сетей за раз: результаты каждой публикуются сразу,
-        // чтобы с девяноста шестью сетями экран не ждал последнюю.
-        var queue = catalog[...]
-        while !queue.isEmpty {
-            let batch = Array(queue.prefix(Self.width))
-            queue = queue.dropFirst(Self.width)
-            await withTaskGroup(of: Answer.self) { group in
-                for chain in batch {
-                    group.addTask { await Self.ask(chain, in: region) }
-                }
-                for await answer in group {
-                    let chain = answer.chain
-                    let result: [MKMapItem]
-                    switch answer.outcome {
-                    case .found(let items): result = items
-                    case .none: none += 1; continue
-                    case .throttled: throttled += 1; continue
-                    case .failed: failed += 1; continue
-                    }
-                    for item in result {
-                        guard let place = Self.place(from: item, origin: origin),
-                              let matched = index.chain(of: place.name),
-                              matched == chain else { continue }
-                        let venue = Venue(chain: matched, extKey: Self.key(of: item),
-                                          latitude: place.latitude,
-                                          longitude: place.longitude,
-                                          address: place.address ?? "",
-                                          phone: item.phoneNumber,
-                                          distance: place.distance)
-                        guard items[venue.id] == nil else { continue }
-                        items[venue.id] = item
-                        found.append(venue)
-                    }
-                }
+        var remaining = catalog
+
+        for pass in 0..<Self.passes {
+            if pass > 0 {
+                guard !remaining.isEmpty else { break }
+                let delay = Self.delay(beforePass: pass)
+                log.info("Отказ по частоте у \(remaining.count) сетей — повтор через \(Int(delay)) с")
+                try? await Task.sleep(for: .seconds(delay))
             }
-            venues = found.sorted { $0.distance < $1.distance }
-            state = .ready(NearbyMatch.chains(from: venues))
+
+            var throttled: [String] = []
+            // По `width` сетей за раз: результаты публикуются после каждой
+            // пачки, и экран заполняется, не дожидаясь последней сети.
+            var queue = remaining[...]
+            while !queue.isEmpty {
+                let batch = Array(queue.prefix(Self.width))
+                queue = queue.dropFirst(Self.width)
+                await withTaskGroup(of: Answer.self) { group in
+                    for chain in batch {
+                        group.addTask { await Self.ask(chain, in: region) }
+                    }
+                    for await answer in group {
+                        let chain = answer.chain
+                        let result: [MKMapItem]
+                        switch answer.outcome {
+                        case .found(let items): result = items
+                        case .none: none += 1; continue
+                        case .throttled: throttled.append(chain); continue
+                        case .failed: failed += 1; continue
+                        }
+                        for item in result {
+                            guard let place = Self.place(from: item, origin: origin),
+                                  let matched = index.chain(of: place.name),
+                                  matched == chain else { continue }
+                            let venue = Venue(chain: matched, extKey: Self.key(of: item),
+                                              latitude: place.latitude,
+                                              longitude: place.longitude,
+                                              address: place.address ?? "",
+                                              phone: item.phoneNumber,
+                                              distance: place.distance)
+                            guard items[venue.id] == nil else { continue }
+                            items[venue.id] = item
+                            found.append(venue)
+                        }
+                        if !found.contains(where: { $0.chain == chain }) { unmatched += 1 }
+                    }
+                }
+                venues = found.sorted { $0.distance < $1.distance }
+                state = .ready(NearbyMatch.chains(from: venues))
+            }
+
+            log.info("Рядом, проход \(pass + 1): \(found.count) точек у \(Set(found.map(\.chain)).count) сетей из \(self.catalog.count); рядом нет \(none), ответила чужими \(unmatched), отказ по частоте \(throttled.count), сбой \(failed)")
+            remaining = throttled
         }
 
-        log.info("Рядом: \(found.count) точек у \(Set(found.map(\.chain)).count) сетей из \(self.catalog.count); рядом нет \(none), отказ по частоте \(throttled), сбой \(failed)")
         // «Карта не отвечает» — только если не ответила ни на один вопрос.
         // Если на все ответила «рядом нет», это пустой список, а не сбой.
-        let answered = catalog.count - throttled - failed
+        let answered = catalog.count - remaining.count - failed
         if found.isEmpty, answered == 0, !catalog.isEmpty {
             state = .failed("The map didn't answer. Try again in a moment.")
         }

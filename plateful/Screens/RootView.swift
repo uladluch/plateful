@@ -27,5 +27,5 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView().environment(MenuRepository.preview)
+    RootView().environment(MenuRepository.preview).environment(NearbyStore())
 }
