@@ -50,8 +50,16 @@ struct ItemPickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $query, prompt: chain.map { "Search \($0)" } ?? "Search all chains")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                // Сравнение закрывается без выбора — это отмена. В заказ
+                // добавляют несколько блюд подряд и заканчивают — это «готово».
+                if chain == nil {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }
+                    }
+                } else {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
                 }
             }
         }
@@ -79,6 +87,8 @@ struct ItemPickerView: View {
             onPick(item)
         } label: {
             MenuItemRow(item: item, showsChain: false)
+                // Нажимается вся строка, а не только текст и снимок.
+                .contentShape(.rect)
         }
         .buttonStyle(.plain)
     }

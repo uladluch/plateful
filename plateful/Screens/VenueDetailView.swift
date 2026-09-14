@@ -6,18 +6,25 @@ import SwiftUI
 /// Данных здесь ровно столько, сколько отдаёт карта: адрес, телефон,
 /// расстояние. Часы, снимки, оценки и ценник живут в карточке места Apple —
 /// она в одном нажатии и рисуется системой, а не нами.
+///
+/// Экран получает только заведение, остальное берёт сам: объект карты — у
+/// общего `NearbyStore`, сеть и её ценовую полосу — у каталога. Иначе каждый,
+/// кто открывает карточку, собирал бы эти четыре параметра по-своему.
 struct VenueDetailView: View {
 
     let venue: Venue
+
+    @Environment(MenuRepository.self) private var menu
+    @Environment(NearbyStore.self) private var nearby
+    @State private var showsMapCard = false
+
     /// Объект карты — для её карточки места и маршрута.
-    var mapItem: MKMapItem?
+    private var mapItem: MKMapItem? { nearby.mapItem(for: venue) }
+    /// Сеть каталога — чтобы отсюда открывалось её меню.
+    private var menuChain: MenuChain? { menu.chain(named: venue.chain) }
     /// `$$` — полоса по сети, а не чек этого ресторана. Разницу проговаривает
     /// подпись под разделом, иначе цифру прочтут как обещание.
-    var priceBand: String?
-    /// Сеть каталога — чтобы отсюда открывалось её меню.
-    var menuChain: MenuChain?
-
-    @State private var showsMapCard = false
+    private var priceBand: String? { menuChain?.priceBand }
 
     var body: some View {
         List {
@@ -53,9 +60,7 @@ struct VenueDetailView: View {
 
             if let menuChain {
                 Section {
-                    NavigationLink {
-                        ChainMenuView(chain: menuChain)
-                    } label: {
+                    NavigationLink(value: Route.chain(menuChain)) {
                         Label("See the menu", systemImage: Tokens.Symbol.chain)
                     }
                 }
@@ -87,25 +92,24 @@ struct VenueDetailView: View {
 ///
 /// С булавки она приходит шитом, из списка — пушем в тот же стек, поэтому
 /// навигационную обвязку добавляет обёртка, а не сама карточка: иначе
-/// пуш вкладывал бы один `NavigationStack` в другой.
+/// пуш вкладывал бы один `NavigationStack` в другой. У стека шита — те же
+/// назначения, что у вкладок: без них меню сети, открытое отсюда, не
+/// открывало блюда.
 struct VenueDetailSheet: View {
 
     let venue: Venue
-    var mapItem: MKMapItem?
-    var priceBand: String?
-    var menuChain: MenuChain?
 
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         NavigationStack {
-            VenueDetailView(venue: venue, mapItem: mapItem,
-                            priceBand: priceBand, menuChain: menuChain)
+            VenueDetailView(venue: venue)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") { dismiss() }
                     }
                 }
+                .routeDestinations()
         }
     }
 }

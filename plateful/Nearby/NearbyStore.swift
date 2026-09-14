@@ -39,6 +39,20 @@ final class NearbyStore: NSObject {
     private(set) var state: State = .idle
     private(set) var venues: [Venue] = []
 
+    /// Решение человека о геопозиции. Экраны читают его отсюда, а не заводят
+    /// `CLLocationManager` в `body`: тот и стоил на каждый рендер, и смену
+    /// разрешения экран не видел.
+    private(set) var authorization: CLAuthorizationStatus = .notDetermined
+
+    /// Залп ещё идёт — в том числе после первой пачки, когда состояние уже
+    /// `ready`, а до многих сетей очередь не дошла.
+    private(set) var isSearching = false
+
+    /// Сети, на которые карта в этом залпе уже ответила — заведениями или
+    /// «рядом нет». По нему экран одной сети отличает «ещё не спросили» от
+    /// «спросили, пусто».
+    private(set) var answered: Set<String> = []
+
     /// Радиус поиска.
     static let radius: CLLocationDistance = 5_000
 
@@ -125,6 +139,7 @@ final class NearbyStore: NSObject {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        authorization = manager.authorizationStatus
     }
 
     /// Спрашивает, что рядом. Каталог передаётся снаружи: хранилище знает
@@ -139,6 +154,7 @@ final class NearbyStore: NSObject {
         pending = true
         venues = []
         items = [:]
+        answered = []
 
         switch manager.authorizationStatus {
         case .notDetermined:
@@ -157,8 +173,43 @@ final class NearbyStore: NSObject {
         items[venue.id]
     }
 
+    /// Заведения одной сети без геопозиции человека.
+    ///
+    /// Спросить «рядом» нечем, но саму сеть карта может найти и без региона
+    /// человека. Расстояние в таком ответе не значит ничего, поэтому
+    /// сортируем по алфавиту адреса, а не по метрам.
+    func venuesWithoutLocation(for chain: String) async -> [Venue] {
+        // Центр континентальных США — не «рядом с кем-то», а просто точка,
+        // без которой `MKLocalSearch` не примет регион.
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 39.8283, longitude: -98.5795),
+            latitudinalMeters: 4_000_000, longitudinalMeters: 4_000_000)
+        guard case .found(let found) = await Self.ask(chain, in: region).outcome else {
+            return []
+        }
+
+        let index = NearbyCatalog([chain])
+        var result: [Venue] = []
+        for item in found {
+            guard let name = item.name, index.chain(of: name) != nil else { continue }
+            let coordinate = item.placemark.coordinate
+            let venue = Venue(
+                chain: chain, extKey: Self.key(of: item),
+                latitude: coordinate.latitude, longitude: coordinate.longitude,
+                address: item.placemark.title ?? "",
+                phone: item.phoneNumber,
+                distance: 0)
+            // Карточке заведения нужен объект карты — у этих тоже.
+            items[venue.id] = item
+            result.append(venue)
+        }
+        return result.sorted { $0.address < $1.address }
+    }
+
     private func search(around coordinate: CLLocationCoordinate2D) async {
         state = .searching
+        isSearching = true
+        defer { isSearching = false }
         startedAt = .now
         let origin = CLLocation(latitude: coordinate.latitude,
                                 longitude: coordinate.longitude)
@@ -200,10 +251,10 @@ final class NearbyStore: NSObject {
                         let chain = answer.chain
                         let result: [MKMapItem]
                         switch answer.outcome {
-                        case .found(let items): result = items
-                        case .none: none += 1; continue
+                        case .found(let items): result = items; answered.insert(chain)
+                        case .none: none += 1; answered.insert(chain); continue
                         case .throttled: throttled.append(chain); continue
-                        case .failed: failed += 1; continue
+                        case .failed: failed += 1; answered.insert(chain); continue
                         }
                         for item in result {
                             guard let place = Self.place(from: item, origin: origin),
@@ -295,6 +346,7 @@ extension NearbyStore: CLLocationManagerDelegate {
         // а свой у нас и так есть. Через границу едет только статус.
         let status = manager.authorizationStatus
         Task { @MainActor in
+            authorization = status
             switch status {
             case .authorizedWhenInUse, .authorizedAlways:
                 if pending { self.manager.requestLocation() }

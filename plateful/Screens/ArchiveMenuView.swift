@@ -15,7 +15,7 @@ struct ArchiveMenuView: View {
         List {
             Section {
                 ForEach(items) { item in
-                    NavigationLink(value: item) {
+                    NavigationLink(value: Route.item(item)) {
                         MenuItemRow(item: item, showsChain: false,
                                     variants: menu.variants(of: item))
                     }

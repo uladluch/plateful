@@ -5,6 +5,8 @@ import SwiftUI
 /// всё лежит на устройстве и уезжает в iCloud вместе с остальными данными.
 struct ProfileView: View {
 
+    @Binding var path: [Route]
+
     @Environment(\.modelContext) private var context
     @Query private var stored: [UserGoals]
 
@@ -17,12 +19,12 @@ struct ProfileView: View {
     private static let proteinOptions = stride(from: 5, through: 80, by: 5).map { $0 }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Form {
                 Section {
-                    goalPicker("Calorie ceiling", selection: $calorieCeiling,
+                    goalPicker("Calorie ceiling", selection: calorieSelection,
                                options: Self.calorieOptions) { "\($0) cal" }
-                    goalPicker("Protein floor", selection: $proteinFloor,
+                    goalPicker("Protein floor", selection: proteinSelection,
                                options: Self.proteinOptions) { MenuItem.grams(Double($0)) }
                 } header: {
                     SectionTitle("Goals")
@@ -35,12 +37,13 @@ struct ProfileView: View {
                         Button("Clear goals", role: .destructive) {
                             calorieCeiling = nil
                             proteinFloor = nil
+                            persist()
                         }
                     }
                 }
 
                 Section {
-                    NavigationLink("Image credits") { PhotoCreditsView() }
+                    NavigationLink("Image credits", value: Route.photoCredits)
                 }
 
                 Section {
@@ -51,13 +54,26 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear(perform: loadGoals)
-            .onChange(of: calorieCeiling) { persist() }
-            .onChange(of: proteinFloor) { persist() }
+            .routeDestinations()
+            // Только чтение: запись идёт по выбору человека, а не на каждое
+            // появление экрана — раньше загрузка будила `onChange`, и в
+            // SwiftData писалось ровно то, что только что прочитали.
+            .task { loadGoals() }
         }
     }
 
     private var goals: UserGoals? { stored.first }
+
+    /// Цель сохраняется в момент выбора.
+    private var calorieSelection: Binding<Int?> {
+        Binding(get: { calorieCeiling },
+                set: { calorieCeiling = $0; persist() })
+    }
+
+    private var proteinSelection: Binding<Int?> {
+        Binding(get: { proteinFloor },
+                set: { proteinFloor = $0; persist() })
+    }
 
     private func goalPicker(
         _ title: String,
@@ -80,11 +96,13 @@ struct ProfileView: View {
     }
 
     private func persist() {
-        try? UserDataStore(context: context)
-            .updateGoals(calorieCeiling: calorieCeiling, proteinFloor: proteinFloor)
+        UserDataStore.attempt("Сохранение целей") {
+            try UserDataStore(context: context)
+                .updateGoals(calorieCeiling: calorieCeiling, proteinFloor: proteinFloor)
+        }
     }
 }
 
 #Preview {
-    ProfileView()
+    ProfileView(path: .constant([]))
 }

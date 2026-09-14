@@ -7,6 +7,10 @@ import SwiftUI
 /// Порядок экрана отвечает на вопрос, с которым его открывают: сперва какие
 /// сети вокруг, потом — что в них подходит под цели. Карта сверху, потому
 /// что расстояние понимают глазами, а не в метрах.
+///
+/// Своего `NavigationStack` у экрана нет: его открывают пушем из стека
+/// «Discovery», и второй стек внутри первого ломал переходы — карточка блюда,
+/// открытая отсюда, не находила назначения.
 struct NearbyView: View {
 
     @Environment(MenuRepository.self) private var menu
@@ -21,29 +25,22 @@ struct NearbyView: View {
     @Query private var goals: [UserGoals]
 
     var body: some View {
-        NavigationStack {
-            content
-                .navigationTitle("Nearby")
-                .toolbar {
-                    if case .ready = nearby.state {
-                        ToolbarItem(placement: .primaryAction) {
-                            MenuFilterMenu(filter: $filter, goals: goals.first)
-                        }
+        content
+            .navigationTitle("Nearby")
+            .toolbar {
+                if case .ready = nearby.state {
+                    ToolbarItem(placement: .primaryAction) {
+                        MenuFilterMenu(filter: $filter, goals: goals.first)
                     }
                 }
-                .sheet(item: $selected) { venue in
-                    VenueDetailSheet(venue: venue,
-                                     mapItem: nearby.mapItem(for: venue),
-                                     priceBand: chain(named: venue.chain).priceBand,
-                                     menuChain: menuChain(for: venue))
-                }
-        }
-        .task { find() }
+            }
+            .sheet(item: $selected) { VenueDetailSheet(venue: $0) }
+            .task { find() }
     }
 
     private func find() {
         guard case .ready = menu.state else { return }
-        nearby.find(chains: menu.catalog?.chains.map(\.name) ?? [])
+        nearby.find(chains: menu.chains.map(\.name))
     }
 
     @ViewBuilder
@@ -80,69 +77,38 @@ struct NearbyView: View {
                     systemImage: "mappin.slash",
                     description: Text("None of the chains in this catalogue has a restaurant around you."))
             } else {
-                list(chains)
+                // Карта над списком, а не строкой в нём: внутри `List` её
+                // перетаскивание спорило с прокруткой.
+                VStack(spacing: 0) {
+                    NearbyMap(selection: $selected)
+                        .containerRelativeFrame(.vertical) { height, _ in height * 0.3 }
+                    NearbyList(chains: chains, filter: filter)
+                }
             }
         }
     }
 
-    /// Сеть каталога по имени. Имя пришло из каталога же — оно там есть.
-    private func chain(named name: String) -> MenuChain {
-        menu.catalog?.chains.first { $0.name == name }
-            ?? MenuChain(name: name, itemCount: 0)
+    /// Расстояние через `Measurement`, чтобы мили и километры выбирала
+    /// система: приложение для США, но телефон бывает настроен иначе.
+    static func distance(_ meters: Double) -> String {
+        Measurement(value: meters, unit: UnitLength.meters)
+            .formatted(.measurement(width: .abbreviated,
+                                    usage: .road,
+                                    numberFormatStyle: .number.precision(.fractionLength(0...1))))
     }
+}
 
-    /// Сеть, чьё меню можно открыть из карточки заведения.
-    private func menuChain(for venue: Venue) -> MenuChain? {
-        menu.catalog?.chains.first { $0.name == venue.chain }
-    }
+/// Системная карта: она уже умеет масштаб, тёмную тему и жесты.
+///
+/// Булавка на каждое заведение, а не на сеть: четыре «Burger King»
+/// вокруг — это четыре разных ответа на вопрос «куда идти».
+private struct NearbyMap: View {
 
-    private func list(_ chains: [NearbyChain]) -> some View {
-        List {
-            Section {
-                map
-                    .frame(height: 220)
-                    .listRowInsets(EdgeInsets())
-            }
+    @Binding var selection: Venue?
+    @Environment(NearbyStore.self) private var nearby
 
-            Section {
-                ForEach(nearby.venues) { venue in
-                    NavigationLink {
-                        VenueDetailView(venue: venue,
-                                        mapItem: nearby.mapItem(for: venue),
-                                        priceBand: chain(named: venue.chain).priceBand,
-                                        menuChain: menuChain(for: venue))
-                    } label: {
-                        venueRow(venue)
-                    }
-                }
-            } header: {
-                SectionTitle("Restaurants around you")
-            }
-
-            Section {
-                ForEach(chains) { found in
-                    NavigationLink {
-                        ChainMenuView(chain: chain(named: found.chain))
-                    } label: {
-                        row(found)
-                    }
-                }
-            } header: {
-                SectionTitle("Chains around you")
-            }
-
-            if filter.isNarrowing {
-                matching(chains)
-            }
-        }
-    }
-
-    /// Системная карта: она уже умеет масштаб, тёмную тему и жесты.
-    ///
-    /// Булавка на каждое заведение, а не на сеть: четыре «Burger King»
-    /// вокруг — это четыре разных ответа на вопрос «куда идти».
-    private var map: some View {
-        Map(selection: $selected) {
+    var body: some View {
+        Map(selection: $selection) {
             UserAnnotation()
             ForEach(nearby.venues) { venue in
                 Marker(venue.chain, systemImage: Tokens.Symbol.chain,
@@ -153,13 +119,58 @@ struct NearbyView: View {
         }
         .mapControls { MapUserLocationButton() }
     }
+}
 
-    /// Строка заведения. Снимок слева — единственное, чем два McDonald's
-    /// в четырёх кварталах друг от друга различаются с одного взгляда:
-    /// имя у них одно, а расстояние читается цифрой, а не узнаётся.
-    private func venueRow(_ venue: Venue) -> some View {
+private struct NearbyList: View {
+
+    let chains: [NearbyChain]
+    let filter: MenuFilter
+
+    @Environment(MenuRepository.self) private var menu
+    @Environment(NearbyStore.self) private var nearby
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(nearby.venues) { venue in
+                    NavigationLink(value: Route.venue(venue)) {
+                        NearbyVenueRow(venue: venue)
+                    }
+                }
+            } header: {
+                SectionTitle("Restaurants around you")
+            }
+
+            Section {
+                ForEach(chains) { found in
+                    // Имя пришло из каталога же — сеть там есть.
+                    if let chain = menu.chain(named: found.chain) {
+                        NavigationLink(value: Route.chain(chain)) {
+                            NearbyChainRow(found: found, priceBand: chain.priceBand)
+                        }
+                    }
+                }
+            } header: {
+                SectionTitle("Chains around you")
+            }
+
+            if filter.isNarrowing {
+                FitsGoalsSection(chains: chains, filter: filter)
+            }
+        }
+    }
+}
+
+/// Строка заведения. Снимок слева — единственное, чем два McDonald's
+/// в четырёх кварталах друг от друга различаются с одного взгляда:
+/// имя у них одно, а расстояние читается цифрой, а не узнаётся.
+private struct NearbyVenueRow: View {
+
+    let venue: Venue
+
+    var body: some View {
         LabeledContent {
-            Text(Self.distance(venue.distance))
+            Text(NearbyView.distance(venue.distance))
                 .monospacedDigit()
                 .foregroundStyle(Tokens.Color.textSecondary)
         } label: {
@@ -176,10 +187,16 @@ struct NearbyView: View {
             }
         }
     }
+}
 
-    private func row(_ found: NearbyChain) -> some View {
+private struct NearbyChainRow: View {
+
+    let found: NearbyChain
+    let priceBand: String?
+
+    var body: some View {
         LabeledContent {
-            Text(Self.distance(found.nearest.distance))
+            Text(NearbyView.distance(found.nearest.distance))
                 .monospacedDigit()
                 .foregroundStyle(Tokens.Color.textSecondary)
         } label: {
@@ -188,12 +205,12 @@ struct NearbyView: View {
                 VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
                     HStack(spacing: Tokens.Spacing.xs) {
                         Text(found.chain)
-                        if let band = chain(named: found.chain).priceBand {
-                            Text(band)
+                        if let priceBand {
+                            Text(priceBand)
                                 .foregroundStyle(Tokens.Color.textSecondary)
                         }
                     }
-                    Text(subtitle(for: found))
+                    Text(subtitle)
                         .font(.caption)
                         .foregroundStyle(Tokens.Color.textSecondary)
                 }
@@ -201,20 +218,29 @@ struct NearbyView: View {
         }
     }
 
-    private func subtitle(for found: NearbyChain) -> String {
+    private var subtitle: String {
         let address = found.nearest.address
         guard found.venues > 1 else { return address }
         return address.isEmpty
             ? "\(found.venues) nearby"
             : "\(address) · \(found.venues) nearby"
     }
+}
 
-    /// Блюда под цель — из того, что рядом, а не из всего каталога.
-    @ViewBuilder
-    private func matching(_ chains: [NearbyChain]) -> some View {
-        let items = filter.apply(to: chains.flatMap {
-            menu.catalog?.items(in: $0.chain) ?? []
-        })
+/// Блюда под цель — из того, что рядом, а не из всего каталога.
+///
+/// Отдельным видом: подборка — проход по меню всех сетей вокруг, и считать
+/// его стоит, только когда поменялись сами сети или фильтр, а не на выбор
+/// булавки.
+private struct FitsGoalsSection: View {
+
+    let chains: [NearbyChain]
+    let filter: MenuFilter
+
+    @Environment(MenuRepository.self) private var menu
+
+    var body: some View {
+        let items = filter.apply(to: chains.flatMap { menu.items(in: $0.chain) })
 
         Section {
             if items.isEmpty {
@@ -222,9 +248,7 @@ struct NearbyView: View {
                     .foregroundStyle(Tokens.Color.textSecondary)
             } else {
                 ForEach(items.prefix(30)) { item in
-                    NavigationLink {
-                        ItemDetailView(item: item)
-                    } label: {
+                    NavigationLink(value: Route.item(item)) {
                         MenuItemRow(item: item, showsChain: true)
                     }
                 }
@@ -233,17 +257,12 @@ struct NearbyView: View {
             SectionTitle("Fits your goals nearby")
         }
     }
-
-    /// Расстояние через `Measurement`, чтобы мили и километры выбирала
-    /// система: приложение для США, но телефон бывает настроен иначе.
-    static func distance(_ meters: Double) -> String {
-        Measurement(value: meters, unit: UnitLength.meters)
-            .formatted(.measurement(width: .abbreviated,
-                                    usage: .road,
-                                    numberFormatStyle: .number.precision(.fractionLength(0...1))))
-    }
 }
 
 #Preview {
-    NearbyView().environment(MenuRepository.preview).environment(NearbyStore())
+    NavigationStack {
+        NearbyView().routeDestinations()
+    }
+    .environment(MenuRepository.preview)
+    .environment(NearbyStore())
 }

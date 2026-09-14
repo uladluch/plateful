@@ -4,6 +4,8 @@ import SwiftUI
 /// Сохранённые заказы — «моё обычное» по сетям.
 struct SavedOrdersView: View {
 
+    @Binding var path: [Route]
+
     @Environment(MenuRepository.self) private var menu
     @Environment(\.modelContext) private var context
 
@@ -11,7 +13,7 @@ struct SavedOrdersView: View {
     private var orders: [SavedOrder]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if orders.isEmpty {
                     ContentUnavailableView(
@@ -21,7 +23,7 @@ struct SavedOrdersView: View {
                 } else {
                     List {
                         ForEach(orders) { order in
-                            NavigationLink(value: order) {
+                            NavigationLink(value: Route.savedOrder(order.persistentModelID)) {
                                 SavedOrderRow(order: order, catalog: menu.catalog)
                             }
                         }
@@ -34,16 +36,14 @@ struct SavedOrdersView: View {
             // На стабильном Group, а не на List внутри if/else: назначение,
             // объявленное в условной ветке, однажды теряется при повторном
             // рендере, и вторая попытка открыть заказ перестаёт работать.
-            .navigationDestination(for: SavedOrder.self) {
-                SavedOrderDetailView(saved: $0)
-            }
+            .routeDestinations()
         }
     }
 
     private func delete(at offsets: IndexSet) {
         let store = UserDataStore(context: context)
         for index in offsets {
-            try? store.delete(orders[index])
+            UserDataStore.attempt("Удаление заказа") { try store.delete(orders[index]) }
         }
     }
 }
@@ -73,85 +73,107 @@ private struct SavedOrderRow: View {
 }
 
 /// Разбор сохранённого заказа по текущему каталогу.
-private struct SavedOrderDetailView: View {
+///
+/// Заказ приходит ссылкой и читается запросом, а не моделью из пути: пока
+/// экран открыт, заказ могут удалить свайпом или правкой из iCloud, и
+/// удалённая модель в пути показала бы мусор.
+struct SavedOrderDetailView: View {
 
-    let saved: SavedOrder
     @Environment(MenuRepository.self) private var menu
+    @Query private var matches: [SavedOrder]
+
+    init(id: PersistentIdentifier) {
+        _matches = Query(filter: #Predicate<SavedOrder> { $0.persistentModelID == id })
+    }
 
     var body: some View {
         Group {
-            if let catalog = menu.catalog {
-                let resolved = ResolvedOrder(saved: saved, catalog: catalog)
-                List {
-                    Section {
-                        LabeledContent("Calories") {
-                            Text(resolved.order.totals.kcal
-                                .formatted(.number.precision(.fractionLength(0))))
-                                .monospacedDigit()
-                        }
-                        LabeledContent("Protein") {
-                            Text(MenuItem.grams(resolved.order.totals.protein)).monospacedDigit()
-                        }
-                        LabeledContent("Carbs") {
-                            Text(MenuItem.grams(resolved.order.totals.carbs)).monospacedDigit()
-                        }
-                        LabeledContent("Fat") {
-                            Text(MenuItem.grams(resolved.order.totals.fat)).monospacedDigit()
-                        }
-                    } header: {
-                        SectionTitle("Total")
-                    }
+            if let saved = matches.first {
+                if let catalog = menu.catalog {
+                    OrderBreakdown(resolved: ResolvedOrder(saved: saved, catalog: catalog))
+                } else {
+                    ProgressView()
+                }
+            } else {
+                ContentUnavailableView("Order deleted", systemImage: "bookmark.slash")
+            }
+        }
+        .navigationTitle(matches.first?.title ?? "")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
 
-                    Section {
-                        ForEach(resolved.order.lines) { line in
-                            NavigationLink(value: line.item) {
-                                LabeledContent {
-                                    Text("\(line.quantity)×").monospacedDigit()
-                                } label: {
-                                    Text(line.item.name)
-                                }
-                            }
-                        }
-                    } header: {
-                        SectionTitle("Items")
-                    }
+private struct OrderBreakdown: View {
 
-                    // Блюдо ещё в каталоге, но сеть его больше не продаёт.
-                    let archived = resolved.order.lines.filter(\.item.isOffMenu)
-                    if !archived.isEmpty {
-                        Section {
-                            ForEach(archived) { line in
-                                Label(line.item.name, systemImage: Tokens.Symbol.stale)
-                                    .foregroundStyle(Tokens.Color.staleWarning)
-                            }
-                        } header: {
-                            SectionTitle("No longer on the menu")
-                        } footer: {
-                            Text("Still counted in the total, but you may not be able to order them.")
-                        }
-                    }
+    let resolved: ResolvedOrder
 
-                    // Исчезнувшие позиции называем прямо: молчаливый недосчёт
-                    // калорий — ровно та претензия, за которую бьют конкурентов.
-                    if resolved.hasMissing {
-                        Section {
-                            ForEach(resolved.missing, id: \.self) { name in
-                                Label(name, systemImage: Tokens.Symbol.failure)
-                                    .foregroundStyle(Tokens.Color.staleWarning)
-                            }
-                        } header: {
-                            SectionTitle("No longer on the menu")
-                        } footer: {
-                            Text("These are not counted in the total.")
+    var body: some View {
+        let archived = resolved.order.lines.filter(\.item.isOffMenu)
+
+        List {
+            Section {
+                LabeledContent("Calories") {
+                    Text(resolved.order.totals.kcal
+                        .formatted(.number.precision(.fractionLength(0))))
+                        .monospacedDigit()
+                }
+                LabeledContent("Protein") {
+                    Text(MenuItem.grams(resolved.order.totals.protein)).monospacedDigit()
+                }
+                LabeledContent("Carbs") {
+                    Text(MenuItem.grams(resolved.order.totals.carbs)).monospacedDigit()
+                }
+                LabeledContent("Fat") {
+                    Text(MenuItem.grams(resolved.order.totals.fat)).monospacedDigit()
+                }
+            } header: {
+                SectionTitle("Total")
+            }
+
+            Section {
+                ForEach(resolved.order.lines) { line in
+                    NavigationLink(value: Route.item(line.item)) {
+                        LabeledContent {
+                            Text("\(line.quantity)×").monospacedDigit()
+                        } label: {
+                            Text(line.item.name)
                         }
                     }
                 }
-            } else {
-                ProgressView()
+            } header: {
+                SectionTitle("Items")
+            }
+
+            // Блюдо ещё в каталоге, но сеть его больше не продаёт.
+            if !archived.isEmpty {
+                Section {
+                    ForEach(archived) { line in
+                        Label(line.item.name, systemImage: Tokens.Symbol.stale)
+                            .foregroundStyle(Tokens.Color.staleWarning)
+                    }
+                } header: {
+                    SectionTitle("No longer on the menu")
+                } footer: {
+                    Text("Still counted in the total, but you may not be able to order them.")
+                }
+            }
+
+            // Исчезнувшие позиции называем прямо: молчаливый недосчёт
+            // калорий — ровно та претензия, за которую бьют конкурентов.
+            if resolved.hasMissing {
+                Section {
+                    // По месту в списке, а не по имени: два одинаковых
+                    // исчезнувших блюда в заказе иначе делили бы одну строку.
+                    ForEach(Array(resolved.missing.enumerated()), id: \.offset) { _, name in
+                        Label(name, systemImage: Tokens.Symbol.failure)
+                            .foregroundStyle(Tokens.Color.staleWarning)
+                    }
+                } header: {
+                    SectionTitle("No longer on the menu")
+                } footer: {
+                    Text("These are not counted in the total.")
+                }
             }
         }
-        .navigationTitle(saved.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(for: MenuItem.self) { ItemDetailView(item: $0) }
     }
 }
