@@ -94,11 +94,12 @@ nonisolated extension MenuCatalog {
         // Газировка почти всегда дешевле по калориям, чем еда, и заняла бы
         // подборку целиком — а «меньше калорий» здесь про то, что съесть,
         // а не про то, что выпить. Она не исчезает, а уходит в конец ряда.
-        let lessCalories = items.sorted {
-            let left = ($0.isSoda ? 1 : 0, $0.kcal, $0.name)
-            let right = ($1.isSoda ? 1 : 0, $1.kcal, $1.name)
-            return left < right
-        }
+        // Признак газировки считается один раз на позицию, а не в
+        // компараторе: там он нормализовал имя дважды на каждое сравнение.
+        let lessCalories = items
+            .map { (item: $0, soda: $0.isSoda ? 1 : 0) }
+            .sorted { ($0.soda, $0.item.kcal, $0.item.name) < ($1.soda, $1.item.kcal, $1.item.name) }
+            .map(\.item)
 
         return [
             shelf("High Protein", highProtein),

@@ -109,6 +109,15 @@ struct MenuCatalogTests {
         #expect(Self.sample.search("a", limit: 2).count <= 2)
     }
 
+    /// Экраны «рядом» и карточка заведения ищут сеть по имени от карты;
+    /// незнакомое имя — не наша сеть, а не пустая заглушка.
+    @Test("сеть находится по имени, незнакомое имя — нет")
+    func findsChainByName() {
+        #expect(Self.sample.chain(named: "Wendy's")?.itemCount == 1)
+        #expect(Self.sample.chain(named: "McDonald's")?.itemCount == 3)
+        #expect(Self.sample.chain(named: "Burger King") == nil)
+    }
+
     @Test("позиции сети отдаются целиком")
     func listsChainItems() {
         #expect(Self.sample.items(in: "McDonald's").count == 3)

@@ -19,6 +19,7 @@ nonisolated struct MenuCatalog: Sendable {
     let chains: [MenuChain]
     let items: [MenuItem]
 
+    private let chainsByName: [String: MenuChain]
     private let index: TextIndex
     private let chainItems: [String: [Int32]]
     private let variantGroups: [MenuItem.VariantGroupID: [Int32]]
@@ -83,6 +84,14 @@ nonisolated struct MenuCatalog: Sendable {
             MenuChain(name: $0.name, itemCount: $0.itemCount,
                       priceTier: $0.priceTier)
         }
+        self.chainsByName = Dictionary(
+            chains.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// Сеть по имени. Словарь, а не проход по списку: имя сети ищут строки
+    /// «рядом» и карточки заведений, по несколько раз на рендер.
+    func chain(named name: String) -> MenuChain? {
+        chainsByName[name]
     }
 
     /// Позиции одной сети, в порядке пака (по названию).

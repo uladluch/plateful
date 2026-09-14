@@ -49,7 +49,7 @@ final class MenuRepository {
 
     /// Сеть каталога по имени — тому самому, что публикует `venues_near`.
     func chain(named name: String) -> MenuChain? {
-        catalog?.chains.first { $0.name == name }
+        catalog?.chain(named: name)
     }
 
     /// Разбор пака идёт вне главного потока: это мегабайты JSON, на главном
