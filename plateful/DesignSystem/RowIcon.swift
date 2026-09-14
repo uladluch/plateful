@@ -21,6 +21,9 @@ struct RowIcon: View {
             .font(.footnote)
             .fontWeight(.bold)
             .foregroundStyle(Tokens.Color.rowIconGlyph)
+            // Подложка фиксированного размера: дальше этой ступени символ
+            // вылезает за её край.
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
             .frame(width: size, height: size)
             .background(tint, in: .rect(cornerRadius: size * 0.28))
             .accessibilityHidden(true)

@@ -11,14 +11,7 @@ import SwiftUI
 /// строку в списке за долю секунды — и ничего не изображают.
 nonisolated enum ChainMark {
 
-    /// Палитра только из системных цветов: тёмная тема и режимы контраста
-    /// достаются бесплатно.
-    static let palette: [Color] = [
-        Color(.systemBlue), Color(.systemGreen), Color(.systemOrange),
-        Color(.systemPurple), Color(.systemTeal), Color(.systemIndigo),
-        Color(.systemPink), Color(.systemBrown), Color(.systemRed),
-        Color(.systemMint), Color(.systemCyan),
-    ]
+    static var palette: [Color] { Tokens.ChainMarkTint.palette }
 
     /// Инициалы: до двух букв.
     ///
@@ -76,9 +69,19 @@ struct ChainMarkView: View {
     /// Префикс имён в каталоге ассетов: `logo-mcdonald-s`, `logo-subway`…
     static let logoPrefix = "logo-"
 
+    /// Есть ли в бандле логотип — по имени ассета.
+    ///
+    /// `UIImage(named:)` — поход в каталог ассетов с загрузкой картинки, а
+    /// знак стоит в каждой строке и карточке и спрашивался на каждый рендер.
+    /// Ответ за жизнь процесса не меняется.
+    private static var bundledLogos: [String: Bool] = [:]
+
     private var logoName: String? {
         let name = Self.logoPrefix + ChainMark.slug(for: chain)
-        return UIImage(named: name) == nil ? nil : name
+        if let known = Self.bundledLogos[name] { return known ? name : nil }
+        let exists = UIImage(named: name) != nil
+        Self.bundledLogos[name] = exists
+        return exists ? name : nil
     }
 
     var body: some View {
@@ -89,12 +92,15 @@ struct ChainMarkView: View {
                     .scaledToFit()
                     .padding(size * 0.1)
                     .frame(width: size, height: size)
-                    .background(Color(.secondarySystemFill), in: .circle)
+                    .background(Tokens.ChainMarkTint.logoBackground, in: .circle)
             } else {
                 Text(ChainMark.initials(for: chain))
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Tokens.Color.rowIconGlyph)
+                    // Круг фиксированного размера, а буквы растут со шрифтом:
+                    // дальше этой ступени они вылезают за подложку.
+                    .dynamicTypeSize(...DynamicTypeSize.xxLarge)
                     .frame(width: size, height: size)
                     .background(ChainMark.color(for: chain), in: .circle)
             }

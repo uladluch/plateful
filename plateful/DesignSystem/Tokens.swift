@@ -73,9 +73,27 @@ enum Tokens {
         static let seasonal = SwiftUI.Color(.systemPurple)
     }
 
+    /// Палитра значков сетей без логотипа.
+    ///
+    /// Только системные цвета: тёмная тема и режимы контраста достаются
+    /// бесплатно. Мятного и голубого нет: белые инициалы на них не читаются.
+    /// `nonisolated` — палитру спрашивает чистая функция цвета по имени.
+    nonisolated enum ChainMarkTint {
+        static let palette: [SwiftUI.Color] = [
+            SwiftUI.Color(.systemBlue), SwiftUI.Color(.systemGreen), SwiftUI.Color(.systemOrange),
+            SwiftUI.Color(.systemPurple), SwiftUI.Color(.systemTeal), SwiftUI.Color(.systemIndigo),
+            SwiftUI.Color(.systemPink), SwiftUI.Color(.systemBrown), SwiftUI.Color(.systemRed),
+        ]
+        /// Подложка логотипа.
+        static let logoBackground = SwiftUI.Color(.secondarySystemFill)
+    }
+
     enum Spacing {
         static let xs: CGFloat = 4
         static let s: CGFloat = 8
+        /// Внутренний отступ карточек — один на все: карточки сети, блюда,
+        /// заведения и приглашения «рядом» раньше жили с 8 и 16 вперемешку.
+        static let card: CGFloat = 12
         static let m: CGFloat = 16
         static let l: CGFloat = 24
     }

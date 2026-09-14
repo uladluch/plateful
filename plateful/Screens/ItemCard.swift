@@ -19,18 +19,21 @@ struct ItemCard: View {
     private var calories: String { isGroup ? variants.calorieRangeText : item.calorieText }
     private var protein: String { isGroup ? variants.proteinRangeText : item.proteinText }
 
-    static let width: CGFloat = 140
+    /// Растёт со шрифтом: при крупном тексте цифры в карточку фиксированной
+    /// ширины не влезали.
+    @ScaledMetric(relativeTo: .subheadline) private var width: CGFloat = 140
 
     var body: some View {
         VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
-            DishImage(item: item, size: Self.width)
+            DishImage(item: item, size: width)
 
+            // Место под две строки держит сам текст, а не высота в точках:
+            // та обрезала название при крупном шрифте.
             Text(title)
                 .font(.subheadline)
-                .fontWeight(.medium)
+                .fontWeight(.semibold)
                 .foregroundStyle(Tokens.Color.textPrimary)
-                .lineLimit(2)
-                .frame(height: 36, alignment: .top)
+                .lineLimit(2, reservesSpace: true)
 
             HStack(spacing: Tokens.Spacing.xs) {
                 Text(calories)
@@ -45,8 +48,8 @@ struct ItemCard: View {
             }
             .font(.caption)
         }
-        .frame(width: Self.width, alignment: .leading)
-        .padding(Tokens.Spacing.s)
+        .frame(width: width, alignment: .leading)
+        .padding(Tokens.Spacing.card)
         .background(Tokens.Color.cardBackground, in: .rect(cornerRadius: Tokens.Radius.card))
     }
 }

@@ -22,7 +22,8 @@ struct VenueCard: View {
     var showsDistance: Bool = true
     var layout: Layout = .tile
 
-    static let tileWidth: CGFloat = 160
+    /// Растёт со шрифтом: адрес при крупном тексте не влезал в плитку.
+    @ScaledMetric(relativeTo: .subheadline) private var tileWidth: CGFloat = 160
 
     var body: some View {
         switch layout {
@@ -33,12 +34,12 @@ struct VenueCard: View {
 
     private var tile: some View {
         VStack(alignment: .leading, spacing: Tokens.Spacing.xs) {
-            VenueImage(venue: venue, chain: venue.chain, side: Self.tileWidth)
+            VenueImage(venue: venue, chain: venue.chain, side: tileWidth)
             addressText
             distanceText
         }
-        .frame(width: Self.tileWidth, alignment: .leading)
-        .padding(Tokens.Spacing.s)
+        .frame(width: tileWidth, alignment: .leading)
+        .padding(Tokens.Spacing.card)
         .background(Tokens.Color.cardBackground, in: .rect(cornerRadius: Tokens.Radius.card))
     }
 
@@ -52,7 +53,7 @@ struct VenueCard: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Tokens.Spacing.s)
+        .padding(Tokens.Spacing.card)
         .background(Tokens.Color.cardBackground, in: .rect(cornerRadius: Tokens.Radius.card))
     }
 
@@ -61,7 +62,7 @@ struct VenueCard: View {
         if !venue.address.isEmpty {
             Text(venue.address)
                 .font(.subheadline)
-                .fontWeight(.medium)
+                .fontWeight(.semibold)
                 .foregroundStyle(Tokens.Color.textPrimary)
                 .lineLimit(2)
         }

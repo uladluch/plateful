@@ -27,7 +27,7 @@ struct ChainCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Tokens.Spacing.m)
+        .padding(Tokens.Spacing.card)
         .background(Tokens.Color.cardBackground, in: .rect(cornerRadius: Tokens.Radius.card))
     }
 }
