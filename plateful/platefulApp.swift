@@ -58,9 +58,16 @@ struct platefulApp: App {
 
         // Справочник должен работать даже так: поиск и калории от истории
         // не зависят.
-        return try! ModelContainer(
-            for: Schema(schema),
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
+        do {
+            return try ModelContainer(
+                for: Schema(schema),
+                configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none))
+        } catch {
+            // Сюда не должно доходить никогда; если дошло — причина в логе,
+            // а не безымянный `try!`.
+            log.fault("Даже хранилище в памяти не поднялось: \(error.localizedDescription)")
+            fatalError("In-memory ModelContainer failed: \(error)")
+        }
     }
 
     var body: some Scene {

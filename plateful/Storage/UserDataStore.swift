@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import SwiftData
 
 /// Всё, что пишет пользователь: история просмотров и сохранённые заказы.
@@ -16,6 +17,21 @@ struct UserDataStore {
 
     init(context: ModelContext) {
         self.context = context
+    }
+
+    private static let log = Logger(subsystem: "com.anluch.plateful", category: "storage")
+
+    /// Запись, сбой которой не мешает экрану.
+    ///
+    /// Смотреть калории можно и без истории, поэтому экран не падает и не
+    /// показывает ошибку. Но и глотать её молча, как делал `try?`, нельзя:
+    /// по логу иначе не понять, почему заказ не сохранился.
+    static func attempt(_ action: String, _ body: () throws -> Void) {
+        do {
+            try body()
+        } catch {
+            log.error("\(action) не удалось: \(error.localizedDescription)")
+        }
     }
 
     // MARK: - История

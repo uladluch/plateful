@@ -69,8 +69,10 @@ struct OrderView: View {
 
     private func save() {
         let name = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        try? UserDataStore(context: context)
-            .save(order, title: name.isEmpty ? order.chain : name)
+        UserDataStore.attempt("Сохранение заказа") {
+            try UserDataStore(context: context)
+                .save(order, title: name.isEmpty ? order.chain : name)
+        }
         title = ""
     }
 
